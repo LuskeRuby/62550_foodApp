@@ -46,7 +46,6 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.sqldelight.coroutines)
             implementation(libs.koin.core)
-            implementation(libs.koin.compose)
         }
 
         iosMain.dependencies {
