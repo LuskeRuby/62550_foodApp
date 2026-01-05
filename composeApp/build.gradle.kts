@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.sqlDelight)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -29,9 +29,10 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
-            implementation(libs.sqldelight.android)
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
+            implementation(libs.room.runtime)
+            implementation(libs.room.ktx)
         }
 
         commonMain.dependencies {
@@ -44,24 +45,14 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(libs.sqldelight.coroutines)
             implementation(libs.koin.core)
         }
 
         iosMain.dependencies {
-            implementation(libs.sqldelight.native)
         }
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
-        }
-    }
-}
-
-sqldelight {
-    databases {
-        create("FoodAppDatabase") {
-            packageName.set("com.example.a62550_foodapp")
         }
     }
 }
@@ -98,4 +89,9 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
+    add("kspAndroid", libs.room.compiler)
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
