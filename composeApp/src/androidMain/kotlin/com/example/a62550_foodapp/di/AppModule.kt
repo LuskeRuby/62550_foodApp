@@ -6,4 +6,5 @@ import org.koin.dsl.module
 
 val appModule = module {
     viewModel { AndroidMainViewModel() }
+    //TODO fix deprecated androidViewModel
 }

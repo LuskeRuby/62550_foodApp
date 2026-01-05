@@ -30,7 +30,6 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.sqldelight.android)
-            // Koin Android and helpers for ViewModel + Compose
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
         }
@@ -45,7 +44,6 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.sqldelight.coroutines)
-            // Koin core for shared logic (multiplatform core)
             implementation(libs.koin.core)
         }
 
