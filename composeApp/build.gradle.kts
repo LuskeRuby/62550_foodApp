@@ -31,8 +31,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.sqldelight.android)
             // Koin Android and helpers for ViewModel + Compose
-            implementation("io.insert-koin:koin-android:3.4.0")
-            implementation("io.insert-koin:koin-androidx-compose:3.4.0")
+            implementation(libs.koin.android)
+            implementation(libs.koin.androidx.compose)
         }
 
         commonMain.dependencies {
@@ -46,7 +46,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.sqldelight.coroutines)
             // Koin core for shared logic (multiplatform core)
-            implementation("io.insert-koin:koin-core:3.4.0")
+            implementation(libs.koin.core)
         }
 
         iosMain.dependencies {
