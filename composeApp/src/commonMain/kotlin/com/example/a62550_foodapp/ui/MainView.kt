@@ -1,5 +1,6 @@
 package com.example.a62550_foodapp.ui
 
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
@@ -23,6 +24,7 @@ fun MainView() {
                 selectedTabIndex = selectedTab,
                 containerColor = creamyOrange,
                 contentColor = Color.Black,
+                modifier = Modifier.height(80.dp),
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
@@ -37,10 +39,15 @@ fun MainView() {
                         Icon(
                             Icons.Default.Restaurant, 
                             contentDescription = "Recipes",
-                            modifier = Modifier.padding(top = 8.dp)
+                            modifier = Modifier.padding(top = 12.dp)
                         ) 
                     },
-                    text = { Text("Recipes") }
+                    text = { 
+                        Text(
+                            "Recipes",
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) 
+                    }
                 )
                 Tab(
                     selected = selectedTab == 1,
@@ -49,10 +56,15 @@ fun MainView() {
                         Icon(
                             Icons.Default.List, 
                             contentDescription = "Shopping List",
-                            modifier = Modifier.padding(top = 8.dp)
+                            modifier = Modifier.padding(top = 12.dp)
                         ) 
                     },
-                    text = { Text("Shopping List") }
+                    text = { 
+                        Text(
+                            "Shopping List",
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) 
+                    }
                 )
             }
         }
