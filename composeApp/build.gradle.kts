@@ -33,6 +33,8 @@ kotlin {
             implementation(libs.koin.androidx.compose)
             implementation(libs.room.runtime)
             implementation(libs.room.ktx)
+
+            implementation("io.coil-kt:coil-compose:2.6.0")
         }
 
         commonMain.dependencies {
