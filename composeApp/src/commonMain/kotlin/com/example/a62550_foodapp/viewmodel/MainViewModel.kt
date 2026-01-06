@@ -1,25 +1,10 @@
 package com.example.a62550_foodapp.viewmodel
 
-import com.example.a62550_foodapp.model.Recipe
-import com.example.a62550_foodapp.model.ShoppingList
+import com.example.a62550_foodapp.model.FoodItem
+import kotlinx.coroutines.flow.StateFlow
 
-class MainViewModel {
+interface MainViewModel {
+    val foodItems: StateFlow<List<FoodItem>>
 
-    var recipeList: List<Recipe> = emptyList()
-    val shoppingList: ShoppingList = ShoppingList(id = 0, name = "", items = emptyList())
-
-    init {
-        loadRecipeList()
-        loadShoppingList()
-    }
-
-    fun loadRecipeList(){
-
-    }
-
-    fun loadShoppingList(){
-
-    }
-
+    fun addFoodItem(name: String, calories: Int)
 }
-
