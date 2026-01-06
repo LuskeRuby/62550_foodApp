@@ -1,0 +1,29 @@
+package com.example.a62550_foodapp.db.entity
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import com.example.a62550_foodapp.db.entity.Supermarket
+
+@Entity(
+    tableName = "item_weekly_prices",
+    primaryKeys = ["item_id", "year", "week", "supermarket_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = Item::class,
+            parentColumns = ["id"],
+            childColumns = ["item_id"]
+        ),
+        ForeignKey(
+            entity = Supermarket::class,
+            parentColumns = ["id"],
+            childColumns = ["supermarket_id"]
+        )
+    ]
+)
+data class ItemWeeklyPrice(
+    val item_id: Int,
+    val year: Int,
+    val week: Int,
+    val price: Float,
+    val supermarket_id: Int
+)

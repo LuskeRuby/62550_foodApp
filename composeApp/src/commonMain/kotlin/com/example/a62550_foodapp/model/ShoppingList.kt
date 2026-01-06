@@ -1,5 +1,6 @@
 package com.example.a62550_foodapp.model
 
+// UI-facing data class
 data class ShoppingList(
     val id: Int,
     val name: String,

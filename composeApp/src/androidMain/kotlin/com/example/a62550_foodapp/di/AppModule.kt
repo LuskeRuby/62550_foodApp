@@ -15,11 +15,19 @@ val androidModule = module {
             androidContext(),
             AppDatabase::class.java,
             "food_app.db"
-        ).build()
+        )
+        .fallbackToDestructiveMigration()
+        .build()
     }
 
     // DAOs
+    single { get<AppDatabase>().shoppingListDao() }
+    single { get<AppDatabase>().itemDao() }
+    single { get<AppDatabase>().recipeDao() }
+    single { get<AppDatabase>().recipeItemDao() }
+    single { get<AppDatabase>().shoppingListItemDao() }
     single { get<AppDatabase>().foodItemDao() }
+    single { get<AppDatabase>().supermarketDao() }
 
     // ViewModels
     viewModel { AndroidMainViewModel(get()) }
