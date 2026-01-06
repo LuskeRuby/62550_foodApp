@@ -14,4 +14,10 @@ interface RecipeDao {
 
     @Query("SELECT * FROM recipes")
     fun getAllRecipes(): Flow<List<Recipe>>
+
+    @Insert
+    suspend fun insert(recipe: Recipe): Long
+
+    @Query("UPDATE recipes SET imagePath = :path WHERE id = :id")
+    suspend fun updateImagePath(id: Int, path: String)
 }

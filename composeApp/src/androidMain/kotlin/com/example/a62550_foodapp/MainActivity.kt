@@ -9,6 +9,8 @@ import androidx.compose.ui.tooling.preview.Preview
 
 import com.example.a62550_foodapp.ui.recipe.CreateRecipeScreen
 import androidx.compose.material3.MaterialTheme
+import com.example.a62550_foodapp.viewmodel.RecipeViewModel
+import org.koin.androidx.compose.koinViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -17,9 +19,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            //App()
             MaterialTheme {
-                CreateRecipeScreen()
+                val recipeViewModel: RecipeViewModel = koinViewModel()
+                CreateRecipeScreen(recipeViewModel)
             }
         }
     }

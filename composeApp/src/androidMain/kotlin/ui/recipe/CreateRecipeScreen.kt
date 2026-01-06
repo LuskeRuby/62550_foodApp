@@ -11,9 +11,13 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import androidx.compose.ui.platform.LocalContext
 import com.example.a62550_foodapp.utils.saveRecipeImage
+import com.example.a62550_foodapp.viewmodel.RecipeViewModel
+
 
 @Composable
-fun CreateRecipeScreen() {
+fun CreateRecipeScreen(
+    recipeViewModel: RecipeViewModel
+) {
     val context = LocalContext.current  // temp for saving image
 
     var title by remember { mutableStateOf("") }
@@ -61,17 +65,15 @@ fun CreateRecipeScreen() {
 
         Button(
             onClick = {
-                selectedImage?.let { uri ->
-                    val path = saveRecipeImage(
-                        context = context,
-                        sourceUri = uri,
-                        recipeId = 999
-                    )
-                    println("Image saved at: $path")
-                }
+                recipeViewModel.createRecipe(
+                    title = title,
+                    description = null,
+                    instructions = null,
+                    imageUri = selectedImage
+                )
             }
         ) {
-            Text("Save image locally (test)")
+            Text("Save recipe")
         }
 
 

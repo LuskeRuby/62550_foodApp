@@ -8,6 +8,7 @@ import com.example.a62550_foodapp.viewmodel.AndroidMainViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
+import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 
 val androidModule = module {
     // 1. Room Database
@@ -35,4 +36,5 @@ val androidModule = module {
 
     // ViewModels
     viewModel { AndroidMainViewModel(get()) }
+    viewModel { RecipeViewModel(recipeDao = get(), appContext = androidContext()) }
 }
