@@ -11,6 +11,9 @@ interface ShoppingListDao {
     @Insert
     suspend fun insert(shoppingList: ShoppingList)
 
+    @Insert
+    suspend fun insertAndReturnId(shoppingList: ShoppingList): Long
+
     @Query("SELECT * FROM shopping_lists")
     fun getAll(): Flow<List<ShoppingList>>
 }

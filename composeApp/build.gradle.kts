@@ -61,6 +61,10 @@ android {
     namespace = "com.example.a62550_foodapp"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.example.a62550_foodapp"
         minSdk = libs.versions.android.minSdk.get().toInt()
