@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.PlaylistAddCheck
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -15,7 +16,9 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainView() {
+fun MainView(
+    recipeContent: @Composable () -> Unit = { RecipePage(recipes = emptyList(), onAddRecipeClick = {}) }
+) {
     var selectedTab by remember { mutableStateOf(0) }
     val creamyOrange = Color(0xFFFFD59A)
 
@@ -84,14 +87,32 @@ fun MainView() {
                         ) 
                     }
                 )
+                Tab(
+                    selected = selectedTab == 3,
+                    onClick = { selectedTab = 3 },
+                    icon = { 
+                        Icon(
+                            Icons.Default.PlaylistAddCheck, 
+                            contentDescription = "Details",
+                            modifier = Modifier.padding(top = 12.dp)
+                        ) 
+                    },
+                    text = { 
+                        Text(
+                            "Details",
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) 
+                    }
+                )
             }
         }
     ) { innerPadding ->
         Surface(modifier = Modifier.padding(innerPadding)) {
             when (selectedTab) {
-                0 -> RecipePage()
+                0 -> recipeContent()
                 1 -> ShoppingListPage()
                 2 -> FoodItemPage()
+                3 -> ShoppingListDetailsPage()
             }
         }
     }

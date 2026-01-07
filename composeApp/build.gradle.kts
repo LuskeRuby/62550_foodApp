@@ -33,6 +33,8 @@ kotlin {
             implementation(libs.koin.androidx.compose)
             implementation(libs.room.runtime)
             implementation(libs.room.ktx)
+
+            implementation("io.coil-kt:coil-compose:2.6.0")
         }
 
         commonMain.dependencies {
@@ -60,6 +62,10 @@ kotlin {
 android {
     namespace = "com.example.a62550_foodapp"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     defaultConfig {
         applicationId = "com.example.a62550_foodapp"
