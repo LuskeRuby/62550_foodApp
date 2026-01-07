@@ -1,71 +1,15 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeMultiplatform)
+    id("org.jetbrains.kotlin.android")
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ksp)
-}
-
-kotlin {
-    androidTarget {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
-    }
-
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "ComposeApp"
-            isStatic = true
-        }
-    }
-
-    sourceSets {
-        androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
-            implementation(libs.koin.android)
-            implementation(libs.koin.androidx.compose)
-            implementation(libs.room.runtime)
-            implementation(libs.room.ktx)
-
-            implementation("io.coil-kt:coil-compose:2.6.0")
-        }
-
-        commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(libs.koin.core)
-        }
-
-        iosMain.dependencies {
-        }
-
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-        }
-    }
 }
 
 android {
     namespace = "com.example.a62550_foodapp"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    buildFeatures {
-        buildConfig = true
-    }
 
     defaultConfig {
         applicationId = "com.example.a62550_foodapp"
@@ -75,6 +19,24 @@ android {
         versionName = "1.0"
     }
 
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "2.0.0"
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -82,20 +44,40 @@ android {
     }
 
     buildTypes {
-        getByName("release") {
+        release {
             isMinifyEnabled = false
         }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
     }
 }
 
 dependencies {
-    debugImplementation(compose.uiTooling)
-    add("kspAndroid", libs.room.compiler)
+
+    /* ---------- Compose (AndroidX, NOT multiplatform) ---------- */
+    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.activity:activity-compose")
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.compose.material:material-icons-extended")
+
+    debugImplementation("androidx.compose.ui:ui-tooling")
+
+    /* ---------- Lifecycle ---------- */
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.3")
+
+    /* ---------- Koin ---------- */
+    implementation("io.insert-koin:koin-android:4.1.1")
+    implementation("io.insert-koin:koin-androidx-compose:4.1.1")
+
+    /* ---------- Room ---------- */
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+
+    /* ---------- Images ---------- */
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }
 
 ksp {

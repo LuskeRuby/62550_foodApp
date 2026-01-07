@@ -11,15 +11,14 @@ import kotlinx.coroutines.launch
 import com.example.a62550_foodapp.db.entity.FoodItem as DbFoodItem
 import com.example.a62550_foodapp.model.FoodItem as ModelFoodItem
 
-class AndroidMainViewModel(private val foodItemDao: FoodItemDao) : ViewModel(), MainViewModel {
-
-    override val foodItems: StateFlow<List<ModelFoodItem>> = foodItemDao.getAll()
+class MainViewModel(private val foodItemDao: FoodItemDao) : ViewModel() {
+        val foodItems: StateFlow<List<ModelFoodItem>> = foodItemDao.getAll()
         .map { dbItems ->
             dbItems.map { ModelFoodItem(it.id, it.name, it.calories) }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    override fun addFoodItem(name: String, calories: Int) {
+    fun addFoodItem(name: String, calories: Int) {
         viewModelScope.launch {
             foodItemDao.insert(DbFoodItem(name = name, calories = calories))
         }
