@@ -39,7 +39,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.a62550_foodapp.ui.icons.PencilIcon
 
 
 data class ShoppingItem1(
@@ -77,7 +76,8 @@ fun ShoppingListPage() {
 
 
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
     ) {
         Column(
             modifier = Modifier
@@ -112,7 +112,7 @@ fun ShoppingListPage() {
             }
         }
 
-        // trigger invocation of overlay
+        // trigger overlay
         if (newListOverlay) {
             NewShoppingListFormOverlay(onDismiss = { newListOverlay = false })
         } else if (editListNameOverlay) {
@@ -125,7 +125,7 @@ fun ShoppingListPage() {
 @Composable
 fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
 
-    // remember the source
+    // program crashes without it
     val interactionSource = remember { MutableInteractionSource() }
 
     Box(
@@ -152,7 +152,7 @@ fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
             )
 
             Icon(
-                imageVector = Icons.Default.BorderColor, //PencilIcon,
+                imageVector = Icons.Default.BorderColor,
                 contentDescription = "Edit",
                 tint = Color.Black,
                 modifier = Modifier
@@ -170,16 +170,13 @@ fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
 @Composable
 fun NewShoppingListFormOverlay(onDismiss: () -> Unit) {
 
+    // Backdrop
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f)),
         contentAlignment = Alignment.Center
     ) {
-        // Backdrop
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
-        )
 
         var name by remember { mutableStateOf("") }
 
@@ -240,16 +237,13 @@ fun NewShoppingListFormOverlay(onDismiss: () -> Unit) {
 @Composable
 fun EditShoppingListFormOverlay(onDismiss: () -> Unit) {
 
+    // Backdrop
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f)),
         contentAlignment = Alignment.Center
     ) {
-        // Backdrop
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
-        )
 
         var name by remember { mutableStateOf("") }
 
