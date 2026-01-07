@@ -1,7 +1,9 @@
 package com.example.a62550_foodapp.ui
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +19,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BorderColor
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -111,15 +115,19 @@ fun ShoppingListPage() {
         // trigger invocation of overlay
         if (newListOverlay) {
             NewShoppingListFormOverlay(onDismiss = { newListOverlay = false })
-        } //else if (editListNameOverlay) {
-        //    EditShoppingListFormOverlay(onDismiss = {editListNameOverlay = false})
-        //}
+        } else if (editListNameOverlay) {
+            EditShoppingListFormOverlay(onDismiss = {editListNameOverlay = false})
+        }
 
     }
 }
 
 @Composable
 fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
+
+    // remember the source
+    val interactionSource = remember { MutableInteractionSource() }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -144,13 +152,16 @@ fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
             )
 
             Icon(
-                imageVector = PencilIcon,
+                imageVector = Icons.Default.BorderColor, //PencilIcon,
                 contentDescription = "Edit",
                 tint = Color.Black,
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .size(24.dp)
-                    .clickable { onClick() }
+                   .clickable(
+                       indication = LocalIndication.current,           // explicitly pass current indication
+                       interactionSource = interactionSource           // and the remembered interaction source
+                    ) { onClick() }
             )
         }
     }
