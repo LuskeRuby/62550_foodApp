@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 5,
-    "identityHash": "beb74ff8190fa60552f2449dc244c13a",
+    "version": 6,
+    "identityHash": "9a443832ab847003e60459d332d1f394",
     "entities": [
       {
         "tableName": "shopping_lists",
@@ -392,39 +392,12 @@
           }
         ],
         "foreignKeys": []
-      },
-      {
-        "tableName": "item_supermarket_cross_ref",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`itemId` INTEGER NOT NULL, `supermarketId` INTEGER NOT NULL, PRIMARY KEY(`itemId`, `supermarketId`))",
-        "fields": [
-          {
-            "fieldPath": "itemId",
-            "columnName": "itemId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "supermarketId",
-            "columnName": "supermarketId",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "itemId",
-            "supermarketId"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'beb74ff8190fa60552f2449dc244c13a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9a443832ab847003e60459d332d1f394')"
     ]
   }
 }

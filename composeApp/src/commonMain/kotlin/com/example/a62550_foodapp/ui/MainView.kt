@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.PlaylistAddCheck
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -86,6 +87,23 @@ fun MainView(
                         ) 
                     }
                 )
+                Tab(
+                    selected = selectedTab == 3,
+                    onClick = { selectedTab = 3 },
+                    icon = { 
+                        Icon(
+                            Icons.Default.PlaylistAddCheck, 
+                            contentDescription = "Details",
+                            modifier = Modifier.padding(top = 12.dp)
+                        ) 
+                    },
+                    text = { 
+                        Text(
+                            "Details",
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) 
+                    }
+                )
             }
         }
     ) { innerPadding ->
@@ -94,6 +112,7 @@ fun MainView(
                 0 -> recipeContent()
                 1 -> ShoppingListPage()
                 2 -> FoodItemPage()
+                3 -> ShoppingListDetailsPage()
             }
         }
     }

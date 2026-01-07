@@ -8,9 +8,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SupermarketDao {
+
     @Insert
-    suspend fun insert(supermarket: Supermarket)
+    suspend fun insert(supermarket: Supermarket): Long
 
     @Query("SELECT * FROM supermarkets")
     fun getAll(): Flow<List<Supermarket>>
 }
+

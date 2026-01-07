@@ -2,28 +2,46 @@
 package com.example.a62550_foodapp.di
 
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.a62550_foodapp.BuildConfig
 import com.example.a62550_foodapp.db.AppDatabase
 import com.example.a62550_foodapp.db.DatabaseInitializer // Make sure to import this
 import com.example.a62550_foodapp.viewmodel.AndroidMainViewModel
+import com.example.a62550_foodapp.viewmodel.AndroidShoppingListDetailsViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 
 val androidModule = module {
-    // 1. Room Database
+    // Room Database
     single {
-        Room.databaseBuilder(
+        lateinit var database: AppDatabase
+
+        database = Room.databaseBuilder(
             androidContext(),
             AppDatabase::class.java,
             "food_app.db"
         )
             .fallbackToDestructiveMigration()
-            .build()
-    }
+            .addCallback(object : RoomDatabase.Callback() {
 
-    // 2. Database Initializer
-    single { DatabaseInitializer(get()) }
+                override fun onCreate(db: SupportSQLiteDatabase) {
+                    if (BuildConfig.DEBUG) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            DatabaseSeeder.seed(database)
+                        }
+                    }
+                }
+            })
+            .build()
+
+        database
+    }
 
     // DAOs
     single { get<AppDatabase>().shoppingListDao() }
@@ -33,8 +51,10 @@ val androidModule = module {
     single { get<AppDatabase>().shoppingListItemDao() }
     single { get<AppDatabase>().foodItemDao() }
     single { get<AppDatabase>().supermarketDao() }
+    single { get<AppDatabase>().itemWeeklyPriceDao() }
 
     // ViewModels
     viewModel { AndroidMainViewModel(get()) }
     viewModel { RecipeViewModel(recipeDao = get(), appContext = androidContext()) }
+    viewModel { AndroidShoppingListDetailsViewModel(get()) }
 }
