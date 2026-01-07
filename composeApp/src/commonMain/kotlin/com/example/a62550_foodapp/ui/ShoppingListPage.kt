@@ -1,6 +1,7 @@
 package com.example.a62550_foodapp.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,8 +17,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BorderColor
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.a62550_foodapp.ui.icons.PencilIcon
 
 
 data class ShoppingItem1(
@@ -69,7 +69,7 @@ fun ShoppingListPage() {
                                 )
 
     var newListOverlay by remember { mutableStateOf(false) }
-    var editNameOverlay by remember { mutableStateOf(false) }
+    var editListNameOverlay by remember { mutableStateOf(false) }
     
 
     Box(
@@ -85,7 +85,7 @@ fun ShoppingListPage() {
                     .weight(1f)
             ) {
                 items(items) { item ->
-                    ShoppingListRow(item)
+                    ShoppingListRow(item, onClick = {editListNameOverlay = true})
                 }
             }
 
@@ -110,13 +110,16 @@ fun ShoppingListPage() {
 
         // trigger invocation of overlay
         if (newListOverlay) {
-            NewShoppingListFormularOverlay(onDismiss = { newListOverlay = false })
-        }
+            NewShoppingListFormOverlay(onDismiss = { newListOverlay = false })
+        } //else if (editListNameOverlay) {
+        //    EditShoppingListFormOverlay(onDismiss = {editListNameOverlay = false})
+        //}
+
     }
 }
 
 @Composable
-fun ShoppingListRow(item: ShoppingItem1) {
+fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,23 +144,20 @@ fun ShoppingListRow(item: ShoppingItem1) {
             )
 
             Icon(
-                imageVector = Icons.Default.BorderColor,
+                imageVector = PencilIcon,
                 contentDescription = "Edit",
                 tint = Color.Black,
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .size(24.dp)
+                    .clickable { onClick() }
             )
-
         }
-
     }
-
-
 }
 
 @Composable
-fun NewShoppingListFormularOverlay(onDismiss: () -> Unit) {
+fun NewShoppingListFormOverlay(onDismiss: () -> Unit) {
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -210,6 +210,76 @@ fun NewShoppingListFormularOverlay(onDismiss: () -> Unit) {
                             onDismiss() }
                     ) {
                         Text("Create")
+                    }
+
+                    Spacer(modifier = Modifier.size(8.dp))
+
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EditShoppingListFormOverlay(onDismiss: () -> Unit) {
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        // Backdrop
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f))
+        )
+
+        var name by remember { mutableStateOf("") }
+
+        Card(
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier
+                .width(340.dp)
+                .wrapContentHeight()
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Edit Shopping List",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = Color.Black
+                )
+
+                Spacer(modifier = Modifier.size(8.dp))
+
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Name") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.size(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Button(
+                        onClick = {
+                            /* TODO: create action */
+                            onDismiss() }
+                    ) {
+                        Text("Edit")
                     }
 
                     Spacer(modifier = Modifier.size(8.dp))
