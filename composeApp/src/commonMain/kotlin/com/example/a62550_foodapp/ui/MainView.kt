@@ -15,7 +15,9 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainView() {
+fun MainView(
+    recipeContent: @Composable () -> Unit = { RecipePage(recipes = emptyList(), onAddRecipeClick = {}) }
+) {
     var selectedTab by remember { mutableStateOf(0) }
     val creamyOrange = Color(0xFFFFD59A)
 
@@ -89,7 +91,7 @@ fun MainView() {
     ) { innerPadding ->
         Surface(modifier = Modifier.padding(innerPadding)) {
             when (selectedTab) {
-                0 -> RecipePage()
+                0 -> recipeContent()
                 1 -> ShoppingListPage()
                 2 -> FoodItemPage()
             }

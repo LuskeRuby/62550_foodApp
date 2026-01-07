@@ -10,19 +10,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import androidx.compose.ui.platform.LocalContext
-import com.example.a62550_foodapp.utils.saveRecipeImage
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 
 
 @Composable
 fun CreateRecipeScreen(
-    recipeViewModel: RecipeViewModel
+    recipeViewModel: RecipeViewModel,
+    onRecipeSaved: () -> Unit
 ) {
-    val context = LocalContext.current  // temp for saving image
-
     var title by remember { mutableStateOf("") }
     var selectedImage by remember { mutableStateOf<Uri?>(null) }
-
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -71,12 +68,11 @@ fun CreateRecipeScreen(
                     instructions = null,
                     imageUri = selectedImage
                 )
-            }
+                onRecipeSaved()
+            },
+            enabled = title.isNotBlank()
         ) {
             Text("Save recipe")
         }
-
-
-
     }
 }
