@@ -74,7 +74,7 @@ fun ShoppingListPage() {
 
     var newListOverlay by remember { mutableStateOf(false) }
     var editListNameOverlay by remember { mutableStateOf(false) }
-    
+
 
     Box(
         modifier = Modifier.fillMaxSize()

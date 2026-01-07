@@ -10,6 +10,7 @@ data class Recipe(
     val title: String,
     val description: String?,
     val instructions: String?,
-    val picture: ByteArray?,
+    // This stores the internal path: e.g., "/data/user/0/.../recipe_123.jpg"
+    val imagePath: String? = null,
     val deletable: Boolean?
 )
