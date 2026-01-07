@@ -1,4 +1,4 @@
-package com.example.a62550_foodapp.ui
+package com.example.a62550_foodapp.ui.ShoppingList
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,8 +27,7 @@ import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
 @Composable
 fun ShoppingListDetailsPage() {
     val viewModel: ShoppingListDetailsViewModel = getDetailsViewModel()
-    val items by viewModel.items.collectAsState(initial = emptyList())
-
+    val items by viewModel.items.collectAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -42,26 +41,45 @@ fun ShoppingListDetailsPage() {
     }
 }
 
+
 @Composable
 fun ShoppingListRow(item: ShoppingListRowDisplay) {
-    var isChecked by remember { mutableStateOf(item.isChecked) }
+
+    val quantityText = remember(item.quantity, item.unit) {
+        val qty = if (item.quantity % 1f == 0f) {
+            item.quantity.toInt().toString()
+        } else {
+            item.quantity.toString()
+        }
+
+        listOfNotNull(qty, item.unit).joinToString(" ")
+    }
+
+    val priceText = remember(item.cheapestPrice) {
+        item.cheapestPrice?.let { "%.2f kr".format(it) } ?: "N/A"
+    }
 
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Checkbox(
-            checked = isChecked == "true",
+            checked = item.isChecked,
             onCheckedChange = {
-                isChecked = it.toString()
-                // TODO:Call viewModel to update the database state
+                // TODO: call ViewModel to update DB
             }
         )
+
         Text(
             text = item.itemName,
             modifier = Modifier.weight(1f)
         )
-        Text(text = item.quantityText)
+
+        Text(text = quantityText)
+
+        Text(text = priceText)
     }
 }

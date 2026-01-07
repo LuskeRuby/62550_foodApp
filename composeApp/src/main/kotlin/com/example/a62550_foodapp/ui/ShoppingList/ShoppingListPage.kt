@@ -1,4 +1,4 @@
-package com.example.a62550_foodapp.ui
+package com.example.a62550_foodapp.ui.ShoppingList
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

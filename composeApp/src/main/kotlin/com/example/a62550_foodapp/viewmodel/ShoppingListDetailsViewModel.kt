@@ -9,21 +9,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class AndroidShoppingListDetailsViewModel(
+class ShoppingListDetailsViewModel(
     shoppingListItemDao: ShoppingListItemDao
-) : ViewModel(), ShoppingListDetailsViewModel {
+) : ViewModel() {
 
-    override val items: StateFlow<List<ShoppingListRowDisplay>> = 
+    val items: StateFlow<List<ShoppingListRowDisplay>> =
         shoppingListItemDao.getShoppingListRowDetails()
             .map { detailsList ->
                 detailsList.map {
                     ShoppingListRowDisplay(
                         itemName = it.itemName,
-                        quantityText = "${it.quantity} ${it.unit ?: ""}".trim(),
-                        isChecked = it.isChecked.toString(),
-                        string = it.supermarketName ?: "N/A",
-                        string1 = it.cheapestPrice?.let { "%.2f kr".format(it) } ?: "N/A",
-                        bool = it.isChecked
+                        quantity = it.quantity,
+                        unit = it.unit,
+                        isChecked = it.isChecked,
+                        supermarketName = it.supermarketName,
+                        cheapestPrice = it.cheapestPrice
                     )
                 }
             }
@@ -33,3 +33,4 @@ class AndroidShoppingListDetailsViewModel(
                 emptyList()
             )
 }
+
