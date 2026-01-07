@@ -1,9 +1,2 @@
-package com.example.a62550_foodapp
-
-import android.os.Build
-
-class AndroidPlatform : Platform {
-    override val name: String = "Android ${Build.VERSION.SDK_INT}"
-}
-
-actual fun getPlatform(): Platform = AndroidPlatform()
+// This file is a duplicate and should be deleted. 
+// The logic has been merged into Platform.kt.
