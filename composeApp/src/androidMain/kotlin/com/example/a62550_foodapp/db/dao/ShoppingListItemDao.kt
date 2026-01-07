@@ -28,7 +28,7 @@ interface ShoppingListItemDao {
             ) AS supermarketName
         FROM shopping_list_items sli
         JOIN items i ON sli.item_id = i.id
-        WHERE sli.shopping_list_id = :listId
+        WHERE sli.shopping_list_id = (SELECT id FROM shopping_lists ORDER BY id ASC LIMIT 1)
     """)
-    fun getShoppingListRowDetails(listId: Long): Flow<List<ShoppingListRowDetails>>
+    fun getShoppingListRowDetails(): Flow<List<ShoppingListRowDetails>>
 }

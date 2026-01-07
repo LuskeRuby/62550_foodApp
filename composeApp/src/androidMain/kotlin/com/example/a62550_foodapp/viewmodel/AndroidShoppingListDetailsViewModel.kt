@@ -13,11 +13,8 @@ class AndroidShoppingListDetailsViewModel(
     shoppingListItemDao: ShoppingListItemDao
 ) : ViewModel(), ShoppingListDetailsViewModel {
 
-    // For now, we are hardcoding the shopping list ID to 1
-    private val listId = 1L
-
     override val items: StateFlow<List<ShoppingListRowDisplay>> = 
-        shoppingListItemDao.getShoppingListRowDetails(listId)
+        shoppingListItemDao.getShoppingListRowDetails()
             .map { detailsList ->
                 detailsList.map {
                     ShoppingListRowDisplay(
