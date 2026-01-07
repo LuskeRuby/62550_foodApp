@@ -8,7 +8,8 @@ import org.koin.core.module.Module
 fun initKoin(config: KoinAppDeclaration? = null, vararg platformModules: Module) {
     startKoin {
         config?.invoke(this)
-        val allModules = listOf(appModule) + platformModules
+        // Using androidModule which contains all our dependencies
+        val allModules = listOf(androidModule) + platformModules
         modules(allModules)
     }
 }

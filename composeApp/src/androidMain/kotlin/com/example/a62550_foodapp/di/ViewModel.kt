@@ -8,11 +8,11 @@ import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-actual fun getViewModel(): MainViewModel {
+fun getViewModel(): MainViewModel {
     return koinViewModel<AndroidMainViewModel>()
 }
 
 @Composable
-actual fun getDetailsViewModel(): ShoppingListDetailsViewModel {
+fun getDetailsViewModel(): ShoppingListDetailsViewModel {
     return koinViewModel<AndroidShoppingListDetailsViewModel>()
 }
