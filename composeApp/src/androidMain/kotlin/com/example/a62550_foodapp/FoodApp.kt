@@ -5,7 +5,6 @@ import com.example.a62550_foodapp.di.androidModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
-import com.example.a62550_foodapp.db.DatabaseInitializer
 import org.koin.android.ext.android.inject
 
 class FoodApp : Application() {
@@ -18,8 +17,5 @@ class FoodApp : Application() {
             modules(androidModule)
         }
 
-        // rigger the Database Initializer, using koin
-        val initializer: DatabaseInitializer by inject()
-        initializer.init()
     }
 }

@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.a62550_foodapp.BuildConfig
 import com.example.a62550_foodapp.db.AppDatabase
-import com.example.a62550_foodapp.db.DatabaseInitializer // Make sure to import this
+import com.example.a62550_foodapp.db.DatabaseSeeder
 import com.example.a62550_foodapp.viewmodel.AndroidMainViewModel
 import com.example.a62550_foodapp.viewmodel.AndroidShoppingListDetailsViewModel
 import kotlinx.coroutines.CoroutineScope

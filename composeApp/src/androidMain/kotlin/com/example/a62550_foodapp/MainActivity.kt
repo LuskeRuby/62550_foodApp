@@ -16,6 +16,7 @@ import com.example.a62550_foodapp.db.AppDatabase
 import com.example.a62550_foodapp.db.DatabaseSeeder
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
+import androidx.activity.compose.BackHandler
 
 
 class MainActivity : ComponentActivity() {

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "9a443832ab847003e60459d332d1f394",
+    "identityHash": "5afa9746fb82028060239cfadb61c334",
     "entities": [
       {
         "tableName": "shopping_lists",
@@ -146,7 +146,7 @@
       },
       {
         "tableName": "recipes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT, `instructions` TEXT, `picture` BLOB, `deletable` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT, `instructions` TEXT, `imagePath` TEXT, `deletable` INTEGER)",
         "fields": [
           {
             "fieldPath": "id",
@@ -173,9 +173,9 @@
             "notNull": false
           },
           {
-            "fieldPath": "picture",
-            "columnName": "picture",
-            "affinity": "BLOB",
+            "fieldPath": "imagePath",
+            "columnName": "imagePath",
+            "affinity": "TEXT",
             "notNull": false
           },
           {
@@ -397,7 +397,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9a443832ab847003e60459d332d1f394')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5afa9746fb82028060239cfadb61c334')"
     ]
   }
 }
