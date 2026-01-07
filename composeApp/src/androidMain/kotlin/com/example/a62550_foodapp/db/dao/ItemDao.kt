@@ -8,11 +8,12 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ItemDao {
-    @Insert
-    suspend fun insert(item: Item)
 
     @Insert
-    suspend fun insertAndReturnId(item: Item): Long
+    suspend fun insert(item: Item): Long
+
+    @Query("SELECT COUNT(*) FROM items")
+    suspend fun count(): Int
 
     @Query("SELECT * FROM items")
     fun getAll(): Flow<List<Item>>

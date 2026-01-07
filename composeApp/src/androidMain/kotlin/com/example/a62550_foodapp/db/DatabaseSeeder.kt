@@ -8,8 +8,10 @@ object DatabaseSeeder {
 
     suspend fun seed(database: AppDatabase) = withContext(Dispatchers.IO) {
 
-        // ---- CLEAR DB FIRST ----
-        database.clearAllTables()
+        // ---- IDPOTENT GUARD ----
+        if (database.itemDao().count() > 0) {
+            return@withContext
+        }
 
         val itemDao = database.itemDao()
         val supermarketDao = database.supermarketDao()
@@ -18,30 +20,56 @@ object DatabaseSeeder {
         val itemWeeklyPriceDao = database.itemWeeklyPriceDao()
 
         // ---- SUPERMARKETS ----
-        val nettoId = supermarketDao.insertAndReturnId(
+        val nettoId = supermarketDao.insert(
             Supermarket(name = "Netto", logo = null)
         )
 
-        val kvicklyId = supermarketDao.insertAndReturnId(
+        val kvicklyId = supermarketDao.insert(
             Supermarket(name = "Kvickly", logo = null)
         )
 
         // ---- ITEMS ----
-        val carrotsId = itemDao.insertAndReturnId(
+        val carrotsId = itemDao.insert(
             Item(name = "Gulerødder", unit = "500g", itemgroup = 1, picture = null)
         )
 
-        val onionId = itemDao.insertAndReturnId(
+        val onionId = itemDao.insert(
             Item(name = "Løg", unit = "1 kg", itemgroup = 1, picture = null)
         )
 
         // ---- ITEM PRICES ----
-        itemWeeklyPriceDao.insert(ItemWeeklyPrice(carrotsId.toInt(), 2024, 28, 7.0f, nettoId.toInt()))
-        itemWeeklyPriceDao.insert(ItemWeeklyPrice(carrotsId.toInt(), 2024, 28, 8.5f, kvicklyId.toInt()))
-        itemWeeklyPriceDao.insert(ItemWeeklyPrice(onionId.toInt(), 2024, 28, 12.0f, nettoId.toInt()))
+        itemWeeklyPriceDao.insert(
+            ItemWeeklyPrice(
+                item_id = carrotsId.toInt(),
+                year = 2024,
+                week = 28,
+                price = 7.0f,
+                supermarket_id = nettoId.toInt()
+            )
+        )
+
+        itemWeeklyPriceDao.insert(
+            ItemWeeklyPrice(
+                item_id = carrotsId.toInt(),
+                year = 2024,
+                week = 28,
+                price = 8.5f,
+                supermarket_id = kvicklyId.toInt()
+            )
+        )
+
+        itemWeeklyPriceDao.insert(
+            ItemWeeklyPrice(
+                item_id = onionId.toInt(),
+                year = 2024,
+                week = 28,
+                price = 12.0f,
+                supermarket_id = nettoId.toInt()
+            )
+        )
 
         // ---- SHOPPING LIST ----
-        val listId = shoppingListDao.insertAndReturnId(
+        val listId = shoppingListDao.insert(
             ShoppingList(name = "Aftensmad")
         )
 
