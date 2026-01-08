@@ -13,10 +13,12 @@ import com.example.a62550_foodapp.utils.saveRecipeImage
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.File
+import com.example.a62550_foodapp.db.dao.ItemWeeklyPriceDao
 
 class RecipeViewModel(
     private val recipeDao: RecipeDao,
     private val recipeItemDao: RecipeItemDao,
+    private val itemWeeklyPriceDao: ItemWeeklyPriceDao,
     private val appContext: Context
 ) : ViewModel() {
 
@@ -33,9 +35,10 @@ class RecipeViewModel(
                 RecipeModel(
                     id = entity.id,
                     title = entity.title,
+                    preparationTimeMinutes = entity.preparationTimeMinutes,
                     description = entity.description,
                     instructions = entity.instructions,
-                    picture = byteArray,
+                    imagePath = entity.imagePath,
                     deletable = entity.deletable ?: true
                 )
             }
@@ -59,22 +62,29 @@ class RecipeViewModel(
                 RecipeModel(
                     id = it.id,
                     title = it.title,
+                    preparationTimeMinutes = it.preparationTimeMinutes,
                     description = it.description,
                     instructions = it.instructions,
-                    picture = byteArray,
+                    imagePath = it.imagePath,
                     deletable = it.deletable ?: true
                 )
             }
         }
     }
 
-    fun getRecipePrice(id: Int): Flow<Float> {
-        return recipeDao.getRecipeTotalPrice(id).map { it ?: 0f }
+    suspend fun calculateRecipePrice(recipeId: Int): Float {
+        val groups = recipeDao.getRecipeItemGroups(recipeId)
+
+        return groups.sumOf { group ->
+            val prices = itemWeeklyPriceDao.getPricesForItemGroup(group.itemGroupId)
+            val cheapest = prices.minByOrNull { it.price }?.price ?: 0f
+            (cheapest * group.quantity).toDouble()
+        }.toFloat() //sumof virker eller ikke. ingen overload til float
     }
 
-    fun getIngredients(recipeId: Int): Flow<List<RecipeIngredient>> {
-        return recipeItemDao.getIngredientsForRecipe(recipeId)
-    }
+    //fun getIngredients(recipeId: Int): Flow<List<RecipeIngredient>> {
+    //    return recipeItemDao.getIngredientsForRecipe(recipeId)
+    //}
 
     fun createRecipe(
         title: String,

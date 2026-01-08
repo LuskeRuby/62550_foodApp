@@ -148,15 +148,15 @@ object DatabaseMockData {
 // Spaghetti Bolognese
         recipeItemDao.insert(
             RecipeItem(
-                recipe_id = recipeIds[0],
-                item_group_id = 1, // Løg
+                recipeId = recipeIds[0],
+                itemId = onionId,
                 quantity = 1f
             )
         )
         recipeItemDao.insert(
             RecipeItem(
-                recipe_id = recipeIds[0],
-                item_group_id = 2, // Gulerødder
+                recipeId = recipeIds[0],
+                itemId = carrotsId,
                 quantity = 1f
             )
         )
@@ -164,8 +164,8 @@ object DatabaseMockData {
 // Kylling i karry
         recipeItemDao.insert(
             RecipeItem(
-                recipe_id = recipeIds[1],
-                item_group_id = 1, // Løg
+                recipeId = recipeIds[1],
+                itemId = onionId,
                 quantity = 2f
             )
         )
@@ -173,8 +173,8 @@ object DatabaseMockData {
 // Lasagne
         recipeItemDao.insert(
             RecipeItem(
-                recipe_id = recipeIds[2],
-                item_group_id = 2, // Gulerødder
+                recipeId = recipeIds[2],
+                itemId = carrotsId,
                 quantity = 1f
             )
         )

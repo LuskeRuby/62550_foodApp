@@ -3,11 +3,9 @@ package com.example.a62550_foodapp.ui.recipe
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material3.*
@@ -31,8 +29,15 @@ fun RecipeDetailScreen(
     onBack: () -> Unit
 ) {
     val recipe by recipeViewModel.getRecipeById(recipeId).collectAsState(initial = null)
-    val ingredients by recipeViewModel.getIngredients(recipeId).collectAsState(initial = emptyList())
-    val totalPrice by recipeViewModel.getRecipePrice(recipeId).collectAsState(initial = 0f)
+
+
+    /*
+    // 🔴 GAMMEL PRIS-LOGIK (fjernet midlertidigt)
+    val totalPrice by recipeViewModel
+        .getRecipePrice(recipeId)
+        .collectAsState(initial = 0f)
+    */
+
     var portions by remember { mutableStateOf(1) }
 
     val lightPink = Color(0xFFF3E5F5)
@@ -46,7 +51,8 @@ fun RecipeDetailScreen(
                 .verticalScroll(rememberScrollState())
                 .background(Color.White)
         ) {
-            // Banner Title
+
+            // ---- TITLE ----
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -67,8 +73,10 @@ fun RecipeDetailScreen(
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Left side: Image and Price info
+
+                // ---- LEFT: IMAGE ----
                 Column(modifier = Modifier.weight(1f)) {
+
                     Surface(
                         shape = RoundedCornerShape(24.dp),
                         color = Color(0xFFEEEEEE),
@@ -88,13 +96,15 @@ fun RecipeDetailScreen(
                             .background(Color.LightGray)
                     ) {
                         AsyncImage(
-                            model = r.picture,
+                            model = r.imagePath,
                             contentDescription = r.title,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
                     }
 
+                    /*
+                    // 🔴 GAMMEL PRIS-VISNING
                     Row(
                         modifier = Modifier
                             .padding(top = 8.dp)
@@ -107,9 +117,9 @@ fun RecipeDetailScreen(
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = "Pris: ${totalPrice * portions}kr",
+                                text = "Pris: ${totalPrice * portions} kr",
                                 modifier = Modifier.padding(vertical = 4.dp),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
@@ -119,16 +129,17 @@ fun RecipeDetailScreen(
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                "Spar 25kr",
+                                "Spar 25 kr",
                                 modifier = Modifier.padding(vertical = 4.dp),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
                     }
+                    */
                 }
 
-                // Right side: Ingredients
+                // ---- RIGHT: INGREDIENTS ----
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -142,22 +153,31 @@ fun RecipeDetailScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
+
                     Spacer(modifier = Modifier.height(8.dp))
+/*
                     ingredients.forEach { ingredient ->
                         val displayQuantity = ingredient.quantity * portions
-                        val quantityText = if (displayQuantity % 1 == 0f) displayQuantity.toInt().toString() else displayQuantity.toString()
-                        val unitText = if (ingredient.unit != null) " ${ingredient.unit}" else ""
-                        
+                        val quantityText =
+                            if (displayQuantity % 1 == 0f)
+                                displayQuantity.toInt().toString()
+                            else
+                                displayQuantity.toString()
+
+                        val unitText = ingredient.unit?.let { " $it" } ?: ""
+
                         Text(
                             text = "• $quantityText$unitText ${ingredient.name}",
                             style = MaterialTheme.typography.bodySmall
                         )
+
                         Spacer(modifier = Modifier.height(4.dp))
                     }
+ */
                 }
             }
 
-            // Description / Instructions
+            // ---- INSTRUCTIONS ----
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -174,7 +194,7 @@ fun RecipeDetailScreen(
                 }
             }
 
-            // Bottom Buttons
+            // ---- BOTTOM CONTROLS ----
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -182,7 +202,7 @@ fun RecipeDetailScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Portion control
+
                 Surface(
                     shape = RoundedCornerShape(24.dp),
                     color = Color(0xFFF5F5F5),
@@ -196,14 +216,15 @@ fun RecipeDetailScreen(
                         IconButton(onClick = { if (portions > 1) portions-- }) {
                             Icon(Icons.Default.RemoveCircle, contentDescription = "Sænk portioner")
                         }
+
                         Text("$portions Portioner", fontWeight = FontWeight.Bold)
+
                         IconButton(onClick = { portions++ }) {
                             Icon(Icons.Default.AddCircle, contentDescription = "Øg portioner")
                         }
                     }
                 }
 
-                // Add to shopping list button
                 Button(
                     onClick = { /* TODO: Add to shopping list */ },
                     modifier = Modifier.weight(1f),
@@ -214,7 +235,10 @@ fun RecipeDetailScreen(
                 }
             }
         }
-    } ?: Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    } ?: Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
         CircularProgressIndicator()
     }
 }

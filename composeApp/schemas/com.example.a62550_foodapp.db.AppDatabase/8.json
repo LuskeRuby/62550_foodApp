@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "819c33ba1ddf37bb5d7f0555d83747b6",
+    "identityHash": "28ee0fe1eece55dbfd1155d470802ee7",
     "entities": [
       {
         "tableName": "shopping_lists",
@@ -220,17 +220,17 @@
       },
       {
         "tableName": "recipe_items",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipe_id` INTEGER NOT NULL, `item_group_id` INTEGER NOT NULL, `quantity` REAL NOT NULL, PRIMARY KEY(`recipe_id`, `item_group_id`), FOREIGN KEY(`recipe_id`) REFERENCES `recipes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipe_id` INTEGER NOT NULL, `item_id` INTEGER NOT NULL, `quantity` REAL NOT NULL, PRIMARY KEY(`recipe_id`, `item_id`))",
         "fields": [
           {
-            "fieldPath": "recipe_id",
+            "fieldPath": "recipeId",
             "columnName": "recipe_id",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "item_group_id",
-            "columnName": "item_group_id",
+            "fieldPath": "itemId",
+            "columnName": "item_id",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -245,23 +245,11 @@
           "autoGenerate": false,
           "columnNames": [
             "recipe_id",
-            "item_group_id"
+            "item_id"
           ]
         },
         "indices": [],
-        "foreignKeys": [
-          {
-            "table": "recipes",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "recipe_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
+        "foreignKeys": []
       },
       {
         "tableName": "shopping_list_items",
@@ -422,7 +410,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '819c33ba1ddf37bb5d7f0555d83747b6')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '28ee0fe1eece55dbfd1155d470802ee7')"
     ]
   }
 }

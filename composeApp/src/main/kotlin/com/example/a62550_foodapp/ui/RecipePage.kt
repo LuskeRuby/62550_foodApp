@@ -78,7 +78,7 @@ fun RecipeCard(recipe: Recipe, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 AsyncImage(
-                    model = recipe.picture,
+                    model = recipe.imagePath,
                     contentDescription = recipe.title,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
