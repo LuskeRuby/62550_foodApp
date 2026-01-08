@@ -1,6 +1,10 @@
 package com.example.a62550_foodapp.ui
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -155,8 +159,9 @@ fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
                     .padding(end = 16.dp)
                     .size(24.dp)
                    .clickable(
-                       indication = LocalIndication.current,           // explicitly pass current indication
-                       interactionSource = interactionSource           // and the remembered interaction source
+                       // quick fix to avoid crash
+                       indication = LocalIndication.current,
+                       interactionSource = interactionSource
                     ) { onClick() }
             )
         }

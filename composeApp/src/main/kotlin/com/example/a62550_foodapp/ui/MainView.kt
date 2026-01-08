@@ -13,8 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.a62550_foodapp.ui.ShoppingList.ShoppingListDetailsPage
-import com.example.a62550_foodapp.ui.ShoppingList.ShoppingListPage
+import com.example.a62550_foodapp.ui.shoppingList.ShoppingListDetailsPage
 import com.example.a62550_foodapp.ui.recipe.RecipePage
 
 @OptIn(ExperimentalMaterial3Api::class)
