@@ -43,18 +43,18 @@ fun ShoppingListDetailsPage() {
 @Composable
 fun ShoppingListRow(item: ShoppingListRowDisplay) {
 
-    val quantityText = remember(item.quantity, item.unit) {
+    val quantityText = remember(item.quantity, item.size, item.unitType) {
         val qty = if (item.quantity % 1f == 0f) {
             item.quantity.toInt().toString()
         } else {
             item.quantity.toString()
         }
 
-        listOfNotNull(qty, item.unit).joinToString(" ")
-    }
+        val sizeText =
+            if (item.size % 1f == 0f) item.size.toInt().toString()
+            else item.size.toString()
 
-    val priceText = remember(item.cheapestPrice) {
-        item.cheapestPrice?.let { "%.2f kr".format(it) } ?: "N/A"
+        "$qty × $sizeText ${item.unitType}"
     }
 
     Row(
@@ -67,7 +67,7 @@ fun ShoppingListRow(item: ShoppingListRowDisplay) {
         Checkbox(
             checked = item.isChecked,
             onCheckedChange = {
-                // TODO: call ViewModel to update DB
+                // TODO update DB
             }
         )
 
@@ -77,7 +77,5 @@ fun ShoppingListRow(item: ShoppingListRowDisplay) {
         )
 
         Text(text = quantityText)
-
-        Text(text = priceText)
     }
 }

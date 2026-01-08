@@ -35,6 +35,7 @@ class RecipeViewModel(
             val recipeId = recipeDao.insert(
                 Recipe(
                     title = title,
+                    preparationTimeMinutes = 30, //midlertidig default
                     description = description,
                     instructions = instructions,
                     imagePath = null,

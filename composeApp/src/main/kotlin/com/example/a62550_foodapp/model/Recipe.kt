@@ -1,12 +1,11 @@
 package com.example.a62550_foodapp.model
 
-// UI-facing data class
 data class Recipe(
     val id: Int,
     val title: String,
+    val preparationTimeMinutes: Int,
     val description: String?,
     val instructions: String?,
-    val picture: ByteArray?,
-    val deletable: Boolean?,
-    val items: List<RecipeItem> = emptyList()
+    val imagePath: String?,
+    val deletable: Boolean
 )

@@ -57,5 +57,10 @@ val appModule = module {
         )
     }
 
-    viewModel { ShoppingListDetailsViewModel(get()) }
+    viewModel {
+        ShoppingListDetailsViewModel(
+            get(), // ShoppingListItemDao
+            get()  // ItemDao
+        )
+    }
 }
