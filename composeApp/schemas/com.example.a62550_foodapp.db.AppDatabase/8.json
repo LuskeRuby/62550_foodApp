@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "b18b7da9cf48695ef0f30d0e7b77269e",
+    "identityHash": "819c33ba1ddf37bb5d7f0555d83747b6",
     "entities": [
       {
         "tableName": "shopping_lists",
@@ -220,7 +220,7 @@
       },
       {
         "tableName": "recipe_items",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipe_id` INTEGER NOT NULL, `item_id` INTEGER NOT NULL, `quantity` REAL NOT NULL, PRIMARY KEY(`recipe_id`, `item_id`), FOREIGN KEY(`recipe_id`) REFERENCES `recipes`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`item_id`) REFERENCES `items`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipe_id` INTEGER NOT NULL, `item_group_id` INTEGER NOT NULL, `quantity` REAL NOT NULL, PRIMARY KEY(`recipe_id`, `item_group_id`), FOREIGN KEY(`recipe_id`) REFERENCES `recipes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "recipe_id",
@@ -229,8 +229,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "item_id",
-            "columnName": "item_id",
+            "fieldPath": "item_group_id",
+            "columnName": "item_group_id",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -245,28 +245,17 @@
           "autoGenerate": false,
           "columnNames": [
             "recipe_id",
-            "item_id"
+            "item_group_id"
           ]
         },
         "indices": [],
         "foreignKeys": [
           {
             "table": "recipes",
-            "onDelete": "NO ACTION",
+            "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
               "recipe_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          },
-          {
-            "table": "items",
-            "onDelete": "NO ACTION",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "item_id"
             ],
             "referencedColumns": [
               "id"
@@ -433,7 +422,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b18b7da9cf48695ef0f30d0e7b77269e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '819c33ba1ddf37bb5d7f0555d83747b6')"
     ]
   }
 }
