@@ -19,11 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.a62550_foodapp.di.getDetailsViewModel
+import com.example.a62550_foodapp.model.ShoppingList
 import com.example.a62550_foodapp.model.ShoppingListRowDisplay
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
 
 @Composable
-fun ShoppingListDetailsPage() {
+fun ShoppingListDetailsPage(selectedShoppingList: ShoppingList) {
     val viewModel: ShoppingListDetailsViewModel = getDetailsViewModel()
     val items by viewModel.items.collectAsState()
 
