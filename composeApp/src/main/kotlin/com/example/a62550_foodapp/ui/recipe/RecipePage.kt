@@ -15,7 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.a62550_foodapp.model.Recipe
+import com.example.a62550_foodapp.db.entity.Recipe
+import com.example.a62550_foodapp.ui.components.LocalImage
 
 @Composable
 fun RecipePage(
@@ -72,7 +73,10 @@ fun RecipeCard(recipe: Recipe) {
                     .weight(0.6f)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                // Image loading will be added here
+                LocalImage(
+                    imagePath = recipe.imagePath,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             Column(

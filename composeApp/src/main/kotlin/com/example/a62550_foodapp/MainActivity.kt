@@ -14,7 +14,7 @@ import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.lifecycle.lifecycleScope
 import com.example.a62550_foodapp.db.AppDatabase
-import com.example.a62550_foodapp.db.DatabaseSeeder
+import com.example.a62550_foodapp.db.DatabaseMockData
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
 
@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
             val database: AppDatabase = get()
 
             lifecycleScope.launch {
-                DatabaseSeeder.seed(database)
+                DatabaseMockData.populate(context = this@MainActivity, database = database)
             }
         }
 

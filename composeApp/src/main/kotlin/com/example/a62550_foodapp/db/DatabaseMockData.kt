@@ -1,14 +1,29 @@
 package com.example.a62550_foodapp.db
 
+import android.content.Context
 import com.example.a62550_foodapp.db.entity.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.example.a62550_foodapp.R
+import com.example.a62550_foodapp.db.entity.Recipe
+import com.example.a62550_foodapp.utils.copyDrawableToInternalStorage
 
-object DatabaseSeeder {
 
-    suspend fun seed(database: AppDatabase) = withContext(Dispatchers.IO) {
+/**
+ * Inserts local mock data for development and demo purposes.
+ *
+ * - Runs only if database is empty (idempotent)
+ * - Not used in production
+ * - Not a migration
+ */
+object DatabaseMockData {
 
-        // ---- IDPOTENT GUARD ----
+    suspend fun populate(
+        context: Context,
+        database: AppDatabase
+    ) = withContext(Dispatchers.IO) {
+
+        // ---- IDEMPOTENT GUARD ----
         if (database.itemDao().count() > 0) {
             return@withContext
         }
@@ -92,5 +107,37 @@ object DatabaseSeeder {
                 label = ""
             )
         )
+
+        // ---- RECIPES ----
+        val recipes = listOf(
+            "Spaghetti Bolognese" to R.drawable.recipe_1,
+            "Kylling i karry" to R.drawable.recipe_2,
+            "Lasagne" to R.drawable.recipe_3,
+            "Pasta Alfredo" to R.drawable.recipe_4,
+            "Chili con carne" to R.drawable.recipe_5,
+            "Fried rice" to R.drawable.recipe_6,
+            "Burger" to R.drawable.recipe_7,
+            "Salat med kylling" to R.drawable.recipe_8
+        )
+
+        recipes.forEachIndexed { index, (title, drawableRes) ->
+
+            val imagePath = copyDrawableToInternalStorage(
+                context = context,
+                drawableRes = drawableRes,
+                targetFileName = "recipe_mock_${index + 1}.webp"
+            )
+
+            database.recipeDao().insert(
+                Recipe(
+                    title = title,
+                    description = "Mock description",
+                    instructions = "Mock instructions",
+                    imagePath = imagePath,
+                    deletable = false
+                )
+            )
+        }
+
     }
 }
