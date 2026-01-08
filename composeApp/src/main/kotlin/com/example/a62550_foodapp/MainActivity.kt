@@ -8,8 +8,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.a62550_foodapp.ui.MainView
-import com.example.a62550_foodapp.ui.recipe.RecipePage
+import com.example.a62550_foodapp.ui.RecipePage
 import com.example.a62550_foodapp.ui.recipe.CreateRecipeScreen
+import com.example.a62550_foodapp.ui.recipe.RecipeDetailScreen
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.lifecycle.lifecycleScope
@@ -33,34 +34,58 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            var showCreateRecipe by remember { mutableStateOf(false) }
+            var navigationState by remember { mutableStateOf<NavState>(NavState.RecipeList) }
             val recipeViewModel: RecipeViewModel = koinViewModel()
             val recipes by recipeViewModel.recipes.collectAsState()
 
             MainView(
                 recipeContent = {
-                    if (showCreateRecipe) {
-                        BackHandler {
-                            showCreateRecipe = false
+                    when (val state = navigationState) {
+                        is NavState.RecipeList -> {
+                            RecipePage(
+                                recipes = recipes,
+                                onAddRecipeClick = {
+                                    navigationState = NavState.CreateRecipe
+                                },
+                                onRecipeClick = { id ->
+                                    navigationState = NavState.RecipeDetail(id)
+                                }
+                            )
                         }
-                        CreateRecipeScreen(
-                            recipeViewModel = recipeViewModel,
-                            onRecipeSaved = {
-                                showCreateRecipe = false
+                        is NavState.CreateRecipe -> {
+                            BackHandler {
+                                navigationState = NavState.RecipeList
                             }
-                        )
-                    } else {
-                        RecipePage(
-                            recipes = recipes,
-                            onAddRecipeClick = {
-                                showCreateRecipe = true
+                            CreateRecipeScreen(
+                                recipeViewModel = recipeViewModel,
+                                onRecipeSaved = {
+                                    navigationState = NavState.RecipeList
+                                }
+                            )
+                        }
+                        is NavState.RecipeDetail -> {
+                            BackHandler {
+                                navigationState = NavState.RecipeList
                             }
-                        )
+                            RecipeDetailScreen(
+                                recipeId = state.id,
+                                recipeViewModel = recipeViewModel,
+                                onBack = {
+                                    navigationState = NavState.RecipeList
+                                }
+                            )
+                        }
                     }
                 }
             )
         }
     }
+}
+
+sealed class NavState {
+    object RecipeList : NavState()
+    object CreateRecipe : NavState()
+    data class RecipeDetail(val id: Int) : NavState()
 }
 
 @Preview
