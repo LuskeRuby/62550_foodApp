@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
+import com.example.a62550_foodapp.model.RecipeIngredient
 
 @Composable
 fun RecipeDetailScreen(
@@ -106,7 +107,7 @@ fun RecipeDetailScreen(
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = "Pris: ${totalPrice}kr",
+                                text = "Pris: ${totalPrice * portions}kr",
                                 modifier = Modifier.padding(vertical = 4.dp),
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                 style = MaterialTheme.typography.labelSmall
@@ -143,7 +144,14 @@ fun RecipeDetailScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     ingredients.forEach { ingredient ->
-                        Text("• $ingredient", style = MaterialTheme.typography.bodySmall)
+                        val displayQuantity = ingredient.quantity * portions
+                        val quantityText = if (displayQuantity % 1 == 0f) displayQuantity.toInt().toString() else displayQuantity.toString()
+                        val unitText = if (ingredient.unit != null) " ${ingredient.unit}" else ""
+                        
+                        Text(
+                            text = "• $quantityText$unitText ${ingredient.name}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
                         Spacer(modifier = Modifier.height(4.dp))
                     }
                 }

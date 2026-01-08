@@ -8,6 +8,7 @@ import com.example.a62550_foodapp.db.dao.RecipeDao
 import com.example.a62550_foodapp.db.dao.RecipeItemDao
 import com.example.a62550_foodapp.db.entity.Recipe as RecipeEntity
 import com.example.a62550_foodapp.model.Recipe as RecipeModel
+import com.example.a62550_foodapp.model.RecipeIngredient
 import com.example.a62550_foodapp.utils.saveRecipeImage
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -71,7 +72,7 @@ class RecipeViewModel(
         return recipeDao.getRecipeTotalPrice(id).map { it ?: 0f }
     }
 
-    fun getIngredients(recipeId: Int): Flow<List<String>> {
+    fun getIngredients(recipeId: Int): Flow<List<RecipeIngredient>> {
         return recipeItemDao.getIngredientsForRecipe(recipeId)
     }
 
