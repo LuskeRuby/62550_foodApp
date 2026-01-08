@@ -34,14 +34,14 @@ fun ShoppingListDetailsPage() {
             .padding(16.dp)
     ) {
         items(items) { item ->
-            ShoppingListRow(item)
+            ShoppingListDetailRow(item)
         }
     }
 }
 
 
 @Composable
-fun ShoppingListRow(item: ShoppingListRowDisplay) {
+fun ShoppingListDetailRow(item: ShoppingListRowDisplay) {
 
     val quantityText = remember(item.quantity, item.unit) {
         val qty = if (item.quantity % 1f == 0f) {

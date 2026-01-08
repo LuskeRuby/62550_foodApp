@@ -1,5 +1,6 @@
 package com.example.a62550_foodapp.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.a62550_foodapp.ui.shoppingList.ShoppingListDetailsPage
 
 
 data class ShoppingItem1(
@@ -73,7 +75,7 @@ fun ShoppingListPage() {
 
     var newListOverlay by remember { mutableStateOf(false) }
     var editListNameOverlay by remember { mutableStateOf(false) }
-
+    var selectListPage by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -89,7 +91,10 @@ fun ShoppingListPage() {
                     .weight(1f)
             ) {
                 items(items) { item ->
-                    ShoppingListRow(item, onClick = {editListNameOverlay = true})
+                    ShoppingListPageRow(
+                        item,
+                        editClick = {editListNameOverlay = true},
+                        selectClick = {selectListPage = true})
                 }
             }
 
@@ -113,9 +118,15 @@ fun ShoppingListPage() {
         }
 
         // trigger overlay
-        if (newListOverlay) {
+        if (selectListPage) {
+            BackHandler { selectListPage = false }
+            ShoppingListDetailsPage()
+        }
+        else if (newListOverlay) {
+            BackHandler { newListOverlay = false }
             NewShoppingListFormOverlay(onDismiss = { newListOverlay = false })
         } else if (editListNameOverlay) {
+            BackHandler { editListNameOverlay = false }
             EditShoppingListFormOverlay(onDismiss = {editListNameOverlay = false})
         }
 
@@ -123,18 +134,20 @@ fun ShoppingListPage() {
 }
 
 @Composable
-fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
+fun ShoppingListPageRow(item: ShoppingItem1, editClick: () -> Unit, selectClick: ()-> Unit ) {
 
     // program crashes without it
     val interactionSource = remember { MutableInteractionSource() }
 
-    Box(
+    Button(
+        onClick = selectClick,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp)
-            .background(Color.Gray,shape = RoundedCornerShape(20.dp)),
-        contentAlignment = Alignment.Center
-    ) {
+            .padding(10.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+    ){
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -154,7 +167,7 @@ fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.BorderColor,
                 contentDescription = "Edit",
-                tint = Color.Black,
+                tint = Color.Gray,
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .size(24.dp)
@@ -162,7 +175,7 @@ fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
                        // quick fix to avoid crash
                        indication = LocalIndication.current,
                        interactionSource = interactionSource
-                    ) { onClick() }
+                    ) { editClick() }
             )
         }
     }
