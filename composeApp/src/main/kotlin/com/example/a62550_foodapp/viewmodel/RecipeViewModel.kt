@@ -5,25 +5,75 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a62550_foodapp.db.dao.RecipeDao
-import com.example.a62550_foodapp.db.entity.Recipe
+import com.example.a62550_foodapp.db.dao.RecipeItemDao
+import com.example.a62550_foodapp.db.entity.Recipe as RecipeEntity
+import com.example.a62550_foodapp.model.Recipe as RecipeModel
 import com.example.a62550_foodapp.utils.saveRecipeImage
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.io.File
 
 class RecipeViewModel(
     private val recipeDao: RecipeDao,
+    private val recipeItemDao: RecipeItemDao,
     private val appContext: Context
 ) : ViewModel() {
 
-    val recipes: StateFlow<List<Recipe>> =
-        recipeDao.getAllRecipes()
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptyList()
-            )
+    val recipes: StateFlow<List<RecipeModel>> = recipeDao.getAllRecipes()
+        .map { entities ->
+            entities.map { entity ->
+                val byteArray = entity.imagePath?.let { path ->
+                    try {
+                        File(path).readBytes()
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                RecipeModel(
+                    id = entity.id,
+                    title = entity.title,
+                    description = entity.description,
+                    instructions = entity.instructions,
+                    picture = byteArray,
+                    deletable = entity.deletable ?: true
+                )
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    fun getRecipeById(id: Int): Flow<RecipeModel?> {
+        return recipeDao.getRecipeById(id).map { entity ->
+            entity?.let {
+                val byteArray = it.imagePath?.let { path ->
+                    try {
+                        File(path).readBytes()
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                RecipeModel(
+                    id = it.id,
+                    title = it.title,
+                    description = it.description,
+                    instructions = it.instructions,
+                    picture = byteArray,
+                    deletable = it.deletable ?: true
+                )
+            }
+        }
+    }
+
+    fun getRecipePrice(id: Int): Flow<Float> {
+        return recipeDao.getRecipeTotalPrice(id).map { it ?: 0f }
+    }
+
+    fun getIngredients(recipeId: Int): Flow<List<String>> {
+        return recipeItemDao.getIngredientsForRecipe(recipeId)
+    }
 
     fun createRecipe(
         title: String,
@@ -33,7 +83,7 @@ class RecipeViewModel(
     ) {
         viewModelScope.launch {
             val recipeId = recipeDao.insert(
-                Recipe(
+                RecipeEntity(
                     title = title,
                     description = description,
                     instructions = instructions,

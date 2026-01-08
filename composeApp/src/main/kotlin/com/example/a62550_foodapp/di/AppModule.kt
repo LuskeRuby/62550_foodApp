@@ -53,6 +53,7 @@ val appModule = module {
     viewModel {
         RecipeViewModel(
             recipeDao = get(),
+            recipeItemDao = get(),
             appContext = androidContext()
         )
     }
