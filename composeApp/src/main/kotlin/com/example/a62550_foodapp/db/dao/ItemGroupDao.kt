@@ -6,7 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.a62550_foodapp.db.entity.ItemGroup
 import kotlinx.coroutines.flow.Flow
-
 @Dao
 interface ItemGroupDao {
 
@@ -21,6 +20,9 @@ interface ItemGroupDao {
 
     @Query("SELECT * FROM item_groups WHERE id = :id")
     suspend fun getById(id: Int): ItemGroup?
+
+    @Query("SELECT COUNT(*) FROM item_groups")
+    suspend fun count(): Int
 
     @Query("DELETE FROM item_groups")
     suspend fun deleteAll()
