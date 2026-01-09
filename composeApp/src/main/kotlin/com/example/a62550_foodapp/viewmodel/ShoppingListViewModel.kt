@@ -3,7 +3,8 @@ package com.example.a62550_foodapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a62550_foodapp.db.dao.ShoppingListDao
-import com.example.a62550_foodapp.db.entity.ShoppingList
+import com.example.a62550_foodapp.db.entity.ShoppingList as ShoppingListEntity
+import com.example.a62550_foodapp.model.ShoppingList as ShoppingListModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -14,11 +15,11 @@ class ShoppingListViewModel(
     private val shoppingListDao: ShoppingListDao
 ) : ViewModel() {
 
-    val shoppingLists: StateFlow<List<ShoppingList>> =
+    val shoppingLists: StateFlow<List<ShoppingListModel>> =
         shoppingListDao.getAll()
-            .map { shoppingList ->
-                shoppingList.map {
-                    ShoppingList(
+            .map { entity ->
+                entity.map {
+                    ShoppingListModel(
                         id = it.id,
                         name = it.name,
                     )
@@ -35,7 +36,7 @@ class ShoppingListViewModel(
     ) {
         viewModelScope.launch {
             val shoppingListId = shoppingListDao.insert(
-                ShoppingList(
+                ShoppingListEntity(
                     id = 0,
                     name = name
                 )
@@ -49,7 +50,7 @@ class ShoppingListViewModel(
     ) {
         viewModelScope.launch {
             shoppingListDao.update(
-                ShoppingList(
+                ShoppingListEntity(
                     id = id,
                     name = name
                 )
@@ -63,7 +64,7 @@ class ShoppingListViewModel(
     ) {
         viewModelScope.launch {
             shoppingListDao.delete(
-                ShoppingList(
+                ShoppingListEntity(
                     id = id,
                     name = name
                 )

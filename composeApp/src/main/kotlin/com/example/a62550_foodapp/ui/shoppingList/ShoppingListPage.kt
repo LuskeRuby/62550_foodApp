@@ -41,23 +41,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.a62550_foodapp.di.getShoppingListViewModel
 import com.example.a62550_foodapp.model.ShoppingList
 import com.example.a62550_foodapp.ui.shoppingList.ShoppingListDetailsPage
 import com.example.a62550_foodapp.viewmodel.ShoppingListViewModel
-
-
-data class ShoppingItem1(
-    val id: Int,
-    val name: String
-)
-
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ShoppingListPage() {
 
-    val viewModel: ShoppingListViewModel = getShoppingListViewModel()
-    val shoppingList by viewModel.shoppingLists.collectAsState()
+    val shoppingListViewModel: ShoppingListViewModel = koinViewModel ()
+    val shoppingList by shoppingListViewModel.shoppingLists.collectAsState()
 
     // onClick booleans
     var newListOverlay by remember { mutableStateOf(false) }
@@ -128,7 +121,7 @@ fun ShoppingListPage() {
             NewShoppingListFormOverlay(
                 onDismiss = { newListOverlay = false },
                 onCreate = { name: String ->
-                    viewModel.createShoppingList( name )
+                    shoppingListViewModel.createShoppingList( name )
                     newListOverlay = false
                 }
             )
@@ -137,7 +130,7 @@ fun ShoppingListPage() {
             EditShoppingListFormOverlay(
                 onDismiss = {editListNameOverlay = false},
                 onEdit = { id: Int, name: String ->
-                    viewModel.editShoppingList(
+                    shoppingListViewModel.editShoppingList(
                         id = id,
                         name = name
                     )
