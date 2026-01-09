@@ -23,22 +23,26 @@ interface ShoppingListItemDao {
     ): Flow<List<ShoppingListItem>>
 
     @Query("""
-        SELECT
-            i.id              AS itemId,
-            i.name            AS itemName,
-            i.size            AS size,
-            i.unitType        AS unitType,
-            sli.calc_quantity AS quantity,
-            sli.is_checked    AS isChecked,
-            i.imagePath       AS imagePath
-        FROM shopping_list_items sli
-        JOIN items i
-            ON i.id = sli.item_id
-        WHERE sli.shopping_list_id = :shoppingListId
-    """)
+    SELECT
+        i.id              AS itemId,
+        i.name            AS itemName,
+        i.size            AS size,
+        i.unitType        AS unitType,
+        sli.calc_quantity AS quantity,
+        sli.is_checked    AS isChecked,
+        i.imagePath       AS imagePath,
+        ig.category       AS category
+    FROM shopping_list_items sli
+    JOIN items i
+        ON i.id = sli.item_id
+    JOIN item_groups ig
+        ON ig.id = i.item_group_id
+    WHERE sli.shopping_list_id = :shoppingListId
+""")
     fun getEntriesForList(
         shoppingListId: Int
     ): Flow<List<ShoppingListEntry>>
+
 
     @Query("""
         UPDATE shopping_list_items

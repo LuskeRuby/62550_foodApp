@@ -17,11 +17,4 @@ fun getShoppingListViewModel(): ShoppingListViewModel {
     return koinViewModel<ShoppingListViewModel>()
 }
 
-@Composable
-fun getShoppingListDetailsViewModel(
-    shoppingListId: Int
-): ShoppingListDetailsViewModel {
-    return koinViewModel(
-        parameters = { parametersOf(shoppingListId) }
-    )
-}
+

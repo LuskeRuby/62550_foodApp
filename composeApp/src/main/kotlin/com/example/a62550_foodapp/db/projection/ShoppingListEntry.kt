@@ -7,5 +7,6 @@ data class ShoppingListEntry(
     val unitType: String,
     val quantity: Float,
     val isChecked: Boolean,
-    val imagePath: String?
+    val imagePath: String?,
+    val category: String
 )

@@ -27,7 +27,8 @@ class ShoppingListDetailsViewModel(
                         size = it.size,
                         unitType = it.unitType,
                         isChecked = it.isChecked,
-                        imagePath = it.imagePath
+                        imagePath = it.imagePath,
+                        category = it.category
                     )
                 }
             }
