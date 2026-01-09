@@ -38,14 +38,17 @@ val appModule = module {
 
     /* ---------- DAOs ---------- */
 
-    single { get<AppDatabase>().shoppingListDao() }
+    single { get<AppDatabase>().itemGroupDao() }
     single { get<AppDatabase>().itemDao() }
+    single { get<AppDatabase>().itemWeeklyPriceDao() }
+
     single { get<AppDatabase>().recipeDao() }
     single { get<AppDatabase>().recipeItemDao() }
+
+    single { get<AppDatabase>().shoppingListDao() }
     single { get<AppDatabase>().shoppingListItemDao() }
-    single { get<AppDatabase>().foodItemDao() }
+
     single { get<AppDatabase>().supermarketDao() }
-    single { get<AppDatabase>().itemWeeklyPriceDao() }
 
     /* ---------- ViewModels ---------- */
 
@@ -54,11 +57,19 @@ val appModule = module {
     viewModel {
         RecipeViewModel(
             recipeDao = get(),
+            recipeItemDao = get(),
+            itemWeeklyPriceDao = get(),
             appContext = androidContext()
         )
     }
 
     viewModel{ ShoppingListViewModel(get()) }
 
-    viewModel { ShoppingListDetailsViewModel(get()) }
+
+    viewModel {
+        ShoppingListDetailsViewModel(
+            get(), // ShoppingListItemDao
+            get()  // ItemDao
+        )
+    }
 }

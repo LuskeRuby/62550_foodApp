@@ -7,24 +7,29 @@ import com.example.a62550_foodapp.db.dao.*
 
 @Database(
     entities = [
-        ShoppingList::class,
+        ItemGroup::class,
         Item::class,
         ItemWeeklyPrice::class,
         Recipe::class,
         RecipeItem::class,
+        ShoppingList::class,
         ShoppingListItem::class,
-        FoodItem::class,
         Supermarket::class
     ],
-    version = 7
+    version = 11,
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun shoppingListDao(): ShoppingListDao
+
+    abstract fun itemGroupDao(): ItemGroupDao
     abstract fun itemDao(): ItemDao
+    abstract fun itemWeeklyPriceDao(): ItemWeeklyPriceDao
+
     abstract fun recipeDao(): RecipeDao
     abstract fun recipeItemDao(): RecipeItemDao
+
+    abstract fun shoppingListDao(): ShoppingListDao
     abstract fun shoppingListItemDao(): ShoppingListItemDao
-    abstract fun foodItemDao(): FoodItemDao
+
     abstract fun supermarketDao(): SupermarketDao
-    abstract fun itemWeeklyPriceDao(): ItemWeeklyPriceDao
 }
