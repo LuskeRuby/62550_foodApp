@@ -66,10 +66,10 @@ val appModule = module {
     viewModel{ ShoppingListViewModel(get()) }
 
 
-    viewModel {
+    viewModel { (shoppingListId: Int) ->
         ShoppingListDetailsViewModel(
-            get(), // ShoppingListItemDao
-            get()  // ItemDao
+            shoppingListId = shoppingListId,
+            shoppingListItemDao = get()
         )
     }
 }

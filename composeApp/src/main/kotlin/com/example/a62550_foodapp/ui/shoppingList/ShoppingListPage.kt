@@ -106,16 +106,22 @@ fun ShoppingListPage() {
             }
         }
 
-        // trigger overlay
         if (selectListPage) {
             BackHandler { selectListPage = false }
 
-            // only call when non-null
-            selectedShoppingList?.let {
-                ShoppingListDetailsPage(selectedShoppingList = it)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White) // or dim color if you want
+            ) {
+                selectedShoppingList?.let {
+                    ShoppingListDetailsPage(
+                        shoppingListId = it.id
+                    )
+                }
             }
-
         }
+
         else if (newListOverlay) {
             BackHandler { newListOverlay = false }
             NewShoppingListFormOverlay(
