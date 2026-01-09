@@ -7,13 +7,6 @@ import com.example.a62550_foodapp.utils.copyDrawableToInternalStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/**
- * Development-only database seeder.
- *
- * - Runs only if database is empty
- * - NOT a migration
- * - Safe to delete at any time
- */
 object DatabaseMockData {
 
     suspend fun populate(
@@ -28,27 +21,11 @@ object DatabaseMockData {
         val itemDao = database.itemDao()
         val supermarketDao = database.supermarketDao()
         val itemWeeklyPriceDao = database.itemWeeklyPriceDao()
-        val shoppingListDao = database.shoppingListDao()
-        val shoppingListItemDao = database.shoppingListItemDao()
         val recipeDao = database.recipeDao()
         val recipeItemDao = database.recipeItemDao()
 
-        // ---- ITEM GROUPS ----
-        val onionGroupId = itemGroupDao.insert(
-            ItemGroup(
-                name = "Onions",
-                category = "Fruit & Vegetables",
-                unitType = "kg"
-            )
-        ).toInt()
-
-        val carrotGroupId = itemGroupDao.insert(
-            ItemGroup(
-                name = "Carrots",
-                category = "Fruit & Vegetables",
-                unitType = "g"
-            )
-        ).toInt()
+        val year = 2025
+        val week = 1
 
         // ---- SUPERMARKETS ----
         val nettoId = supermarketDao.insert(
@@ -59,127 +36,229 @@ object DatabaseMockData {
             Supermarket(name = "Kvickly", logo = null)
         ).toInt()
 
-        // ---- ITEMS ----
-        val onionItemId = itemDao.insert(
-            Item(
-                itemGroupId = onionGroupId,
-                name = "Yellow onions",
-                size = 1f,
-                unitType = "kg",
-                imagePath = null
+        // ---- ITEM GROUPS ----
+        val pastaGroupId = itemGroupDao.insert(
+            ItemGroup(
+                name = "Pasta",
+                category = "Tørvarer",
+                unitType = "g"
             )
         ).toInt()
 
-        val carrotItemId = itemDao.insert(
+        val beefGroupId = itemGroupDao.insert(
+            ItemGroup(
+                name = "Hakket oksekød",
+                category = "Kød",
+                unitType = "g"
+            )
+        ).toInt()
+
+        val onionGroupId = itemGroupDao.insert(
+            ItemGroup(
+                name = "Løg",
+                category = "Grøntsager",
+                unitType = "g"
+            )
+        ).toInt()
+
+        val chickenGroupId = itemGroupDao.insert(
+            ItemGroup(
+                name = "Kyllingebryst",
+                category = "Kød",
+                unitType = "g"
+            )
+        ).toInt()
+
+        val pepperGroupId = itemGroupDao.insert(
+            ItemGroup(
+                name = "Peberfrugt",
+                category = "Grøntsager",
+                unitType = "g"
+            )
+        ).toInt()
+
+        val soyGroupId = itemGroupDao.insert(
+            ItemGroup(
+                name = "Sojasauce",
+                category = "Kolonial",
+                unitType = "ml"
+            )
+        ).toInt()
+
+        // ---- ITEMS (10 TOTAL) ----
+        val items = listOf(
             Item(
-                itemGroupId = carrotGroupId,
-                name = "Carrots",
+                itemGroupId = pastaGroupId,
+                name = "Spaghetti 500 g",
                 size = 500f,
                 unitType = "g",
                 imagePath = null
+            ),
+            Item(
+                itemGroupId = pastaGroupId,
+                name = "Penne 1 kg",
+                size = 1000f,
+                unitType = "g",
+                imagePath = null
+            ),
+            Item(
+                itemGroupId = beefGroupId,
+                name = "Hakket oksekød 8% 400 g",
+                size = 400f,
+                unitType = "g",
+                imagePath = null
+            ),
+            Item(
+                itemGroupId = beefGroupId,
+                name = "Hakket oksekød 12% 500 g",
+                size = 500f,
+                unitType = "g",
+                imagePath = null
+            ),
+            Item(
+                itemGroupId = onionGroupId,
+                name = "Gule løg 1 kg",
+                size = 1000f,
+                unitType = "g",
+                imagePath = null
+            ),
+            Item(
+                itemGroupId = onionGroupId,
+                name = "Røde løg 500 g",
+                size = 500f,
+                unitType = "g",
+                imagePath = null
+            ),
+            Item(
+                itemGroupId = chickenGroupId,
+                name = "Kyllingebryst 400 g",
+                size = 400f,
+                unitType = "g",
+                imagePath = null
+            ),
+            Item(
+                itemGroupId = pepperGroupId,
+                name = "Rød peberfrugt",
+                size = 250f,
+                unitType = "g",
+                imagePath = null
+            ),
+            Item(
+                itemGroupId = soyGroupId,
+                name = "Sojasauce 150 ml",
+                size = 150f,
+                unitType = "ml",
+                imagePath = null
+            ),
+            Item(
+                itemGroupId = soyGroupId,
+                name = "Sojasauce med lavt saltindhold 250 ml",
+                size = 250f,
+                unitType = "ml",
+                imagePath = null
             )
-        ).toInt()
+        )
+
+        val itemIds = items.map { itemDao.insert(it).toInt() }
 
         // ---- ITEM WEEKLY PRICES ----
-        val year = 2025
-        val week = 1
-
-        itemWeeklyPriceDao.insert(
-            ItemWeeklyPrice(
-                item_id = onionItemId,
-                year = year,
-                week = week,
-                price = 12.0f,
-                supermarket_id = nettoId
+        itemIds.forEachIndexed { index, itemId ->
+            itemWeeklyPriceDao.insert(
+                ItemWeeklyPrice(
+                    item_id = itemId,
+                    year = year,
+                    week = week,
+                    price = 10f + index,
+                    supermarket_id = nettoId
+                )
             )
-        )
-
-        itemWeeklyPriceDao.insert(
-            ItemWeeklyPrice(
-                item_id = carrotItemId,
-                year = year,
-                week = week,
-                price = 7.5f,
-                supermarket_id = nettoId
+            itemWeeklyPriceDao.insert(
+                ItemWeeklyPrice(
+                    item_id = itemId,
+                    year = year,
+                    week = week,
+                    price = 11f + index,
+                    supermarket_id = kvicklyId
+                )
             )
-        )
+        }
 
-        itemWeeklyPriceDao.insert(
-            ItemWeeklyPrice(
-                item_id = carrotItemId,
-                year = year,
-                week = week,
-                price = 8.5f,
-                supermarket_id = kvicklyId
-            )
-        )
-
-        // ---- SHOPPING LIST ----
-        val shoppingListId = shoppingListDao.insert(
-            ShoppingList(
-                name = "Dinner",
-                lastPriceCheckTimestamp = System.currentTimeMillis()
+        // ---- RECIPES ----
+        val spaghettiId = recipeDao.insert(
+            Recipe(
+                title = "Spaghetti Bolognese",
+                preparationTimeMinutes = 45,
+                description = "Klassisk italiensk pastaret",
+                instructions = "Kog pasta. Brun kødet. Tilsæt sauce.",
+                imagePath = copyDrawableToInternalStorage(
+                    context,
+                    R.drawable.recipe_1,
+                    "spaghetti.webp"
+                ),
+                deletable = false
             )
         ).toInt()
 
-        shoppingListItemDao.insert(
-            ShoppingListItem(
-                shoppingListId = shoppingListId,
-                itemId = onionItemId,
-                calcQuantity = 2f,
-                isChecked = false
+        val wokId = recipeDao.insert(
+            Recipe(
+                title = "Kylling wokret",
+                preparationTimeMinutes = 30,
+                description = "Hurtig asiatisk wokret",
+                instructions = "Steg kylling. Tilsæt grøntsager. Tilsæt sojasauce.",
+                imagePath = copyDrawableToInternalStorage(
+                    context,
+                    R.drawable.recipe_2,
+                    "wok.webp"
+                ),
+                deletable = false
             )
-        )
+        ).toInt()
 
-        shoppingListItemDao.insert(
-            ShoppingListItem(
-                shoppingListId = shoppingListId,
-                itemId = carrotItemId,
-                calcQuantity = 1f,
-                isChecked = false
-            )
-        )
+        // ---- RECIPE ITEMS ----
 
-        // ---- RECIPES ----
-        val recipes = listOf(
-            Triple("Spaghetti Bolognese", 45, R.drawable.recipe_1),
-            Triple("Chicken curry", 40, R.drawable.recipe_2),
-            Triple("Lasagna", 60, R.drawable.recipe_3)
-        )
-
-        val recipeIds = recipes.mapIndexed { index, (title, time, drawableRes) ->
-            val imagePath = copyDrawableToInternalStorage(
-                context = context,
-                drawableRes = drawableRes,
-                targetFileName = "recipe_mock_${index + 1}.webp"
-            )
-
-            recipeDao.insert(
-                Recipe(
-                    title = title,
-                    preparationTimeMinutes = time,
-                    description = "Mock description",
-                    instructions = "Mock instructions",
-                    imagePath = imagePath,
-                    deletable = false
-                )
-            ).toInt()
-        }
-
-        // ---- RECIPE ITEMS (USES ITEM GROUPS) ----
+        // Spaghetti Bolognese
         recipeItemDao.insert(
             RecipeItem(
-                recipeId = recipeIds[0],
+                recipeId = spaghettiId,
+                itemGroupId = pastaGroupId,
+                quantity = 200f
+            )
+        )
+        recipeItemDao.insert(
+            RecipeItem(
+                recipeId = spaghettiId,
+                itemGroupId = beefGroupId,
+                quantity = 300f
+            )
+        )
+        recipeItemDao.insert(
+            RecipeItem(
+                recipeId = spaghettiId,
                 itemGroupId = onionGroupId,
-                quantity = 1f
+                quantity = 100f
             )
         )
 
+        // Kylling wokret
         recipeItemDao.insert(
             RecipeItem(
-                recipeId = recipeIds[0],
-                itemGroupId = carrotGroupId,
-                quantity = 1f
+                recipeId = wokId,
+                itemGroupId = chickenGroupId,
+                quantity = 300f
+            )
+        )
+        recipeItemDao.insert(
+            RecipeItem(
+                recipeId = wokId,
+                itemGroupId = pepperGroupId,
+                quantity = 150f
+            )
+        )
+        recipeItemDao.insert(
+            RecipeItem(
+                recipeId = wokId,
+                itemGroupId = onionGroupId,
+                quantity = 100f
             )
         )
     }
