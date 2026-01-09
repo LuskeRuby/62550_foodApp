@@ -1,6 +1,7 @@
 package com.example.a62550_foodapp.ui.recipe
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -15,13 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.a62550_foodapp.db.entity.Recipe
+import com.example.a62550_foodapp.model.Recipe
 import com.example.a62550_foodapp.ui.components.LocalImage
 
 @Composable
 fun RecipePage(
     recipes: List<Recipe>,
-    onAddRecipeClick: () -> Unit
+    onAddRecipeClick: () -> Unit,
+    onRecipeClick: (Int) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         if (recipes.isEmpty()) {
@@ -39,7 +41,7 @@ fun RecipePage(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(recipes) { recipe ->
-                    RecipeCard(recipe)
+                    RecipeCard(recipe, onClick = { onRecipeClick(recipe.id) })
                 }
             }
         }
@@ -58,13 +60,14 @@ fun RecipePage(
 }
 
 @Composable
-fun RecipeCard(recipe: Recipe) {
+fun RecipeCard(recipe: Recipe, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
+            .clickable(onClick = onClick)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Box(
