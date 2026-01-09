@@ -5,60 +5,30 @@ import androidx.room.Insert
 import androidx.room.Query
 import com.example.a62550_foodapp.db.entity.ShoppingListItem
 import com.example.a62550_foodapp.db.projection.ShoppingListRowDetails
-import com.example.a62550_foodapp.db.projection.ShoppingListSupermarketRow
 import kotlinx.coroutines.flow.Flow
+
 @Dao
 interface ShoppingListItemDao {
-
     @Insert
     suspend fun insert(shoppingListItem: ShoppingListItem)
 
     @Query("""
         SELECT
-            s.id AS supermarketId,
-            s.name AS supermarketName,
-
-            i.itemgroup AS itemGroupId,
-            i.id AS itemId,
             i.name AS itemName,
-            i.unit AS unit,
-
             sli.quantity AS quantity,
+            i.unit AS unit,
             sli.is_checked AS isChecked,
-
-            iwp.price AS price
+            i.itemgroup AS itemGroupId,
+            (SELECT MIN(iwp.price) FROM item_weekly_prices iwp WHERE iwp.item_id = i.id) AS cheapestPrice,
+            (SELECT s.name FROM supermarkets s
+                INNER JOIN item_weekly_prices iwp ON s.id = iwp.supermarket_id
+                WHERE iwp.item_id = i.id
+                ORDER BY iwp.price ASC
+                LIMIT 1
+            ) AS supermarketName
         FROM shopping_list_items sli
-        JOIN items i
-            ON i.id = sli.item_id
-        JOIN item_weekly_prices iwp
-            ON iwp.item_id = i.id
-        JOIN supermarkets s
-            ON s.id = iwp.supermarket_id
-        WHERE sli.shopping_list_id = (
-            SELECT id FROM shopping_lists ORDER BY id ASC LIMIT 1
-        )
-          AND iwp.year = :year
-          AND iwp.week = :week
-        ORDER BY
-            s.name,
-            i.itemgroup,
-            i.name
+        JOIN items i ON sli.item_id = i.id
+        WHERE sli.shopping_list_id = (SELECT id FROM shopping_lists ORDER BY id ASC LIMIT 1)
     """)
-    fun getShoppingListBySupermarket(
-        year: Int,
-        week: Int
-    ): Flow<List<ShoppingListSupermarketRow>>
-
-    @Query("""
-        UPDATE shopping_list_items
-        SET is_checked = :checked
-        WHERE shopping_list_id = (
-            SELECT id FROM shopping_lists ORDER BY id ASC LIMIT 1
-        )
-          AND item_id = :itemId
-    """)
-    suspend fun updateChecked(
-        itemId: Int,
-        checked: Boolean
-    )
+    fun getShoppingListRowDetails(): Flow<List<ShoppingListRowDetails>>
 }
