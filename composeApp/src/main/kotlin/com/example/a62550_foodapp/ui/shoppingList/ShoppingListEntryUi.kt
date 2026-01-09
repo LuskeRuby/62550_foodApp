@@ -4,9 +4,9 @@ data class ShoppingListEntryUi(
     val itemId: Int,
     val name: String,
     val quantity: Float,
-    val size: Float,
     val unitType: String,
     val isChecked: Boolean,
-    val imagePath: String?,
-    val category: String
+    val category: String,
+    val size: Float,
+    val price: Float?
 )

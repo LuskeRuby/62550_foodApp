@@ -1,11 +1,14 @@
 package com.example.a62550_foodapp.viewmodel
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a62550_foodapp.db.dao.ShoppingListItemDao
 import com.example.a62550_foodapp.ui.shoppingList.ShoppingListEntryUi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -15,20 +18,30 @@ class ShoppingListDetailsViewModel(
     private val shoppingListItemDao: ShoppingListItemDao
 ) : ViewModel() {
 
+   //select a supermarket
+    private val _selectedSupermarketId = MutableStateFlow(1)
+    val selectedSupermarketId: StateFlow<Int> = _selectedSupermarketId
+
+  //items
     val items: StateFlow<List<ShoppingListEntryUi>> =
-        shoppingListItemDao
-            .getEntriesForList(shoppingListId)
+        selectedSupermarketId
+            .flatMapLatest { supermarketId ->
+                shoppingListItemDao.getEntriesForList(
+                    shoppingListId = shoppingListId,
+                    supermarketId = supermarketId
+                )
+            }
             .map { entries ->
                 entries.map {
                     ShoppingListEntryUi(
                         itemId = it.itemId,
                         name = it.itemName,
+                        category = it.category,
                         quantity = it.quantity,
-                        size = it.size,
                         unitType = it.unitType,
+                        price = it.price,
                         isChecked = it.isChecked,
-                        imagePath = it.imagePath,
-                        category = it.category
+                        size = it.size
                     )
                 }
             }
@@ -38,6 +51,24 @@ class ShoppingListDetailsViewModel(
                 initialValue = emptyList()
             )
 
+    //total price per supermarket
+    val totalPrice: StateFlow<Float?> =
+        selectedSupermarketId
+            .flatMapLatest { supermarketId ->
+                shoppingListItemDao.getTotalPrice(
+                    shoppingListId = shoppingListId,
+                    supermarketId = supermarketId
+                )
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = null
+            )
+
+    fun selectSupermarket(id: Int) {
+        _selectedSupermarketId.value = id
+    }
     fun setChecked(itemId: Int, checked: Boolean) {
         viewModelScope.launch {
             shoppingListItemDao.updateChecked(
