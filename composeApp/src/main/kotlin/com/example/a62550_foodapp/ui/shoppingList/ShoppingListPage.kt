@@ -1,5 +1,6 @@
 package com.example.a62550_foodapp.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,6 +29,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,41 +41,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-
-data class ShoppingItem1(
-    val id: Int,
-    val name: String
-)
-
+import com.example.a62550_foodapp.model.ShoppingList
+import com.example.a62550_foodapp.ui.shoppingList.ShoppingListDetailsPage
+import com.example.a62550_foodapp.viewmodel.ShoppingListViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ShoppingListPage() {
 
-                                val items = listOf(
-                                    ShoppingItem1(1, "Spaghetti Carbonara"),
-                                    ShoppingItem1(2, "Lasagna"),
-                                    ShoppingItem1(3, "Butter Chicken"),
-                                    ShoppingItem1(4, "Tacos al Pastor"),
-                                    ShoppingItem1(5, "Pad Thai"),
-                                    ShoppingItem1(6, "Chicken Tikka Masala"),
-                                    ShoppingItem1(7, "Beef Stroganoff"),
-                                    ShoppingItem1(8, "Fish and Chips"),
-                                    ShoppingItem1(9, "Shepherd's Pie"),
-                                    ShoppingItem1(10, "Ratatouille"),
-                                    ShoppingItem1(11, "Ramen"),
-                                    ShoppingItem1(12, "Margherita Pizza"),
-                                    ShoppingItem1(13, "Sushi Rolls"),
-                                    ShoppingItem1(14, "Caesar Salad"),
-                                    ShoppingItem1(15, "Bruschetta"),
-                                    ShoppingItem1(16, "Enchiladas"),
-                                    ShoppingItem1(17, "Paella"),
-                                    ShoppingItem1(18, "Poke Bowl")
-                                )
+    val shoppingListViewModel: ShoppingListViewModel = koinViewModel ()
+    val shoppingList by shoppingListViewModel.shoppingLists.collectAsState()
 
+    // onClick booleans
     var newListOverlay by remember { mutableStateOf(false) }
     var editListNameOverlay by remember { mutableStateOf(false) }
+    var selectListPage by remember { mutableStateOf(false) }
 
+    var selectedShoppingList by remember { mutableStateOf<ShoppingList?>(null) }
 
     Box(
         modifier = Modifier
@@ -88,8 +72,18 @@ fun ShoppingListPage() {
                 modifier = Modifier
                     .weight(1f)
             ) {
-                items(items) { item ->
-                    ShoppingListRow(item, onClick = {editListNameOverlay = true})
+                items(shoppingList) { list ->
+                    ShoppingListPageRow(
+                        list,
+                        editClick = { clicked ->
+                            selectedShoppingList = clicked
+                            editListNameOverlay = true
+                        },
+                        selectClick = { clicked ->
+                            selectedShoppingList = clicked
+                            selectListPage = true
+                        }
+                    )
                 }
             }
 
@@ -113,34 +107,67 @@ fun ShoppingListPage() {
         }
 
         // trigger overlay
-        if (newListOverlay) {
-            NewShoppingListFormOverlay(onDismiss = { newListOverlay = false })
+        if (selectListPage) {
+            BackHandler { selectListPage = false }
+
+            // only call when non-null
+            selectedShoppingList?.let {
+                ShoppingListDetailsPage(selectedShoppingList = it)
+            }
+
+        }
+        else if (newListOverlay) {
+            BackHandler { newListOverlay = false }
+            NewShoppingListFormOverlay(
+                onDismiss = { newListOverlay = false },
+                onCreate = { name: String ->
+                    shoppingListViewModel.createShoppingList( name )
+                    newListOverlay = false
+                }
+            )
         } else if (editListNameOverlay) {
-            EditShoppingListFormOverlay(onDismiss = {editListNameOverlay = false})
+            BackHandler { editListNameOverlay = false }
+            EditShoppingListFormOverlay(
+                onDismiss = {editListNameOverlay = false},
+                onEdit = { id: Int, name: String ->
+                    shoppingListViewModel.editShoppingList(
+                        id = id,
+                        name = name
+                    )
+                    editListNameOverlay = false
+                },
+                selectedShoppingList = selectedShoppingList
+            )
         }
 
     }
 }
 
 @Composable
-fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
+fun ShoppingListPageRow(
+    shoppingList: ShoppingList,
+    editClick: (shoppingList: ShoppingList) -> Unit,
+    selectClick: (shoppingList: ShoppingList) -> Unit
+) {
 
     // program crashes without it
     val interactionSource = remember { MutableInteractionSource() }
 
-    Box(
+    Button(
+        onClick = {selectClick(shoppingList)},
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp)
-            .background(Color.Gray,shape = RoundedCornerShape(20.dp)),
-        contentAlignment = Alignment.Center
-    ) {
+            .padding(10.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+    ){
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = item.name,
+                text = shoppingList.name,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
@@ -154,7 +181,7 @@ fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.BorderColor,
                 contentDescription = "Edit",
-                tint = Color.Black,
+                tint = Color.Gray,
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .size(24.dp)
@@ -162,14 +189,17 @@ fun ShoppingListRow(item: ShoppingItem1, onClick: () -> Unit) {
                        // quick fix to avoid crash
                        indication = LocalIndication.current,
                        interactionSource = interactionSource
-                    ) { onClick() }
+                    ) { editClick(shoppingList) }
             )
         }
     }
 }
 
 @Composable
-fun NewShoppingListFormOverlay(onDismiss: () -> Unit) {
+fun NewShoppingListFormOverlay(
+    onDismiss: () -> Unit,
+    onCreate: (String) -> Unit
+) {
 
     // Backdrop
     Box(
@@ -179,7 +209,7 @@ fun NewShoppingListFormOverlay(onDismiss: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
 
-        var name by remember { mutableStateOf("") }
+        var newShoppingListName by remember { mutableStateOf("") }
 
         Card(
             shape = RoundedCornerShape(12.dp),
@@ -201,8 +231,8 @@ fun NewShoppingListFormOverlay(onDismiss: () -> Unit) {
                 Spacer(modifier = Modifier.size(8.dp))
 
                 OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
+                    value = newShoppingListName,
+                    onValueChange = { newShoppingListName = it },
                     label = { Text("Name") },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -215,8 +245,8 @@ fun NewShoppingListFormOverlay(onDismiss: () -> Unit) {
                 ) {
                     Button(
                         onClick = {
-                            /* TODO: create action */
-                            onDismiss() }
+                            onCreate(newShoppingListName)
+                        }
                     ) {
                         Text("Create")
                     }
@@ -236,7 +266,11 @@ fun NewShoppingListFormOverlay(onDismiss: () -> Unit) {
 }
 
 @Composable
-fun EditShoppingListFormOverlay(onDismiss: () -> Unit) {
+fun EditShoppingListFormOverlay(
+    onDismiss: () -> Unit,
+    onEdit: (Int, String) -> Unit,
+    selectedShoppingList: ShoppingList?
+) {
 
     // Backdrop
     Box(
@@ -246,7 +280,7 @@ fun EditShoppingListFormOverlay(onDismiss: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
 
-        var name by remember { mutableStateOf("") }
+        var newName by remember { mutableStateOf(selectedShoppingList?.name?: "") }
 
         Card(
             shape = RoundedCornerShape(12.dp),
@@ -268,8 +302,8 @@ fun EditShoppingListFormOverlay(onDismiss: () -> Unit) {
                 Spacer(modifier = Modifier.size(8.dp))
 
                 OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
+                    value = newName,
+                    onValueChange = { newName = it },
                     label = { Text("Name") },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -282,8 +316,8 @@ fun EditShoppingListFormOverlay(onDismiss: () -> Unit) {
                 ) {
                     Button(
                         onClick = {
-                            /* TODO: create action */
-                            onDismiss() }
+                            selectedShoppingList?.let {onEdit(it.id, newName)}
+                        }
                     ) {
                         Text("Edit")
                     }

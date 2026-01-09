@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 8,
-    "identityHash": "28ee0fe1eece55dbfd1155d470802ee7",
+    "version": 10,
+    "identityHash": "a7fd5d4790f6b8374e4b319287ee7368",
     "entities": [
       {
-        "tableName": "shopping_lists",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `lastPriceCheckTimestamp` INTEGER)",
+        "tableName": "item_groups",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `category` TEXT NOT NULL, `unitType` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -21,10 +21,16 @@
             "notNull": true
           },
           {
-            "fieldPath": "lastPriceCheckTimestamp",
-            "columnName": "lastPriceCheckTimestamp",
-            "affinity": "INTEGER",
-            "notNull": false
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unitType",
+            "columnName": "unitType",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -38,7 +44,7 @@
       },
       {
         "tableName": "items",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `itemGroupId` INTEGER NOT NULL, `category` TEXT NOT NULL, `name` TEXT NOT NULL, `size` REAL NOT NULL, `unitType` TEXT NOT NULL, `imagePath` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `item_group_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `size` REAL NOT NULL, `unitType` TEXT NOT NULL, `imagePath` TEXT, FOREIGN KEY(`item_group_id`) REFERENCES `item_groups`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
         "fields": [
           {
             "fieldPath": "id",
@@ -48,14 +54,8 @@
           },
           {
             "fieldPath": "itemGroupId",
-            "columnName": "itemGroupId",
+            "columnName": "item_group_id",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "category",
-            "columnName": "category",
-            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -89,8 +89,30 @@
             "id"
           ]
         },
-        "indices": [],
-        "foreignKeys": []
+        "indices": [
+          {
+            "name": "index_items_item_group_id",
+            "unique": false,
+            "columnNames": [
+              "item_group_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_items_item_group_id` ON `${TABLE_NAME}` (`item_group_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "item_groups",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "item_group_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
       },
       {
         "tableName": "item_weekly_prices",
@@ -136,7 +158,26 @@
             "supermarket_id"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_item_weekly_prices_item_id",
+            "unique": false,
+            "columnNames": [
+              "item_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_item_weekly_prices_item_id` ON `${TABLE_NAME}` (`item_id`)"
+          },
+          {
+            "name": "index_item_weekly_prices_supermarket_id",
+            "unique": false,
+            "columnNames": [
+              "supermarket_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_item_weekly_prices_supermarket_id` ON `${TABLE_NAME}` (`supermarket_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "items",
@@ -220,7 +261,7 @@
       },
       {
         "tableName": "recipe_items",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipe_id` INTEGER NOT NULL, `item_id` INTEGER NOT NULL, `quantity` REAL NOT NULL, PRIMARY KEY(`recipe_id`, `item_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipe_id` INTEGER NOT NULL, `item_group_id` INTEGER NOT NULL, `quantity` REAL NOT NULL, PRIMARY KEY(`recipe_id`, `item_group_id`), FOREIGN KEY(`recipe_id`) REFERENCES `recipes`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`item_group_id`) REFERENCES `item_groups`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
         "fields": [
           {
             "fieldPath": "recipeId",
@@ -229,8 +270,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "itemId",
-            "columnName": "item_id",
+            "fieldPath": "itemGroupId",
+            "columnName": "item_group_id",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -245,7 +286,72 @@
           "autoGenerate": false,
           "columnNames": [
             "recipe_id",
-            "item_id"
+            "item_group_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_recipe_items_item_group_id",
+            "unique": false,
+            "columnNames": [
+              "item_group_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_recipe_items_item_group_id` ON `${TABLE_NAME}` (`item_group_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "recipes",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "recipe_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "item_groups",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "item_group_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "shopping_lists",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `lastPriceCheckTimestamp` INTEGER)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastPriceCheckTimestamp",
+            "columnName": "lastPriceCheckTimestamp",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
           ]
         },
         "indices": [],
@@ -253,7 +359,7 @@
       },
       {
         "tableName": "shopping_list_items",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`shopping_list_id` INTEGER NOT NULL, `item_id` INTEGER NOT NULL, `quantity` REAL NOT NULL, `is_checked` INTEGER NOT NULL, PRIMARY KEY(`shopping_list_id`, `item_id`), FOREIGN KEY(`shopping_list_id`) REFERENCES `shopping_lists`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`item_id`) REFERENCES `items`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`shopping_list_id` INTEGER NOT NULL, `item_id` INTEGER NOT NULL, `calc_quantity` REAL NOT NULL, `is_checked` INTEGER NOT NULL, PRIMARY KEY(`shopping_list_id`, `item_id`), FOREIGN KEY(`shopping_list_id`) REFERENCES `shopping_lists`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`item_id`) REFERENCES `items`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "shoppingListId",
@@ -268,8 +374,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "quantity",
-            "columnName": "quantity",
+            "fieldPath": "calcQuantity",
+            "columnName": "calc_quantity",
             "affinity": "REAL",
             "notNull": true
           },
@@ -333,38 +439,6 @@
         ]
       },
       {
-        "tableName": "food_items",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `calories` INTEGER NOT NULL)",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "calories",
-            "columnName": "calories",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
         "tableName": "supermarkets",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `logo` BLOB)",
         "fields": [
@@ -410,7 +484,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '28ee0fe1eece55dbfd1155d470802ee7')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a7fd5d4790f6b8374e4b319287ee7368')"
     ]
   }
 }
