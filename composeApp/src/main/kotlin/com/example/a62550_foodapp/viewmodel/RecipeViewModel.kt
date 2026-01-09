@@ -71,7 +71,7 @@ class RecipeViewModel(
             }
         }
     }
-
+/*
     suspend fun calculateRecipePrice(recipeId: Int): Float {
         val groups = recipeDao.getRecipeItemGroups(recipeId)
 
@@ -82,6 +82,8 @@ class RecipeViewModel(
         }.toFloat() //sumof virker eller ikke. ingen overload til float
     }
 
+
+ */
     //fun getIngredients(recipeId: Int): Flow<List<RecipeIngredient>> {
     //    return recipeItemDao.getIngredientsForRecipe(recipeId)
     //}

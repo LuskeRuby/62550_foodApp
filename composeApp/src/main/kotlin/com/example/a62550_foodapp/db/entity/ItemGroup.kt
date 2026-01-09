@@ -1,4 +1,14 @@
 package com.example.a62550_foodapp.db.entity
 
-class ItemGroup {
-}
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "item_groups")
+data class ItemGroup(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+
+    val name: String,
+    val category: String,
+    val unitType: String
+)

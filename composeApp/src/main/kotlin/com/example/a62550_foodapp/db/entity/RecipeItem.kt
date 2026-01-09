@@ -7,14 +7,29 @@ import androidx.room.Index
 
 @Entity(
     tableName = "recipe_items",
-    primaryKeys = ["recipe_id", "item_id"]
+    primaryKeys = ["recipe_id", "item_group_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = Recipe::class,
+            parentColumns = ["id"],
+            childColumns = ["recipe_id"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = ItemGroup::class,
+            parentColumns = ["id"],
+            childColumns = ["item_group_id"],
+            onDelete = ForeignKey.RESTRICT
+        )
+    ],
+    indices = [Index("item_group_id")]
 )
 data class RecipeItem(
     @ColumnInfo(name = "recipe_id")
     val recipeId: Int,
 
-    @ColumnInfo(name = "item_id")
-    val itemId: Int,
+    @ColumnInfo(name = "item_group_id")
+    val itemGroupId: Int,
 
     val quantity: Float
 )

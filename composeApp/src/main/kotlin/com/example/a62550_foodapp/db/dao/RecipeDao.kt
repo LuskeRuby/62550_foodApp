@@ -19,16 +19,6 @@ interface RecipeDao {
     @Query("SELECT * FROM recipes WHERE id = :id")
     fun getRecipeById(id: Int): Flow<Recipe?>
 
-    @Query("""
-    SELECT ri.quantity, i.itemGroupId
-    FROM recipe_items ri
-    JOIN items i ON ri.item_id = i.id
-    WHERE ri.recipe_id = :recipeId
-""")
-    suspend fun getRecipeItemGroups(
-        recipeId: Int
-    ): List<RecipeItemGroupQuantity>
-
     @Insert
     suspend fun insert(recipe: Recipe): Long
 

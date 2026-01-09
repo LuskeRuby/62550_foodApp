@@ -3,6 +3,7 @@ package com.example.a62550_foodapp.db.entity
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import com.example.a62550_foodapp.db.entity.Supermarket
+import androidx.room.Index
 
 @Entity(
     tableName = "item_weekly_prices",
@@ -18,6 +19,10 @@ import com.example.a62550_foodapp.db.entity.Supermarket
             parentColumns = ["id"],
             childColumns = ["supermarket_id"]
         )
+    ],
+    indices = [
+        Index("item_id"),
+        Index("supermarket_id")
     ]
 )
 data class ItemWeeklyPrice(

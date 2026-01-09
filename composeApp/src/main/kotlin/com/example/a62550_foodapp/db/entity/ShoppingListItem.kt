@@ -34,7 +34,8 @@ data class ShoppingListItem(
     @ColumnInfo(name = "item_id")
     val itemId: Int,
 
-    val quantity: Float,
+    @ColumnInfo(name = "calc_quantity")
+    val calcQuantity: Float,
 
     @ColumnInfo(name = "is_checked")
     val isChecked: Boolean

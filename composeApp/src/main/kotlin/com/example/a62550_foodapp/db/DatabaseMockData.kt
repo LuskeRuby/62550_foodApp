@@ -24,6 +24,7 @@ object DatabaseMockData {
         // ---- IDEMPOTENT GUARD ----
         if (database.itemDao().count() > 0) return@withContext
 
+        val itemGroupDao = database.itemGroupDao()
         val itemDao = database.itemDao()
         val supermarketDao = database.supermarketDao()
         val shoppingListDao = database.shoppingListDao()
@@ -31,6 +32,23 @@ object DatabaseMockData {
         val itemWeeklyPriceDao = database.itemWeeklyPriceDao()
         val recipeDao = database.recipeDao()
         val recipeItemDao = database.recipeItemDao()
+
+        // ---- ITEM GROUPS ----
+        val onionGroupId = itemGroupDao.insert(
+            ItemGroup(
+                name = "Løg",
+                category = "Frugt & grønt",
+                unitType = "kg"
+            )
+        ).toInt()
+
+        val carrotGroupId = itemGroupDao.insert(
+            ItemGroup(
+                name = "Gulerødder",
+                category = "Frugt & grønt",
+                unitType = "g"
+            )
+        ).toInt()
 
         // ---- SUPERMARKETS ----
         val nettoId = supermarketDao.insert(
@@ -41,24 +59,20 @@ object DatabaseMockData {
             Supermarket(name = "Kvickly", logo = null)
         ).toInt()
 
-        // ---- ITEMS ----
-        // itemGroupId = 1 → Løg
-        val onionId = itemDao.insert(
+        // ---- ITEMS (concrete products) ----
+        val onionItemId = itemDao.insert(
             Item(
-                itemGroupId = 1,
-                category = "Frugt & grønt",
-                name = "løg",
+                itemGroupId = onionGroupId,
+                name = "Løg",
                 size = 1f,
                 unitType = "kg",
                 imagePath = null
             )
         ).toInt()
 
-        // itemGroupId = 2 → Gulerødder
-        val carrotsId = itemDao.insert(
+        val carrotItemId = itemDao.insert(
             Item(
-                itemGroupId = 2,
-                category = "Frugt & grønt",
+                itemGroupId = carrotGroupId,
                 name = "Gulerødder",
                 size = 500f,
                 unitType = "g",
@@ -66,10 +80,10 @@ object DatabaseMockData {
             )
         ).toInt()
 
-        // ---- ITEM PRICES ----
+        // ---- ITEM WEEKLY PRICES ----
         itemWeeklyPriceDao.insert(
             ItemWeeklyPrice(
-                item_id = onionId,
+                item_id = onionItemId,
                 year = 2024,
                 week = 28,
                 price = 12.0f,
@@ -79,7 +93,7 @@ object DatabaseMockData {
 
         itemWeeklyPriceDao.insert(
             ItemWeeklyPrice(
-                item_id = carrotsId,
+                item_id = carrotItemId,
                 year = 2024,
                 week = 28,
                 price = 7.0f,
@@ -89,7 +103,7 @@ object DatabaseMockData {
 
         itemWeeklyPriceDao.insert(
             ItemWeeklyPrice(
-                item_id = carrotsId,
+                item_id = carrotItemId,
                 year = 2024,
                 week = 28,
                 price = 8.5f,
@@ -105,8 +119,8 @@ object DatabaseMockData {
         shoppingListItemDao.insert(
             ShoppingListItem(
                 shoppingListId = listId,
-                itemId = onionId,
-                quantity = 2f,
+                itemId = onionItemId,
+                calcQuantity = 2f,
                 isChecked = false
             )
         )
@@ -143,38 +157,38 @@ object DatabaseMockData {
             ).toInt()
         }
 
-        // ---- RECIPE ITEMS ----
+        // ---- RECIPE ITEMS (USES ITEM GROUPS) ----
 
-// Spaghetti Bolognese
+        // Spaghetti Bolognese
         recipeItemDao.insert(
             RecipeItem(
                 recipeId = recipeIds[0],
-                itemId = onionId,
+                itemGroupId = onionGroupId,
                 quantity = 1f
             )
         )
         recipeItemDao.insert(
             RecipeItem(
                 recipeId = recipeIds[0],
-                itemId = carrotsId,
+                itemGroupId = carrotGroupId,
                 quantity = 1f
             )
         )
 
-// Kylling i karry
+        // Kylling i karry
         recipeItemDao.insert(
             RecipeItem(
                 recipeId = recipeIds[1],
-                itemId = onionId,
+                itemGroupId = onionGroupId,
                 quantity = 2f
             )
         )
 
-// Lasagne
+        // Lasagne
         recipeItemDao.insert(
             RecipeItem(
                 recipeId = recipeIds[2],
-                itemId = carrotsId,
+                itemGroupId = carrotGroupId,
                 quantity = 1f
             )
         )

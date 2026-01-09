@@ -2,19 +2,31 @@ package com.example.a62550_foodapp.db.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.ForeignKey
+import androidx.room.ColumnInfo
+import androidx.room.Index
 
-@Entity(tableName = "items")
+@Entity(
+    tableName = "items",
+    foreignKeys = [
+        ForeignKey(
+            entity = ItemGroup::class,
+            parentColumns = ["id"],
+            childColumns = ["item_group_id"],
+            onDelete = ForeignKey.RESTRICT
+        )
+    ],
+    indices = [Index("item_group_id")]
+)
 data class Item(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    /**
-     * Alternatives to that specific item. e.g. fløde 250ml & 500ml
-     */
-    val itemGroupId: Int,   // logical ingredient (alternatives)
-    val category: String,   // Mejeri, Frugt & grønt, osv.
 
-    val name: String,       // "Arla Fløde 38% 250 ml"
-    val size: Float,        // 250
-    val unitType: String,   // "ml"
+    @ColumnInfo(name = "item_group_id")
+    val itemGroupId: Int,
+
+    val name: String,
+    val size: Float,
+    val unitType: String,
     val imagePath: String? = null
 )
