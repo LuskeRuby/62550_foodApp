@@ -7,5 +7,9 @@ import androidx.room.PrimaryKey
 data class ShoppingList(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val name: String
+    val name: String,
+    /**
+     * Timestamp for when prices were last generated/checked
+     */
+    val lastPriceCheckTimestamp: Long? = null
 )

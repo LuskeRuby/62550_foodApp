@@ -1,26 +1,20 @@
 package com.example.a62550_foodapp.db.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 
 @Entity(
     tableName = "recipe_items",
-    primaryKeys = ["recipe_id", "item_id"],
-    foreignKeys = [
-        ForeignKey(
-            entity = Recipe::class,
-            parentColumns = ["id"],
-            childColumns = ["recipe_id"]
-        ),
-        ForeignKey(
-            entity = Item::class,
-            parentColumns = ["id"],
-            childColumns = ["item_id"]
-        )
-    ]
+    primaryKeys = ["recipe_id", "item_id"]
 )
 data class RecipeItem(
-    val recipe_id: Int,
-    val item_id: Int,
+    @ColumnInfo(name = "recipe_id")
+    val recipeId: Int,
+
+    @ColumnInfo(name = "item_id")
+    val itemId: Int,
+
     val quantity: Float
 )

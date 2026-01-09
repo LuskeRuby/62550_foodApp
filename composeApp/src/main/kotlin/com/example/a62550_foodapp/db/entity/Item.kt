@@ -7,8 +7,14 @@ import androidx.room.PrimaryKey
 data class Item(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val itemgroup: Int?,
-    val name: String,
-    val unit: String?,
-    val picture: ByteArray?
+    /**
+     * Alternatives to that specific item. e.g. fløde 250ml & 500ml
+     */
+    val itemGroupId: Int,   // logical ingredient (alternatives)
+    val category: String,   // Mejeri, Frugt & grønt, osv.
+
+    val name: String,       // "Arla Fløde 38% 250 ml"
+    val size: Float,        // 250
+    val unitType: String,   // "ml"
+    val imagePath: String? = null
 )
