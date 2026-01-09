@@ -8,7 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.a62550_foodapp.ui.MainView
-import com.example.a62550_foodapp.ui.RecipePage
+import com.example.a62550_foodapp.ui.recipe.RecipePage
 import com.example.a62550_foodapp.ui.recipe.CreateRecipeScreen
 import com.example.a62550_foodapp.ui.recipe.RecipeDetailScreen
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel

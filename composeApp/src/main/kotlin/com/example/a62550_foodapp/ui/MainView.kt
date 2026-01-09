@@ -20,7 +20,8 @@ fun MainView(
     recipeContent: @Composable () -> Unit = {
         RecipePage(
             recipes = emptyList(),
-            onAddRecipeClick = {})
+            onAddRecipeClick = {},
+            onRecipeClick = {})
     }
 ) {
     var selectedTab by remember { mutableStateOf(0) }
