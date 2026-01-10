@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -58,8 +60,11 @@ fun ShoppingListDetailsPage(
                         item = item,
                         onCheckedChange = {
                             viewModel.setChecked(item.itemId, it)
-                        }
+                        },
+                        onDelete = { viewModel.deleteItem(item.itemId) },
+                        modifier = Modifier.animateItem()
                     )
+
                 }
             }
         }
@@ -123,76 +128,114 @@ fun CategoryHeader(category: String) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShoppingItemRow(
     item: ShoppingListEntryUi,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        //name
-        Text(
-            text = "${item.quantity.toInt()} x ${item.name}",
-            modifier = Modifier.weight(1f),
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium
-        )
-
-        //size
-        Text(
-            text = "${item.quantity.toInt()} × ${item.size.toInt()} ${item.unitType}",
-            modifier = Modifier.width(90.dp),
-            fontSize = 13.sp,
-            color = Color.DarkGray,
-            textAlign = TextAlign.End
-        )
-
-        //price
-        val qty = item.quantity.toInt()
-        val unitPrice = item.price
-
-        Column(
-            modifier = Modifier.width(80.dp),
-            horizontalAlignment = Alignment.End
-        ) {
-            if (unitPrice != null) {
-                if (qty > 1) {
-                    Text(
-                        text = "${item.quantity.toInt()} x ${unitPrice.toInt()} kr",
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                    Text(
-                        text = "${(unitPrice * qty).toInt()} kr",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                } else {
-                    Text(
-                        text = "${unitPrice.toInt()} kr",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
+    //used for swiperemove
+    val dismissState = rememberSwipeToDismissBoxState(
+        positionalThreshold = { fullWidth ->
+            fullWidth * 0.4f   // //how much swipe before delete (40% her)
+        },
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                onDelete()
+                true
             } else {
-                Text(
-                    text = "-",
-                    fontSize = 14.sp,
-                    color = Color.Gray
+                false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Red)
+                    .padding(end = 20.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete item",
+                    tint = Color.White
                 )
             }
         }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White, RoundedCornerShape(8.dp))
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
-        //checkbox
-        Checkbox(
-            checked = item.isChecked,
-            onCheckedChange = onCheckedChange
-        )
+            //name
+            Text(
+                text = "${item.quantity.toInt()} x ${item.name}",
+                modifier = Modifier.weight(1f),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            //size
+            Text(
+                text = "${item.quantity.toInt()} × ${item.size.toInt()} ${item.unitType}",
+                modifier = Modifier.width(90.dp),
+                fontSize = 13.sp,
+                color = Color.DarkGray,
+                textAlign = TextAlign.End
+            )
+
+            //price
+            val qty = item.quantity.toInt()
+            val unitPrice = item.price
+
+            Column(
+                modifier = Modifier.width(80.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+                if (unitPrice != null) {
+                    if (qty > 1) {
+                        Text(
+                            text = "${item.quantity.toInt()} x ${unitPrice.toInt()} kr",
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = "${(unitPrice * qty).toInt()} kr",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        Text(
+                            text = "${unitPrice.toInt()} kr",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "-",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
+            }
+
+            //checkbox
+            Checkbox(
+                checked = item.isChecked,
+                onCheckedChange = onCheckedChange
+            )
+        }
     }
 }
 @Composable

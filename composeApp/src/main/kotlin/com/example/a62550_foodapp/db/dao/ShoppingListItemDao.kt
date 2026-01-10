@@ -74,4 +74,15 @@ WHERE sli.shopping_list_id = :shoppingListId
         itemId: Int,
         checked: Boolean
     )
+
+    @Query("""
+        DELETE FROM shopping_list_items
+        WHERE shopping_list_id = :shoppingListId
+        AND item_id = :itemId
+    """)
+    suspend fun deleteItem(
+        shoppingListId: Int,
+        itemId: Int
+    )
+
 }
