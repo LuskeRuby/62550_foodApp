@@ -69,12 +69,14 @@ fun ShoppingListDetailsPage(
             }
         }
         //footer
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(end = 16.dp, bottom = 16.dp),
-            contentAlignment = Alignment.CenterEnd
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            AddItem()
             TotalFooter(total)
         }
 
@@ -262,6 +264,27 @@ private fun TotalFooter(total: Float?) {
             Text(
                 text = total?.let { "${it.toInt()} kr" } ?: "-",
                 fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddItem() {
+    Surface(
+        shape = RoundedCornerShape(50),
+        shadowElevation = 8.dp,
+        color = Color(0xfffff5cc)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "+",
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
         }
