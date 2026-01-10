@@ -27,15 +27,6 @@ fun ShoppingListRow(
 
         Spacer(Modifier.width(12.dp))
 
-        item.imagePath?.let {
-            AsyncImage(
-                model = it,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp)
-            )
-            Spacer(Modifier.width(12.dp))
-        }
-
         Column {
             Text(text = item.name, style = MaterialTheme.typography.bodyLarge)
             Text(
