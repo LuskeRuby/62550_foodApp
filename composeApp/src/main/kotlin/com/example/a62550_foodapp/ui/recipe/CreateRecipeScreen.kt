@@ -31,7 +31,8 @@ fun CreateRecipeScreen(
 
     // State for selecting existing item groups
     val allGroups by recipeViewModel.getAllItemGroups().collectAsState(initial = emptyList())
-    var expanded by remember { mutableStateOf(false) }
+    // search state replaces the previous dropdown/expanded UI
+    var searchQuery by remember { mutableStateOf("") }
     var selectedGroupId by remember { mutableStateOf<Int?>(null) }
     var quantityText by remember { mutableStateOf("") }
     var selectedGroups by remember { mutableStateOf(listOf<SelectedItemGroup>()) }
@@ -164,23 +165,46 @@ fun CreateRecipeScreen(
             if (allGroups.isEmpty()) {
                 Text("No item groups available. Add item groups first.")
             } else {
-                // Dropdown to pick a group
-                Box {
-                    val currentLabel = allGroups.firstOrNull { it.id == selectedGroupId }?.name ?: "Select group"
-                    OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
-                        Text(currentLabel)
-                    }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        allGroups.forEach { g: ItemGroup ->
-                            DropdownMenuItem(text = { Text(g.name) }, onClick = {
-                                selectedGroupId = g.id
-                                expanded = false
-                            })
-                        }
-                    }
-                }
+                // Search field that filters existing item groups
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Search item groups") },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // Suggestions shown when user typed something
+                if (searchQuery.isNotBlank()) {
+                    val matches = allGroups.filter { it.name.contains(searchQuery, ignoreCase = true) }
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(4.dp)) {
+                            if (matches.isEmpty()) {
+                                Text("No matches", modifier = Modifier.padding(8.dp))
+                            } else {
+                                matches.take(8).forEach { g ->
+                                    Column(modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            selectedGroupId = g.id
+                                            // set searchQuery to the chosen name so user sees selection
+                                            searchQuery = g.name
+                                        }
+                                        .padding(8.dp)) {
+                                        Text(g.name)
+                                    }
+                                    Divider()
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // when search empty, show currently selected group (if any)
+                    val currentLabel = allGroups.firstOrNull { it.id == selectedGroupId }?.name ?: "No group selected"
+                    Text("Selected: $currentLabel", modifier = Modifier.fillMaxWidth())
+                }
+
 
                 OutlinedTextField(
                     value = quantityText,
@@ -199,6 +223,7 @@ fun CreateRecipeScreen(
                             // reset inputs
                             selectedGroupId = null
                             quantityText = ""
+                            searchQuery = ""
                         }
                     }) {
                         Text("Add selected group")
@@ -207,6 +232,7 @@ fun CreateRecipeScreen(
                     Button(onClick = {
                         selectedGroupId = null
                         quantityText = ""
+                        searchQuery = ""
                     }) {
                         Text("Clear")
                     }
