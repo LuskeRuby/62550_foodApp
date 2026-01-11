@@ -3,6 +3,7 @@ package com.example.a62550_foodapp.ui.recipe
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
@@ -11,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.flow.collectLatest
+import com.example.a62550_foodapp.viewmodel.SelectedItemGroup
+import com.example.a62550_foodapp.db.entity.ItemGroup
 
 
 @Composable
@@ -25,6 +28,13 @@ fun CreateRecipeScreen(
     var instructions by remember { mutableStateOf<String?>(null) }
     var selectedImage by remember { mutableStateOf<Uri?>(null) }
     var existingImagePath by remember { mutableStateOf<String?>(null) }
+
+    // State for selecting existing item groups
+    val allGroups by recipeViewModel.getAllItemGroups().collectAsState(initial = emptyList())
+    var expanded by remember { mutableStateOf(false) }
+    var selectedGroupId by remember { mutableStateOf<Int?>(null) }
+    var quantityText by remember { mutableStateOf("") }
+    var selectedGroups by remember { mutableStateOf(listOf<SelectedItemGroup>()) }
 
     // If editing, load existing recipe values
     LaunchedEffect(existingRecipeId) {
@@ -145,6 +155,88 @@ fun CreateRecipeScreen(
             }
         }
 
+        // UI for selecting existing item groups
+        item {
+            Text("Item groups (choose from existing)", style = MaterialTheme.typography.titleMedium)
+        }
+
+        item {
+            if (allGroups.isEmpty()) {
+                Text("No item groups available. Add item groups first.")
+            } else {
+                // Dropdown to pick a group
+                Box {
+                    val currentLabel = allGroups.firstOrNull { it.id == selectedGroupId }?.name ?: "Select group"
+                    OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+                        Text(currentLabel)
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        allGroups.forEach { g: ItemGroup ->
+                            DropdownMenuItem(text = { Text(g.name) }, onClick = {
+                                selectedGroupId = g.id
+                                expanded = false
+                            })
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = quantityText,
+                    onValueChange = { quantityText = it },
+                    label = { Text("Quantity") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = {
+                        val qty = quantityText.toFloatOrNull() ?: 0f
+                        val gid = selectedGroupId
+                        if (gid != null) {
+                            // avoid duplicates for the same group - replace quantity
+                            selectedGroups = (selectedGroups.filter { it.itemGroupId != gid } + SelectedItemGroup(gid, qty))
+                            // reset inputs
+                            selectedGroupId = null
+                            quantityText = ""
+                        }
+                    }) {
+                        Text("Add selected group")
+                    }
+
+                    Button(onClick = {
+                        selectedGroupId = null
+                        quantityText = ""
+                    }) {
+                        Text("Clear")
+                    }
+                }
+            }
+        }
+
+        // Show the list of selected groups
+        item {
+            Column {
+                selectedGroups.forEachIndexed { idx, sg ->
+                    val name = allGroups.firstOrNull { it.id == sg.itemGroupId }?.name ?: "(unknown)"
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(name, style = MaterialTheme.typography.bodyLarge)
+                            Text("${sg.quantity}", style = MaterialTheme.typography.bodySmall)
+                        }
+                        Text("Remove", modifier = Modifier.clickable {
+                            selectedGroups = selectedGroups.filterIndexed { i, _ -> i != idx }
+                        }, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        }
+
         item {
             Button(
                 onClick = {
@@ -158,11 +250,13 @@ fun CreateRecipeScreen(
                             imageUri = selectedImage
                         )
                     } else {
+                        // Pass selected existing groups to viewmodel
                         recipeViewModel.createRecipe(
                             title = title,
                             description = description,
                             instructions = instructions,
-                            imageUri = selectedImage
+                            imageUri = selectedImage,
+                            selectedGroups = selectedGroups
                         )
                     }
                     onRecipeSaved()

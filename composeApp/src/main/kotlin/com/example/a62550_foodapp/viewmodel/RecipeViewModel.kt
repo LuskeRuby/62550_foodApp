@@ -6,6 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a62550_foodapp.db.dao.RecipeDao
 import com.example.a62550_foodapp.db.dao.RecipeItemDao
+import com.example.a62550_foodapp.db.entity.RecipeItem
+import com.example.a62550_foodapp.db.entity.ItemGroup
+import com.example.a62550_foodapp.db.dao.ItemWeeklyPriceDao
+import com.example.a62550_foodapp.db.dao.ItemGroupDao
 import com.example.a62550_foodapp.db.entity.Recipe as RecipeEntity
 import com.example.a62550_foodapp.model.Recipe as RecipeModel
 import com.example.a62550_foodapp.utils.saveRecipeImage
@@ -13,13 +17,19 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import java.io.File
-import com.example.a62550_foodapp.db.dao.ItemWeeklyPriceDao
+
+// Represent a selection of an existing ItemGroup when creating a recipe
+data class SelectedItemGroup(
+    val itemGroupId: Int,
+    val quantity: Float
+)
 
 class RecipeViewModel(
     private val recipeDao: RecipeDao,
     private val recipeItemDao: RecipeItemDao,
     private val itemWeeklyPriceDao: ItemWeeklyPriceDao,
-    private val appContext: Context
+    private val appContext: Context,
+    private val itemGroupDao: ItemGroupDao
 ) : ViewModel() {
 
     val recipes: StateFlow<List<RecipeModel>> = recipeDao.getAllRecipes()
@@ -73,11 +83,15 @@ class RecipeViewModel(
         }
     }
 
+    // Expose existing item groups for the UI to select from
+    fun getAllItemGroups(): Flow<List<ItemGroup>> = itemGroupDao.getAllItemGroups()
+
     fun createRecipe(
         title: String,
         description: String?,
         instructions: String?,
-        imageUri: Uri?
+        imageUri: Uri?,
+        selectedGroups: List<SelectedItemGroup> = emptyList()
     ) {
         viewModelScope.launch {
             val recipeId = recipeDao.insert(
@@ -90,6 +104,17 @@ class RecipeViewModel(
                     deletable = true
                 )
             ).toInt()
+
+            // Link selected existing item groups to the created recipe
+            if (selectedGroups.isNotEmpty()) {
+                selectedGroups.forEach { sg ->
+                    try {
+                        recipeItemDao.insert(RecipeItem(recipeId, sg.itemGroupId, sg.quantity))
+                    } catch (_: Exception) {
+                        // ignore failures for now (minimal change)
+                    }
+                }
+            }
 
             if (imageUri != null) {
                 val path = saveRecipeImage(
