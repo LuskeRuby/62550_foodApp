@@ -102,8 +102,22 @@ fun CreateRecipeScreen(
         }
 
         item {
-            Button(onClick = { imagePicker.launch("image/*") }) {
-                Text("Choose image")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = { imagePicker.launch("image/*") }) {
+                    Text("Choose image")
+                }
+
+                // Show remove image when editing and an existing image is present and no new image selected
+                if (existingImagePath != null && selectedImage == null) {
+                    Button(onClick = {
+                        existingRecipeId?.let { id ->
+                            recipeViewModel.removeImage(id)
+                            existingImagePath = null
+                        }
+                    }) {
+                        Text("Remove image")
+                    }
+                }
             }
         }
 

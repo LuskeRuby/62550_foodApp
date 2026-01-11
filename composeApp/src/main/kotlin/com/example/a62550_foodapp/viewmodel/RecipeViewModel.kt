@@ -11,6 +11,7 @@ import com.example.a62550_foodapp.model.Recipe as RecipeModel
 import com.example.a62550_foodapp.utils.saveRecipeImage
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import java.io.File
 import com.example.a62550_foodapp.db.dao.ItemWeeklyPriceDao
 
@@ -28,7 +29,7 @@ class RecipeViewModel(
                 entity.imagePath?.let { path ->
                     try {
                         File(path).readBytes()
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         null
                     }
                 }
@@ -55,7 +56,7 @@ class RecipeViewModel(
                 it.imagePath?.let { path ->
                     try {
                         File(path).readBytes()
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         null
                     }
                 }
@@ -101,7 +102,7 @@ class RecipeViewModel(
         }
     }
 
-    // New: update an existing recipe's fields and optionally its image
+    // Update an existing recipe's fields and optionally its image
     fun updateRecipe(
         id: Int,
         title: String,
@@ -114,8 +115,25 @@ class RecipeViewModel(
             // Update textual fields first
             recipeDao.updateRecipe(id, title, preparationTimeMinutes, description, instructions)
 
-            // If a new image was provided, save and update imagePath
+            // If a new image was provided, delete any existing app-managed image file and save new image
             if (imageUri != null) {
+                try {
+                    val existingPath = recipeDao.getRecipeById(id).first()?.imagePath
+                    existingPath?.let { path ->
+                        try {
+                            val f = File(path)
+                            val filesDir = appContext.filesDir
+                            if (f.exists() && f.canonicalPath.startsWith(filesDir.canonicalPath)) {
+                                f.delete()
+                            }
+                        } catch (_: Exception) {
+                            // ignore deletion failures
+                        }
+                    }
+                } catch (_: Exception) {
+                    // ignore failures getting existing path
+                }
+
                 val path = saveRecipeImage(
                     context = appContext,
                     sourceUri = imageUri,
@@ -123,6 +141,31 @@ class RecipeViewModel(
                 )
                 recipeDao.updateImagePath(id, path)
             }
+        }
+    }
+
+    // Remove image association for a recipe and delete the app-managed image file if present
+    fun removeImage(recipeId: Int) {
+        viewModelScope.launch {
+            try {
+                val existingPath = recipeDao.getRecipeById(recipeId).first()?.imagePath
+                existingPath?.let { path ->
+                    try {
+                        val f = File(path)
+                        val filesDir = appContext.filesDir
+                        if (f.exists() && f.canonicalPath.startsWith(filesDir.canonicalPath)) {
+                            f.delete()
+                        }
+                    } catch (_: Exception) {
+                        // ignore deletion failures
+                    }
+                }
+            } catch (_: Exception) {
+                // ignore failures getting existing path
+            }
+
+            // Clear DB reference
+            recipeDao.updateImagePath(recipeId, null)
         }
     }
 }
