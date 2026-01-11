@@ -25,5 +25,8 @@ interface RecipeDao {
     @Query("UPDATE recipes SET imagePath = :path WHERE id = :id")
     suspend fun updateImagePath(id: Int, path: String)
 
+    // Added: update basic recipe fields (title, preparation time, description, instructions)
+    @Query("UPDATE recipes SET title = :title, preparationTimeMinutes = :preparationTimeMinutes, description = :description, instructions = :instructions WHERE id = :id")
+    suspend fun updateRecipe(id: Int, title: String, preparationTimeMinutes: Int, description: String?, instructions: String?)
 
 }

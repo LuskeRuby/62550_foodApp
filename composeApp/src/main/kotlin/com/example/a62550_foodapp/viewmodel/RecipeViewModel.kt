@@ -8,7 +8,6 @@ import com.example.a62550_foodapp.db.dao.RecipeDao
 import com.example.a62550_foodapp.db.dao.RecipeItemDao
 import com.example.a62550_foodapp.db.entity.Recipe as RecipeEntity
 import com.example.a62550_foodapp.model.Recipe as RecipeModel
-import com.example.a62550_foodapp.model.RecipeIngredient
 import com.example.a62550_foodapp.utils.saveRecipeImage
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -25,7 +24,8 @@ class RecipeViewModel(
     val recipes: StateFlow<List<RecipeModel>> = recipeDao.getAllRecipes()
         .map { entities ->
             entities.map { entity ->
-                val byteArray = entity.imagePath?.let { path ->
+                // read image bytes if available (previously assigned but unused)
+                entity.imagePath?.let { path ->
                     try {
                         File(path).readBytes()
                     } catch (e: Exception) {
@@ -52,7 +52,7 @@ class RecipeViewModel(
     fun getRecipeById(id: Int): Flow<RecipeModel?> {
         return recipeDao.getRecipeById(id).map { entity ->
             entity?.let {
-                val byteArray = it.imagePath?.let { path ->
+                it.imagePath?.let { path ->
                     try {
                         File(path).readBytes()
                     } catch (e: Exception) {
@@ -71,22 +71,6 @@ class RecipeViewModel(
             }
         }
     }
-/*
-    suspend fun calculateRecipePrice(recipeId: Int): Float {
-        val groups = recipeDao.getRecipeItemGroups(recipeId)
-
-        return groups.sumOf { group ->
-            val prices = itemWeeklyPriceDao.getPricesForItemGroup(group.itemGroupId)
-            val cheapest = prices.minByOrNull { it.price }?.price ?: 0f
-            (cheapest * group.quantity).toDouble()
-        }.toFloat() //sumof virker eller ikke. ingen overload til float
-    }
-
-
- */
-    //fun getIngredients(recipeId: Int): Flow<List<RecipeIngredient>> {
-    //    return recipeItemDao.getIngredientsForRecipe(recipeId)
-    //}
 
     fun createRecipe(
         title: String,
@@ -113,6 +97,31 @@ class RecipeViewModel(
                     recipeId = recipeId
                 )
                 recipeDao.updateImagePath(recipeId, path)
+            }
+        }
+    }
+
+    // New: update an existing recipe's fields and optionally its image
+    fun updateRecipe(
+        id: Int,
+        title: String,
+        preparationTimeMinutes: Int,
+        description: String?,
+        instructions: String?,
+        imageUri: Uri?
+    ) {
+        viewModelScope.launch {
+            // Update textual fields first
+            recipeDao.updateRecipe(id, title, preparationTimeMinutes, description, instructions)
+
+            // If a new image was provided, save and update imagePath
+            if (imageUri != null) {
+                val path = saveRecipeImage(
+                    context = appContext,
+                    sourceUri = imageUri,
+                    recipeId = id
+                )
+                recipeDao.updateImagePath(id, path)
             }
         }
     }
