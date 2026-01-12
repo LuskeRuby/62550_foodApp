@@ -86,6 +86,11 @@ class RecipeViewModel(
     // Expose existing item groups for the UI to select from
     fun getAllItemGroups(): Flow<List<ItemGroup>> = itemGroupDao.getAllItemGroups()
 
+    // Expose recipe items (associations of item group + quantity) as a Flow for the UI
+    fun getItemsForRecipeFlow(recipeId: Int) = kotlinx.coroutines.flow.flow {
+        emit(recipeItemDao.getItemsForRecipe(recipeId))
+    }
+
     fun createRecipe(
         title: String,
         description: String?,
