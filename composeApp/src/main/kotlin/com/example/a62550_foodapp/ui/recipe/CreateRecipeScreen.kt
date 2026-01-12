@@ -9,11 +9,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import kotlinx.coroutines.flow.collectLatest
-import com.example.a62550_foodapp.viewmodel.SelectedItemGroup
 import com.example.a62550_foodapp.db.entity.ItemGroup
+import com.example.a62550_foodapp.viewmodel.SelectedItemGroup
+import kotlinx.coroutines.flow.collectLatest
 
 
 @Composable
@@ -23,7 +25,8 @@ fun CreateRecipeScreen(
     onRecipeSaved: () -> Unit
 ) {
     var title by remember { mutableStateOf("") }
-    var preparationTime by remember { mutableStateOf(30) }
+    // Replace Int-backed preparationTime with a String so the text field can accept any numeric input
+    var preparationTimeText by remember { mutableStateOf("") }
     var description by remember { mutableStateOf<String?>(null) }
     var instructions by remember { mutableStateOf<String?>(null) }
     var selectedImage by remember { mutableStateOf<Uri?>(null) }
@@ -43,7 +46,8 @@ fun CreateRecipeScreen(
             recipeViewModel.getRecipeById(id).collectLatest { recipe ->
                 recipe?.let {
                     title = it.title
-                    preparationTime = it.preparationTimeMinutes
+                    // load preparation time into the text state
+                    preparationTimeText = it.preparationTimeMinutes.toString()
                     description = it.description
                     instructions = it.instructions
                     existingImagePath = it.imagePath
@@ -81,13 +85,17 @@ fun CreateRecipeScreen(
         }
 
         item {
+            // Use the string-backed text field with numeric keyboard and digit-only filtering
             OutlinedTextField(
-                value = if (preparationTime == 0) "" else preparationTime.toString(),
-                onValueChange = {
-                    preparationTime = it.toIntOrNull() ?: 0
+                value = preparationTimeText,
+                onValueChange = { input ->
+                    // allow only digits
+                    val filtered = input.filter { it.isDigit() }
+                    preparationTimeText = filtered
                 },
                 label = { Text("Preparation time (minutes)") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
             )
         }
 
@@ -266,11 +274,12 @@ fun CreateRecipeScreen(
         item {
             Button(
                 onClick = {
+                    val prepMinutes = preparationTimeText.toIntOrNull() ?: 0
                     if (existingRecipeId != null) {
                         recipeViewModel.updateRecipe(
                             id = existingRecipeId,
                             title = title,
-                            preparationTimeMinutes = preparationTime,
+                            preparationTimeMinutes = prepMinutes,
                             description = description,
                             instructions = instructions,
                             imageUri = selectedImage

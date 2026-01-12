@@ -143,7 +143,12 @@ class RecipeViewModel(
     ) {
         viewModelScope.launch {
             // Update textual fields first
-            recipeDao.updateRecipe(id, title, preparationTimeMinutes, description, instructions)
+            recipeDao.updateRecipe(
+                id,
+                title,
+                preparationTimeMinutes,
+                description?: "",
+                instructions?: "")
 
             // If a new image was provided, delete any existing app-managed image file and save new image
             if (imageUri != null) {

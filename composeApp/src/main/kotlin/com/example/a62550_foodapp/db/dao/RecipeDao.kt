@@ -27,6 +27,6 @@ interface RecipeDao {
 
     // Update basic recipe fields (title, preparation time, description, instructions)
     @Query("UPDATE recipes SET title = :title, preparationTimeMinutes = :preparationTimeMinutes, description = :description, instructions = :instructions WHERE id = :id")
-    suspend fun updateRecipe(id: Int, title: String, preparationTimeMinutes: Int, description: String?, instructions: String?)
+    suspend fun updateRecipe(id: Int, title: String, preparationTimeMinutes: Int, description: String, instructions: String)
 
 }
