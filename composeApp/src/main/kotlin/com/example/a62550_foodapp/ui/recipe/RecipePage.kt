@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,6 +24,7 @@ import com.example.a62550_foodapp.ui.components.LocalImage
 fun RecipePage(
     recipes: List<Recipe>,
     onAddRecipeClick: () -> Unit,
+    onDiscoverRecipesClick: () -> Unit,
     onRecipeClick: (Int) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -46,15 +48,38 @@ fun RecipePage(
             }
         }
 
-        FloatingActionButton(
-            onClick = onAddRecipeClick,
+        Row(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Add Recipe")
+            ExtendedFloatingActionButton(
+                onClick = onDiscoverRecipesClick,
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Discover recipes"
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Find opskrifter på engelsk",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            )
+
+
+            FloatingActionButton(
+                onClick = onAddRecipeClick,
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Recipe")
+            }
         }
     }
 }

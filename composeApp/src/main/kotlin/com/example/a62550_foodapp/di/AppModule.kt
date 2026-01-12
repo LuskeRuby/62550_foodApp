@@ -11,6 +11,13 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+import com.example.a62550_foodapp.api.MealDbApi
+import com.example.a62550_foodapp.viewmodel.DiscoverRecipeViewModel
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+
 
 /**
  * Call this once from Application.onCreate()
@@ -50,6 +57,23 @@ val appModule = module {
 
     single { get<AppDatabase>().supermarketDao() }
 
+    /* ---------- API ---------- */
+
+    single {
+        val moshi = Moshi.Builder()
+            .add(KotlinJsonAdapterFactory())
+            .build()
+
+        Retrofit.Builder()
+            .baseUrl("https://themealdb.com/api/json/v1/1/")
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+    }
+
+    single {
+        get<Retrofit>().create(MealDbApi::class.java)
+    }
+
     /* ---------- ViewModels ---------- */
 
     viewModel {
@@ -69,6 +93,11 @@ val appModule = module {
         ShoppingListDetailsViewModel(
             shoppingListId = shoppingListId,
             shoppingListItemDao = get()
+        )
+    }
+    viewModel {
+        DiscoverRecipeViewModel(
+            api = get()
         )
     }
 }
