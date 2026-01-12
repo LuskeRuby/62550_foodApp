@@ -59,7 +59,8 @@ val appModule = module {
             recipeDao = get(),
             recipeItemDao = get(),
             itemWeeklyPriceDao = get(),
-            appContext = androidContext()
+            appContext = androidContext(),
+            itemGroupDao = get()
         )
     }
 

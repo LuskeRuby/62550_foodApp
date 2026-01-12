@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,30 +20,22 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Locale
 import coil.compose.AsyncImage
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
-import com.example.a62550_foodapp.model.RecipeIngredient
 
 @Composable
 fun RecipeDetailScreen(
     recipeId: Int,
     recipeViewModel: RecipeViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEdit: (Int) -> Unit
 ) {
     val recipe by recipeViewModel.getRecipeById(recipeId).collectAsState(initial = null)
-
-
-    /*
-    // 🔴 GAMMEL PRIS-LOGIK (fjernet midlertidigt)
-    val totalPrice by recipeViewModel
-        .getRecipePrice(recipeId)
-        .collectAsState(initial = 0f)
-    */
 
     var portions by remember { mutableStateOf(1) }
 
     val lightPink = Color(0xFFF3E5F5)
-    val lightGreen = Color(0xFF98FB98)
     val lightOrange = Color(0xFFFFCC80)
 
     recipe?.let { r ->
@@ -51,6 +45,11 @@ fun RecipeDetailScreen(
                 .verticalScroll(rememberScrollState())
                 .background(Color.White)
         ) {
+
+            // Back button so onBack param is used
+            IconButton(onClick = onBack, modifier = Modifier.padding(8.dp)) {
+                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+            }
 
             // ---- TITLE ----
             Box(
@@ -83,7 +82,7 @@ fun RecipeDetailScreen(
                         modifier = Modifier.padding(bottom = 8.dp)
                     ) {
                         Text(
-                            "TILB. TID: 30 min",
+                            "TILB. TID: ${r.preparationTimeMinutes} min",
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelLarge
                         )
@@ -102,41 +101,6 @@ fun RecipeDetailScreen(
                             contentScale = ContentScale.Crop
                         )
                     }
-
-                    /*
-                    // 🔴 GAMMEL PRIS-VISNING
-                    Row(
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = Color(0xFFEEEEEE),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = "Pris: ${totalPrice * portions} kr",
-                                modifier = Modifier.padding(vertical = 4.dp),
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = lightGreen,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                "Spar 25 kr",
-                                modifier = Modifier.padding(vertical = 4.dp),
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
-                    }
-                    */
                 }
 
                 // ---- RIGHT: INGREDIENTS ----
@@ -155,25 +119,40 @@ fun RecipeDetailScreen(
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
-/*
-                    ingredients.forEach { ingredient ->
-                        val displayQuantity = ingredient.quantity * portions
-                        val quantityText =
-                            if (displayQuantity % 1 == 0f)
-                                displayQuantity.toInt().toString()
-                            else
-                                displayQuantity.toString()
+                    // Collect item groups and recipe items to display ingredient list
+                    val allGroups by recipeViewModel.getAllItemGroups().collectAsState(initial = emptyList())
+                    val recipeItems by recipeViewModel.getItemsForRecipeFlow(r.id).collectAsState(initial = emptyList())
 
-                        val unitText = ingredient.unit?.let { " $it" } ?: ""
+                    if (recipeItems.isEmpty()) {
+                        Text("Ingen ingredienser angivet.", modifier = Modifier.align(Alignment.CenterHorizontally))
+                    } else {
+                        Column {
+                            recipeItems.forEach { ri ->
+                                val group = allGroups.firstOrNull { it.id == ri.itemGroupId }
+                                val groupName = group?.name ?: "(ukendt)"
+                                val unit = group?.unitType ?: ""
+                                val scaledQty = ri.quantity * portions
+                                fun formatQty(q: Float): String {
+                                    return if (q % 1f == 0f) q.toInt().toString() else String.format(Locale.getDefault(), "%.1f", q)
+                                }
 
-                        Text(
-                            text = "• $quantityText$unitText ${ingredient.name}",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Column {
+                                        Text(groupName, style = MaterialTheme.typography.bodyLarge)
+                                        if (unit.isNotBlank()) {
+                                            Text(unit, style = MaterialTheme.typography.bodySmall)
+                                        }
+                                    }
+                                    Text("${formatQty(scaledQty)} ${unit}", style = MaterialTheme.typography.bodySmall)
+                                }
+                            }
+                        }
                     }
- */
                 }
             }
 
@@ -232,6 +211,13 @@ fun RecipeDetailScreen(
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Text("Tilføj til indkøbslisten", color = Color.Black)
+                }
+
+                // Edit button
+                Button(onClick = { onEdit(r.id) }) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edit")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Edit")
                 }
             }
         }

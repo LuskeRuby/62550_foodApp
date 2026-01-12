@@ -78,6 +78,9 @@ dependencies {
 
     /* ---------- Images ---------- */
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // Test dependencies
+    testImplementation("junit:junit:4.13.2")
 }
 
 ksp {

@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
                             RecipePage(
                                 recipes = recipes,
                                 onAddRecipeClick = {
-                                    navigationState = NavState.CreateRecipe
+                                    navigationState = NavState.CreateRecipe(null)
                                 },
                                 onRecipeClick = { id ->
                                     navigationState = NavState.RecipeDetail(id)
@@ -58,6 +58,7 @@ class MainActivity : ComponentActivity() {
                             }
                             CreateRecipeScreen(
                                 recipeViewModel = recipeViewModel,
+                                existingRecipeId = state.existingRecipeId,
                                 onRecipeSaved = {
                                     navigationState = NavState.RecipeList
                                 }
@@ -72,6 +73,9 @@ class MainActivity : ComponentActivity() {
                                 recipeViewModel = recipeViewModel,
                                 onBack = {
                                     navigationState = NavState.RecipeList
+                                },
+                                onEdit = { id ->
+                                    navigationState = NavState.CreateRecipe(id)
                                 }
                             )
                         }
@@ -84,7 +88,8 @@ class MainActivity : ComponentActivity() {
 
 sealed class NavState {
     object RecipeList : NavState()
-    object CreateRecipe : NavState()
+    // CreateRecipe now carries an optional existing recipe id for editing
+    data class CreateRecipe(val existingRecipeId: Int? = null) : NavState()
     data class RecipeDetail(val id: Int) : NavState()
 }
 
