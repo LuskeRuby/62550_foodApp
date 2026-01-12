@@ -69,6 +69,15 @@ class ShoppingListDetailsViewModel(
     fun selectSupermarket(id: Int) {
         _selectedSupermarketId.value = id
     }
+
+    fun deleteItem(itemId: Int) {
+        viewModelScope.launch {
+            shoppingListItemDao.deleteItem(
+                shoppingListId = shoppingListId,
+                itemId = itemId
+            )
+        }
+    }
     fun setChecked(itemId: Int, checked: Boolean) {
         viewModelScope.launch {
             shoppingListItemDao.updateChecked(
