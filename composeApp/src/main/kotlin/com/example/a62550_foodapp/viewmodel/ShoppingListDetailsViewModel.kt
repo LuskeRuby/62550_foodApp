@@ -1,6 +1,5 @@
 package com.example.a62550_foodapp.viewmodel
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a62550_foodapp.db.dao.ShoppingListItemDao
@@ -70,6 +69,16 @@ class ShoppingListDetailsViewModel(
         _selectedSupermarketId.value = id
     }
 
+    fun addItem(itemId: Int, quantity: Int) {
+        viewModelScope.launch {
+            shoppingListItemDao.addItemToList(
+                shoppingListId = shoppingListId,
+                itemId = itemId,
+                quantity = quantity
+            )
+        }
+    }
+
     fun deleteItem(itemId: Int) {
         viewModelScope.launch {
             shoppingListItemDao.deleteItem(
@@ -78,6 +87,7 @@ class ShoppingListDetailsViewModel(
             )
         }
     }
+
     fun setChecked(itemId: Int, checked: Boolean) {
         viewModelScope.launch {
             shoppingListItemDao.updateChecked(
