@@ -75,23 +75,6 @@ fun MainView(
                         ) 
                     }
                 )
-                Tab(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
-                    icon = { 
-                        Icon(
-                            Icons.Default.Fastfood, 
-                            contentDescription = "Food",
-                            modifier = Modifier.padding(top = 12.dp)
-                        ) 
-                    },
-                    text = { 
-                        Text(
-                            "Food",
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        ) 
-                    }
-                )
 
             }
         }
@@ -100,7 +83,6 @@ fun MainView(
             when (selectedTab) {
                 0 -> recipeContent()
                 1 -> ShoppingListPage()
-                2 -> FoodItemPage()
             }
         }
     }

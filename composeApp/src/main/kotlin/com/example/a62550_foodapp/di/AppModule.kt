@@ -52,8 +52,6 @@ val appModule = module {
 
     /* ---------- ViewModels ---------- */
 
-    viewModel { MainViewModel(get()) }
-
     viewModel {
         RecipeViewModel(
             recipeDao = get(),
