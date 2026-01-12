@@ -13,9 +13,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.example.a62550_foodapp.db.entity.ItemGroup
 import com.example.a62550_foodapp.viewmodel.SelectedItemGroup
 import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.ui.Alignment
 
 
 @Composable
@@ -173,19 +173,49 @@ fun CreateRecipeScreen(
             if (allGroups.isEmpty()) {
                 Text("No item groups available. Add item groups first.")
             } else {
-                // Search field that filters existing item groups
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    label = { Text("Search item groups") },
+                // Compute matches and the unit type to display
+                val matches = if (searchQuery.isNotBlank()) allGroups.filter { it.name.contains(searchQuery, ignoreCase = true) } else emptyList()
+                val displayedUnitType = when {
+                    selectedGroupId != null -> allGroups.firstOrNull { it.id == selectedGroupId }?.unitType
+                    matches.isNotEmpty() -> matches.first().unitType
+                    else -> null
+                }
+
+                // Row with search field, quantity input, and unit type text
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
-                )
+                ) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        label = { Text("Search item groups") },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    OutlinedTextField(
+                        value = quantityText,
+                        onValueChange = { input ->
+                            // allow digits and decimal point
+                            val filtered = input.filter { it.isDigit() || it == '.' }
+                            quantityText = filtered
+                        },
+                        label = { Text("Qty") },
+                        modifier = Modifier.width(96.dp),
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                    )
+
+                    Text(
+                        text = displayedUnitType ?: "",
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // Suggestions shown when user typed something
                 if (searchQuery.isNotBlank()) {
-                    val matches = allGroups.filter { it.name.contains(searchQuery, ignoreCase = true) }
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(4.dp)) {
                             if (matches.isEmpty()) {
@@ -213,13 +243,6 @@ fun CreateRecipeScreen(
                     Text("Selected: $currentLabel", modifier = Modifier.fillMaxWidth())
                 }
 
-
-                OutlinedTextField(
-                    value = quantityText,
-                    onValueChange = { quantityText = it },
-                    label = { Text("Quantity") },
-                    modifier = Modifier.fillMaxWidth()
-                )
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = {
