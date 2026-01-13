@@ -210,4 +210,14 @@ class RecipeViewModel(
             recipeDao.updateImagePath(recipeId, null)
         }
     }
+
+    suspend fun getSelectedGroupsForRecipe(recipeId: Int): List<SelectedItemGroup> {
+        return recipeItemDao.getItemsForRecipe(recipeId).map {
+            SelectedItemGroup(
+                itemGroupId = it.itemGroupId,
+                quantity = it.quantity
+            )
+        }
+    }
+
 }

@@ -14,8 +14,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.a62550_foodapp.viewmodel.SelectedItemGroup
-import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.ui.Alignment
+import kotlinx.coroutines.flow.first
 
 
 @Composable
@@ -42,19 +42,22 @@ fun CreateRecipeScreen(
 
     // If editing, load existing recipe values
     LaunchedEffect(existingRecipeId) {
-        existingRecipeId?.let { id ->
-            recipeViewModel.getRecipeById(id).collectLatest { recipe ->
-                recipe?.let {
-                    title = it.title
-                    // load preparation time into the text state
-                    preparationTimeText = it.preparationTimeMinutes.toString()
-                    description = it.description
-                    instructions = it.instructions
-                    existingImagePath = it.imagePath
-                }
-            }
+        if (existingRecipeId == null) return@LaunchedEffect
+
+        // Load recipe once
+        val recipe = recipeViewModel.getRecipeById(existingRecipeId).first()
+        recipe?.let {
+            title = it.title
+            preparationTimeText = it.preparationTimeMinutes.toString()
+            description = it.description
+            instructions = it.instructions
+            existingImagePath = it.imagePath
         }
+
+        // Load recipe_items once
+        selectedGroups = recipeViewModel.getSelectedGroupsForRecipe(existingRecipeId)
     }
+
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
