@@ -5,8 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -23,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
+import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.collections.component1
@@ -30,7 +33,8 @@ import kotlin.collections.component2
 
 @Composable
 fun ShoppingListDetailsPage(
-    shoppingListId: Int
+    shoppingListId: Int,
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     val viewModel: ShoppingListDetailsViewModel =
         koinViewModel(
@@ -68,20 +72,21 @@ private fun ViewShoppingList(
 
     val grouped = items.groupBy { it.category }
 
-    Column(Modifier.fillMaxSize().background(Color.White)) {
+    Box(modifier = Modifier.fillMaxSize().background(themeViewModel.backgroundColor)){
+        Column(modifier = Modifier.fillMaxSize()) {
 
-        // header
-        Text(
-            "Indkøbsliste",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(16.dp)
-        )
+            // header
+            Text(
+                "Indkøbsliste",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(16.dp)
+            )
 
-        SupermarketSelector(
-            selectedId = selectedSupermarket,
-            onSelect = viewModel::selectSupermarket
-        )
+            SupermarketSelector(
+                selectedId = selectedSupermarket,
+                onSelect = viewModel::selectSupermarket
+            )
 
         // body
         ShoppingListContent(
@@ -102,6 +107,18 @@ private fun ViewShoppingList(
             TotalFooter(total)
         }
 
+        FloatingActionButton(
+            onClick = { /* Handle add item */ },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 32.dp),
+            shape = CircleShape,
+            containerColor = themeViewModel.addButtonColor,
+            contentColor = themeViewModel.onPrimaryColor
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Add Item")
+        }
+        }
     }
 }
 
@@ -147,6 +164,7 @@ private fun ShoppingListContent(
             items(categoryItems, key = { it.itemId }) { item ->
                 ShoppingItemRow(
                     item = item,
+                    themeViewModel = themeViewModel,
                     onCheckedChange =
                         if (!addItemsOverlay) {
                             { checked: Boolean -> viewModel.setChecked(item.itemId, checked) }
@@ -221,6 +239,7 @@ fun CategoryHeader(category: String) {
 @Composable
 private fun ShoppingItemRow(
     item: ShoppingListEntryUi,
+    themeViewModel: ThemeViewModel,
     onCheckedChange: (Boolean) -> Unit,
     checkboxVisible: Boolean,
     onDelete: () -> Unit,
@@ -229,7 +248,7 @@ private fun ShoppingItemRow(
     //used for swiperemove
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { fullWidth ->
-            fullWidth * 0.6f   // how much swipe % before delete
+            fullWidth * 0.4f   // //how much swipe before delete (40% her)
         },
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart) {
@@ -262,7 +281,7 @@ private fun ShoppingItemRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White, RoundedCornerShape(8.dp))
+                .background(themeViewModel.backgroundColor, RoundedCornerShape(8.dp))
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -302,13 +321,15 @@ private fun ShoppingItemRow(
                         Text(
                             text = "${(unitPrice * qty).toInt()} kr",
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = themeViewModel.priceTagColor
                         )
                     } else {
                         Text(
                             text = "${unitPrice.toInt()} kr",
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            color = themeViewModel.priceTagColor
                         )
                     }
                 } else {
@@ -346,7 +367,7 @@ private fun TotalFooter(total: Float?) {
                 text = "Total",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color.DarkGray
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.width(8.dp))

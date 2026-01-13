@@ -23,46 +23,55 @@ import androidx.compose.ui.unit.sp
 import java.util.Locale
 import coil.compose.AsyncImage
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
+import com.example.a62550_foodapp.viewmodel.ThemeViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun RecipeDetailScreen(
     recipeId: Int,
     recipeViewModel: RecipeViewModel,
     onBack: () -> Unit,
-    onEdit: (Int) -> Unit
+    onEdit: (Int) -> Unit,
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     val recipe by recipeViewModel.getRecipeById(recipeId).collectAsState(initial = null)
 
     var portions by remember { mutableStateOf(1) }
 
     val lightPink = Color(0xFFF3E5F5)
-    val lightOrange = Color(0xFFFFCC80)
 
     recipe?.let { r ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .background(Color.White)
+                .background(themeViewModel.backgroundColor)
         ) {
 
-            // Back button so onBack param is used
-            IconButton(onClick = onBack, modifier = Modifier.padding(8.dp)) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-            }
-
-            // ---- TITLE ----
+            // ---- HEADER WITH BACK BUTTON AND TITLE (Matching Nav Bar) ----
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(lightOrange)
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
+                    .background(themeViewModel.navBarColor)
+                    .padding(8.dp)
             ) {
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier.align(Alignment.CenterStart)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = themeViewModel.onNavBarColor
+                    )
+                }
+
                 Text(
                     text = r.title,
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = themeViewModel.onNavBarColor,
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
 
@@ -78,13 +87,14 @@ fun RecipeDetailScreen(
 
                     Surface(
                         shape = RoundedCornerShape(24.dp),
-                        color = Color(0xFFEEEEEE),
+                        color = themeViewModel.secondaryColor,
                         modifier = Modifier.padding(bottom = 8.dp)
                     ) {
                         Text(
                             "TILB. TID: ${r.preparationTimeMinutes} min",
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.labelLarge
+                            style = MaterialTheme.typography.labelLarge,
+                            color = themeViewModel.onSecondaryColor
                         )
                     }
 
@@ -92,7 +102,7 @@ fun RecipeDetailScreen(
                         modifier = Modifier
                             .aspectRatio(1f)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color.LightGray)
+                            .background(themeViewModel.secondaryColor)
                     ) {
                         AsyncImage(
                             model = r.imagePath,
@@ -184,7 +194,7 @@ fun RecipeDetailScreen(
 
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color(0xFFF5F5F5),
+                    color = themeViewModel.secondaryColor,
                     modifier = Modifier.weight(1f)
                 ) {
                     Row(
@@ -193,13 +203,13 @@ fun RecipeDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         IconButton(onClick = { if (portions > 1) portions-- }) {
-                            Icon(Icons.Default.RemoveCircle, contentDescription = "Sænk portioner")
+                            Icon(Icons.Default.RemoveCircle, contentDescription = "Sænk portioner", tint = themeViewModel.primaryColor)
                         }
 
-                        Text("$portions Portioner", fontWeight = FontWeight.Bold)
+                        Text("$portions Portioner", fontWeight = FontWeight.Bold, color = themeViewModel.onSecondaryColor)
 
                         IconButton(onClick = { portions++ }) {
-                            Icon(Icons.Default.AddCircle, contentDescription = "Øg portioner")
+                            Icon(Icons.Default.AddCircle, contentDescription = "Øg portioner", tint = themeViewModel.primaryColor)
                         }
                     }
                 }
@@ -207,17 +217,15 @@ fun RecipeDetailScreen(
                 Button(
                     onClick = { /* TODO: Add to shopping list */ },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF90EE90)),
+                    colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.primaryColor),
                     shape = RoundedCornerShape(24.dp)
                 ) {
-                    Text("Tilføj til indkøbslisten", color = Color.Black)
+                    Text("Tilføj til indkøbslisten", color = themeViewModel.onPrimaryColor)
                 }
 
                 // Edit button
-                Button(onClick = { onEdit(r.id) }) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Edit")
+                IconButton(onClick = { onEdit(r.id) }) {
+                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = themeViewModel.textSecondary)
                 }
             }
         }
