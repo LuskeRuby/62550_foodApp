@@ -6,31 +6,42 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.a62550_foodapp.model.Recipe
 import com.example.a62550_foodapp.ui.components.LocalImage
+import com.example.a62550_foodapp.viewmodel.ThemeViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun RecipePage(
     recipes: List<Recipe>,
     onAddRecipeClick: () -> Unit,
-    onRecipeClick: (Int) -> Unit
+    onDiscoverRecipesClick: () -> Unit,
+    onRecipeClick: (Int) -> Unit,
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(themeViewModel.backgroundColor)
+    ) {
         if (recipes.isEmpty()) {
             Text(
                 text = "No recipes yet. Click + to add one!",
                 modifier = Modifier.align(Alignment.Center),
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = themeViewModel.textSecondary
             )
         } else {
             LazyVerticalGrid(
@@ -41,29 +52,54 @@ fun RecipePage(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(recipes) { recipe ->
-                    RecipeCard(recipe, onClick = { onRecipeClick(recipe.id) })
+                    RecipeCard(recipe, themeViewModel, onClick = { onRecipeClick(recipe.id) })
                 }
             }
         }
 
-        FloatingActionButton(
-            onClick = onAddRecipeClick,
+        Column(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Add Recipe")
+            ExtendedFloatingActionButton(
+                onClick = onDiscoverRecipesClick,
+                containerColor = themeViewModel.secondaryColor,
+                contentColor = themeViewModel.onSecondaryColor,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Discover recipes"
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Find opskrifter på engelsk",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            )
+
+            FloatingActionButton(
+                onClick = onAddRecipeClick,
+                shape = CircleShape,
+                containerColor = themeViewModel.addButtonColor,
+                contentColor = themeViewModel.onPrimaryColor
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Recipe")
+            }
         }
     }
 }
 
 @Composable
-fun RecipeCard(recipe: Recipe, onClick: () -> Unit) {
+fun RecipeCard(recipe: Recipe, themeViewModel: ThemeViewModel, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
@@ -74,7 +110,7 @@ fun RecipeCard(recipe: Recipe, onClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.6f)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .background(themeViewModel.secondaryColor)
             ) {
                 LocalImage(
                     imagePath = recipe.imagePath,
@@ -92,6 +128,7 @@ fun RecipeCard(recipe: Recipe, onClick: () -> Unit) {
                 Text(
                     text = recipe.title,
                     style = MaterialTheme.typography.titleSmall,
+                    color = themeViewModel.textPrimary,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -101,6 +138,7 @@ fun RecipeCard(recipe: Recipe, onClick: () -> Unit) {
                     Text(
                         text = it,
                         style = MaterialTheme.typography.bodySmall,
+                        color = themeViewModel.textSecondary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )

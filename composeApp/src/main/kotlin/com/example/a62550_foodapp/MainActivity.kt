@@ -14,8 +14,10 @@ import com.example.a62550_foodapp.ui.recipe.RecipeDetailScreen
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.lifecycle.lifecycleScope
+import com.example.a62550_foodapp.NavState.*
 import com.example.a62550_foodapp.db.AppDatabase
 import com.example.a62550_foodapp.db.DatabaseMockData
+import com.example.a62550_foodapp.ui.discover.DiscoverRecipesScreen
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
 
@@ -45,10 +47,13 @@ class MainActivity : ComponentActivity() {
                             RecipePage(
                                 recipes = recipes,
                                 onAddRecipeClick = {
-                                    navigationState = NavState.CreateRecipe(null)
+                                    navigationState = CreateRecipe(null)
                                 },
                                 onRecipeClick = { id ->
-                                    navigationState = NavState.RecipeDetail(id)
+                                    navigationState = RecipeDetail(id)
+                                },
+                                onDiscoverRecipesClick = {
+                                    navigationState = NavState.DiscoverRecipes
                                 }
                             )
                         }
@@ -75,7 +80,18 @@ class MainActivity : ComponentActivity() {
                                     navigationState = NavState.RecipeList
                                 },
                                 onEdit = { id ->
-                                    navigationState = NavState.CreateRecipe(id)
+                                    navigationState = CreateRecipe(id)
+                                }
+                            )
+                        }
+                        is NavState.DiscoverRecipes -> {
+                            BackHandler {
+                                navigationState = NavState.RecipeList
+                            }
+
+                            DiscoverRecipesScreen(
+                                onBack = {
+                                    navigationState = NavState.RecipeList
                                 }
                             )
                         }
@@ -88,7 +104,7 @@ class MainActivity : ComponentActivity() {
 
 sealed class NavState {
     object RecipeList : NavState()
-    // CreateRecipe now carries an optional existing recipe id for editing
+    object DiscoverRecipes : NavState()
     data class CreateRecipe(val existingRecipeId: Int? = null) : NavState()
     data class RecipeDetail(val id: Int) : NavState()
 }

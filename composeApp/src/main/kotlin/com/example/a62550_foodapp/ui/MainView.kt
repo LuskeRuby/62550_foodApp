@@ -17,12 +17,7 @@ import com.example.a62550_foodapp.ui.recipe.RecipePage
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainView(
-    recipeContent: @Composable () -> Unit = {
-        RecipePage(
-            recipes = emptyList(),
-            onAddRecipeClick = {},
-            onRecipeClick = {})
-    }
+    recipeContent: @Composable () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val creamyOrange = Color(0xFFFFD59A)
