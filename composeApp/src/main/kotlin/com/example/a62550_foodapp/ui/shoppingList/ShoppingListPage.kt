@@ -150,7 +150,7 @@ fun ShoppingListPage() {
 }
 
 @Composable
-fun ShoppingListPageRow(
+private fun ShoppingListPageRow(
     shoppingList: ShoppingList,
     editClick: (shoppingList: ShoppingList) -> Unit,
     selectClick: (shoppingList: ShoppingList) -> Unit
@@ -202,7 +202,7 @@ fun ShoppingListPageRow(
 }
 
 @Composable
-fun NewShoppingListFormOverlay(
+private fun NewShoppingListFormOverlay(
     onDismiss: () -> Unit,
     onCreate: (String) -> Unit
 ) {
@@ -272,7 +272,7 @@ fun NewShoppingListFormOverlay(
 }
 
 @Composable
-fun EditShoppingListFormOverlay(
+private fun EditShoppingListFormOverlay(
     onDismiss: () -> Unit,
     onEdit: (Int, String) -> Unit,
     selectedShoppingList: ShoppingList?
