@@ -139,34 +139,41 @@ class RecipeViewModel(
         preparationTimeMinutes: Int,
         description: String?,
         instructions: String?,
-        imageUri: Uri?
+        imageUri: Uri?,
+        selectedGroups: List<SelectedItemGroup>
     ) {
         viewModelScope.launch {
-            // Update textual fields first
+
+            // 1) Update recipe text fields
             recipeDao.updateRecipe(
                 id,
                 title,
                 preparationTimeMinutes,
-                description?: "",
-                instructions?: "")
+                description ?: "",
+                instructions ?: ""
+            )
 
-            // If a new image was provided, delete any existing app-managed image file and save new image
+            // 2) ALWAYS update recipe_items
+            recipeItemDao.deleteForRecipe(id)
+
+            val items = selectedGroups.map {
+                RecipeItem(
+                    recipeId = id,
+                    itemGroupId = it.itemGroupId,
+                    quantity = it.quantity
+                )
+            }
+
+            recipeItemDao.insertAll(items)
+
+            // 3) Update image ONLY if a new one was provided
             if (imageUri != null) {
-                try {
-                    val existingPath = recipeDao.getRecipeById(id).first()?.imagePath
-                    existingPath?.let { path ->
-                        try {
-                            val f = File(path)
-                            val filesDir = appContext.filesDir
-                            if (f.exists() && f.canonicalPath.startsWith(filesDir.canonicalPath)) {
-                                f.delete()
-                            }
-                        } catch (_: Exception) {
-                            // ignore deletion failures
-                        }
-                    }
-                } catch (_: Exception) {
-                    // ignore failures getting existing path
+                val existingPath = recipeDao.getRecipeById(id).first()?.imagePath
+                existingPath?.let {
+                    try {
+                        val f = File(it)
+                        if (f.exists()) f.delete()
+                    } catch (_: Exception) { }
                 }
 
                 val path = saveRecipeImage(

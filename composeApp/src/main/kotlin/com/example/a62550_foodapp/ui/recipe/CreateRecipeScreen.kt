@@ -305,7 +305,8 @@ fun CreateRecipeScreen(
                             preparationTimeMinutes = prepMinutes,
                             description = description,
                             instructions = instructions,
-                            imageUri = selectedImage
+                            imageUri = selectedImage,
+                            selectedGroups = selectedGroups
                         )
                     } else {
                         // Pass selected existing groups to viewmodel
