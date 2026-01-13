@@ -34,7 +34,6 @@ import kotlin.collections.component2
 @Composable
 fun ShoppingListDetailsPage(
     shoppingListId: Int,
-    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     val viewModel: ShoppingListDetailsViewModel =
         koinViewModel(
@@ -63,6 +62,7 @@ fun ShoppingListDetailsPage(
 @Composable
 private fun ViewShoppingList(
     viewModel: ShoppingListDetailsViewModel,
+    themeViewModel: ThemeViewModel = koinViewModel(),
     onAddItemsButtonClick: () -> Unit = {},
     addItemsOverlay: Boolean
 ) {
@@ -72,7 +72,7 @@ private fun ViewShoppingList(
 
     val grouped = items.groupBy { it.category }
 
-    Box(modifier = Modifier.fillMaxSize().background(themeViewModel.backgroundColor)){
+    Box(modifier = Modifier.fillMaxSize().background(themeViewModel.backgroundColor)) {
         Column(modifier = Modifier.fillMaxSize()) {
 
             // header
@@ -88,27 +88,28 @@ private fun ViewShoppingList(
                 onSelect = viewModel::selectSupermarket
             )
 
-        // body
-        ShoppingListContent(
-            grouped = grouped,
-            viewModel = viewModel,
-            addItemsOverlay = addItemsOverlay
-        )
+            // body
+            ShoppingListContent(
+                grouped = grouped,
+                viewModel = viewModel,
+                addItemsOverlay = addItemsOverlay
+            )
 
-        // footer
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AddItemButton(onClick = onAddItemsButtonClick)
-            TotalFooter(total)
+            // footer
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AddItemButton(onClick = onAddItemsButtonClick)
+                TotalFooter(total)
+            }
         }
 
         FloatingActionButton(
-            onClick = { /* Handle add item */ },
+            onClick = { onAddItemsButtonClick },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 32.dp),
@@ -118,13 +119,13 @@ private fun ViewShoppingList(
         ) {
             Icon(Icons.Default.Add, contentDescription = "Add Item")
         }
-        }
     }
 }
 
 @Composable
 private fun AddShoppingListItems(
     viewModel: ShoppingListDetailsViewModel,
+    themeViewModel: ThemeViewModel = koinViewModel(),
     addItemsOverlay: Boolean
 ) {
     val items by viewModel.addItemsList.collectAsState()
@@ -143,6 +144,7 @@ private fun AddShoppingListItems(
     ShoppingListContent(
         grouped = grouped,
         viewModel = viewModel,
+        themeViewModel = themeViewModel,
         addItemsOverlay = addItemsOverlay
     )
 
@@ -156,6 +158,7 @@ private fun AddShoppingListItems(
 private fun ShoppingListContent(
     grouped: Map<String, List<ShoppingListEntryUi>>,
     viewModel: ShoppingListDetailsViewModel,
+    themeViewModel: ThemeViewModel = koinViewModel(),
     addItemsOverlay: Boolean
 ){
     LazyColumn() {
