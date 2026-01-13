@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
@@ -31,6 +33,7 @@ import org.koin.core.parameter.parametersOf
 import kotlin.collections.component1
 import kotlin.collections.component2
 
+// top layer so we can reuse ShoppingListContnt and ShoppingItemRow
 @Composable
 fun ShoppingListDetailsPage(
     shoppingListId: Int,
@@ -144,7 +147,6 @@ private fun AddShoppingListItems(
     ShoppingListContent(
         grouped = grouped,
         viewModel = viewModel,
-        themeViewModel = themeViewModel,
         addItemsOverlay = addItemsOverlay
     )
 
@@ -158,7 +160,6 @@ private fun AddShoppingListItems(
 private fun ShoppingListContent(
     grouped: Map<String, List<ShoppingListEntryUi>>,
     viewModel: ShoppingListDetailsViewModel,
-    themeViewModel: ThemeViewModel = koinViewModel(),
     addItemsOverlay: Boolean
 ){
     LazyColumn() {
@@ -167,7 +168,6 @@ private fun ShoppingListContent(
             items(categoryItems, key = { it.itemId }) { item ->
                 ShoppingItemRow(
                     item = item,
-                    themeViewModel = themeViewModel,
                     onCheckedChange =
                         if (!addItemsOverlay) {
                             { checked: Boolean -> viewModel.setChecked(item.itemId, checked) }
@@ -212,16 +212,20 @@ private fun SupermarketSelector(
         )
     }
 }
-
-fun categoryColor(category: String): Color =
+@Composable
+fun categoryColor(
+    category: String,
+    themeViewModel: ThemeViewModel = koinViewModel()
+): Color =
     when (category.lowercase()) {
         "tørvarer" -> Color(0xFF996600)
         "kød" -> Color(0xFFD32F2F)
         "grøntsager" -> Color(0xFF388E3C)
         "mejeri" -> Color(0xFF1976D2)
         "kolonial" -> Color(0xFF6A1B9A)
-        else -> Color(0xFF757575)
+        else -> themeViewModel.grayedOutColor
     }
+
 @Composable
 fun CategoryHeader(category: String) {
     Box(
@@ -241,8 +245,8 @@ fun CategoryHeader(category: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShoppingItemRow(
+    themeViewModel: ThemeViewModel = koinViewModel(),
     item: ShoppingListEntryUi,
-    themeViewModel: ThemeViewModel,
     onCheckedChange: (Boolean) -> Unit,
     checkboxVisible: Boolean,
     onDelete: () -> Unit,
@@ -271,7 +275,7 @@ private fun ShoppingItemRow(
                     .fillMaxSize()
                     .background(Color.Red)
                     .padding(end = 20.dp),
-                contentAlignment = Alignment.CenterEnd
+                contentAlignment = Alignment.CenterEnd,
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
@@ -284,25 +288,31 @@ private fun ShoppingItemRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(themeViewModel.backgroundColor, RoundedCornerShape(8.dp))
+                .background(
+                    if (item.isChecked) themeViewModel.greyedOutColor
+                    else themeViewModel.backgroundColor,
+                    RoundedCornerShape(8.dp))
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
             //name
-            Text(
+            CheckboxText(
+                checked = item.isChecked,
                 text = "${item.quantity.toInt()} x ${item.name}",
                 modifier = Modifier.weight(1f),
                 fontSize = 15.sp,
+                color = if (item.isChecked) themeViewModel.textPrimary else themeViewModel.greyedOutColor,
                 fontWeight = FontWeight.Medium
             )
 
             //size
-            Text(
+            CheckboxText(
+                checked = item.isChecked,
                 text = "${item.quantity.toInt()} × ${item.size.toInt()} ${item.unitType}",
                 modifier = Modifier.width(90.dp),
                 fontSize = 13.sp,
-                color = Color.DarkGray,
+                color = themeViewModel.textPrimary,
                 textAlign = TextAlign.End
             )
 
@@ -316,19 +326,23 @@ private fun ShoppingItemRow(
             ) {
                 if (unitPrice != null) {
                     if (qty > 1) {
-                        Text(
+                        CheckboxText(
+                            checked = item.isChecked,
                             text = "${item.quantity.toInt()} x ${unitPrice.toInt()} kr",
                             fontSize = 12.sp,
-                            color = Color.Gray
+                            color =  Color.Gray,
+                            textAlign = TextAlign.End
                         )
-                        Text(
+                        CheckboxText(
+                            checked = item.isChecked,
                             text = "${(unitPrice * qty).toInt()} kr",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = themeViewModel.priceTagColor
+                            color =  themeViewModel.priceTagColor
                         )
                     } else {
-                        Text(
+                        CheckboxText(
+                            checked = item.isChecked,
                             text = "${unitPrice.toInt()} kr",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
@@ -336,7 +350,8 @@ private fun ShoppingItemRow(
                         )
                     }
                 } else {
-                    Text(
+                    CheckboxText(
+                        checked = item.isChecked,
                         text = "-",
                         fontSize = 14.sp,
                         color = Color.Gray
@@ -345,7 +360,6 @@ private fun ShoppingItemRow(
             }
 
             if (checkboxVisible) {
-                //checkbox
                 Checkbox(
                     checked = item.isChecked,
                     onCheckedChange = onCheckedChange
@@ -354,6 +368,30 @@ private fun ShoppingItemRow(
         }
     }
 }
+
+@Composable
+private fun CheckboxText(
+    checked: Boolean,
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontWeight: FontWeight? = null,
+    textAlign: TextAlign? = null,
+    themeViewModel: ThemeViewModel = koinViewModel()
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        color = if (checked) themeViewModel.greyedOutColor else color,
+        fontSize = fontSize,
+        fontWeight = fontWeight,
+        textAlign = textAlign,
+        textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None
+    )
+}
+
+
 @Composable
 private fun TotalFooter(total: Float?) {
     Surface(

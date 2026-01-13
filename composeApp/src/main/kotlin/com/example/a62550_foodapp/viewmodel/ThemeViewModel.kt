@@ -34,4 +34,8 @@ class ThemeViewModel : ViewModel() {
     // Status Colors
     val successColor = Color(0xFF388E3C)
     val errorColor = Color(0xFFD32F2F)
+
+    val greyedOutColor = Color(0xFF757575) // Medium Grey for disabled elements
+    val grayedOutColor = greyedOutColor
+
 }
