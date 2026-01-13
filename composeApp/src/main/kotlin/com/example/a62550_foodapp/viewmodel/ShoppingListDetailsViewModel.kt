@@ -3,6 +3,7 @@ package com.example.a62550_foodapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a62550_foodapp.db.dao.ShoppingListItemDao
+import com.example.a62550_foodapp.db.entity.ShoppingListItem
 import com.example.a62550_foodapp.ui.shoppingList.ShoppingListEntryUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -72,9 +73,12 @@ class ShoppingListDetailsViewModel(
     fun addItem(itemId: Int, quantity: Int) {
         viewModelScope.launch {
             shoppingListItemDao.addItemToList(
-                shoppingListId = shoppingListId,
-                itemId = itemId,
-                quantity = quantity
+                ShoppingListItem(
+                    shoppingListId = shoppingListId,
+                    itemId = itemId,
+                    calcQuantity = quantity,
+                    isChecked = false
+                )
             )
         }
     }

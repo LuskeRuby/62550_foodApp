@@ -14,12 +14,7 @@ interface ShoppingListItemDao {
     suspend fun insert(item: ShoppingListItem)
 
     @Insert
-    fun addItemToList(
-        shoppingListId: Int,
-        itemId: Int,
-        quantity: Int,
-        isChecked: Boolean = false
-    ): Long
+    fun addItemToList(shoppingListItem: ShoppingListItem): Long
 
     @Query("""
         SELECT *

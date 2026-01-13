@@ -218,7 +218,7 @@ object DatabaseMockData {
             ShoppingListItem(
                 shoppingListId = shoppingListId,
                 itemId = itemIds[0],
-                calcQuantity = 1f,
+                calcQuantity = 1,
                 isChecked = false
             )
         )
@@ -227,7 +227,7 @@ object DatabaseMockData {
             ShoppingListItem(
                 shoppingListId = shoppingListId,
                 itemId = itemIds[2],
-                calcQuantity = 2f,
+                calcQuantity = 2,
                 isChecked = false
             )
         )
@@ -236,7 +236,7 @@ object DatabaseMockData {
             ShoppingListItem(
                 shoppingListId = shoppingListId,
                 itemId = itemIds[4],
-                calcQuantity = 1f,
+                calcQuantity = 1,
                 isChecked = true
             )
         )
