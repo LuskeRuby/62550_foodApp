@@ -1,9 +1,9 @@
 package com.example.a62550_foodapp.viewmodel
 
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a62550_foodapp.db.dao.ShoppingListItemDao
+import com.example.a62550_foodapp.db.entity.ShoppingListItem
 import com.example.a62550_foodapp.ui.shoppingList.ShoppingListEntryUi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -66,8 +66,23 @@ class ShoppingListDetailsViewModel(
                 initialValue = null
             )
 
+    var addItemsList: StateFlow<List<ShoppingListEntryUi>> = MutableStateFlow(emptyList())
+
     fun selectSupermarket(id: Int) {
         _selectedSupermarketId.value = id
+    }
+
+    fun addItem(itemId: Int, quantity: Int) {
+        viewModelScope.launch {
+            shoppingListItemDao.addItemToList(
+                ShoppingListItem(
+                    shoppingListId = shoppingListId,
+                    itemId = itemId,
+                    calcQuantity = quantity,
+                    isChecked = false
+                )
+            )
+        }
     }
 
     fun deleteItem(itemId: Int) {
@@ -78,6 +93,7 @@ class ShoppingListDetailsViewModel(
             )
         }
     }
+
     fun setChecked(itemId: Int, checked: Boolean) {
         viewModelScope.launch {
             shoppingListItemDao.updateChecked(
