@@ -19,15 +19,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BorderColor
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,10 +48,13 @@ import androidx.compose.ui.unit.sp
 import com.example.a62550_foodapp.model.ShoppingList
 import com.example.a62550_foodapp.ui.shoppingList.ShoppingListDetailsPage
 import com.example.a62550_foodapp.viewmodel.ShoppingListViewModel
+import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun ShoppingListPage() {
+fun ShoppingListPage(
+    themeViewModel: ThemeViewModel = koinViewModel()
+) {
 
     val shoppingListViewModel: ShoppingListViewModel = koinViewModel ()
     val shoppingList by shoppingListViewModel.shoppingLists.collectAsState()
@@ -62,11 +69,12 @@ fun ShoppingListPage() {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(themeViewModel.backgroundColor)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White).padding(16.dp)
+                .padding(16.dp)
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -75,6 +83,7 @@ fun ShoppingListPage() {
                 items(shoppingList) { list ->
                     ShoppingListPageRow(
                         list,
+                        themeViewModel = themeViewModel,
                         editClick = { clicked ->
                             selectedShoppingList = clicked
                             editListNameOverlay = true
@@ -86,24 +95,18 @@ fun ShoppingListPage() {
                     )
                 }
             }
+        }
 
-            Button(
-                onClick = { newListOverlay = true },
-                modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
-            ){
-                Text(
-                    text = "+",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier
-                        .padding(10.dp)
-                )
-            }
+        FloatingActionButton(
+            onClick = { newListOverlay = true },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 32.dp),
+            shape = CircleShape,
+            containerColor = themeViewModel.addButtonColor,
+            contentColor = themeViewModel.onPrimaryColor
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "New Shopping List")
         }
 
         if (selectListPage) {
@@ -112,7 +115,7 @@ fun ShoppingListPage() {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White) // or dim color if you want
+                    .background(themeViewModel.backgroundColor)
             ) {
                 selectedShoppingList?.let {
                     ShoppingListDetailsPage(
@@ -152,47 +155,44 @@ fun ShoppingListPage() {
 @Composable
 fun ShoppingListPageRow(
     shoppingList: ShoppingList,
+    themeViewModel: ThemeViewModel,
     editClick: (shoppingList: ShoppingList) -> Unit,
     selectClick: (shoppingList: ShoppingList) -> Unit
 ) {
 
-    // program crashes without it
     val interactionSource = remember { MutableInteractionSource() }
 
-    Button(
-        onClick = {selectClick(shoppingList)},
+    Card(
+        onClick = { selectClick(shoppingList) },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray),
-        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
-    ){
+            .padding(vertical = 8.dp)
+    ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = shoppingList.name,
-                fontSize = 24.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                textAlign = TextAlign.Center,
+                color = themeViewModel.textPrimary,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 32.dp, end = 8.dp)
-                    .padding(vertical = 16.dp)
             )
 
             Icon(
                 imageVector = Icons.Default.BorderColor,
                 contentDescription = "Edit",
-                tint = Color.Gray,
+                tint = themeViewModel.textSecondary,
                 modifier = Modifier
-                    .padding(end = 16.dp)
                     .size(24.dp)
                    .clickable(
-                       // quick fix to avoid crash
                        indication = LocalIndication.current,
                        interactionSource = interactionSource
                     ) { editClick(shoppingList) }
@@ -207,7 +207,6 @@ fun NewShoppingListFormOverlay(
     onCreate: (String) -> Unit
 ) {
 
-    // Backdrop
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -218,14 +217,14 @@ fun NewShoppingListFormOverlay(
         var newShoppingListName by remember { mutableStateOf("") }
 
         Card(
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .width(340.dp)
                 .wrapContentHeight()
         ) {
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(24.dp)
             ) {
                 Text(
                     text = "New Shopping List",
@@ -234,7 +233,7 @@ fun NewShoppingListFormOverlay(
                     color = Color.Black
                 )
 
-                Spacer(modifier = Modifier.size(8.dp))
+                Spacer(modifier = Modifier.size(16.dp))
 
                 OutlinedTextField(
                     value = newShoppingListName,
@@ -243,7 +242,7 @@ fun NewShoppingListFormOverlay(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.size(24.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -252,7 +251,8 @@ fun NewShoppingListFormOverlay(
                     Button(
                         onClick = {
                             onCreate(newShoppingListName)
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
                     ) {
                         Text("Create")
                     }
@@ -263,7 +263,7 @@ fun NewShoppingListFormOverlay(
                         onClick = onDismiss,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
                     ) {
-                        Text("Cancel")
+                        Text("Cancel", color = Color.Black)
                     }
                 }
             }
@@ -278,7 +278,6 @@ fun EditShoppingListFormOverlay(
     selectedShoppingList: ShoppingList?
 ) {
 
-    // Backdrop
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -289,14 +288,14 @@ fun EditShoppingListFormOverlay(
         var newName by remember { mutableStateOf(selectedShoppingList?.name?: "") }
 
         Card(
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .width(340.dp)
                 .wrapContentHeight()
         ) {
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(24.dp)
             ) {
                 Text(
                     text = "Edit Shopping List",
@@ -305,7 +304,7 @@ fun EditShoppingListFormOverlay(
                     color = Color.Black
                 )
 
-                Spacer(modifier = Modifier.size(8.dp))
+                Spacer(modifier = Modifier.size(16.dp))
 
                 OutlinedTextField(
                     value = newName,
@@ -314,7 +313,7 @@ fun EditShoppingListFormOverlay(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.size(24.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -323,7 +322,8 @@ fun EditShoppingListFormOverlay(
                     Button(
                         onClick = {
                             selectedShoppingList?.let {onEdit(it.id, newName)}
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
                     ) {
                         Text("Edit")
                     }
@@ -334,7 +334,7 @@ fun EditShoppingListFormOverlay(
                         onClick = onDismiss,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
                     ) {
-                        Text("Cancel")
+                        Text("Cancel", color = Color.Black)
                     }
                 }
             }

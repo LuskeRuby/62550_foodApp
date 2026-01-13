@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -19,12 +21,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
+import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
 fun ShoppingListDetailsPage(
-    shoppingListId: Int
+    shoppingListId: Int,
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     val viewModel: ShoppingListDetailsViewModel =
         koinViewModel(
@@ -37,49 +41,62 @@ fun ShoppingListDetailsPage(
 
     val grouped = items.groupBy { it.category }
 
-    Column(Modifier.fillMaxSize().background(Color.White)) {
-        Text(
-            "Indkøbsliste",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(16.dp)
-        )
+    Box(modifier = Modifier.fillMaxSize().background(themeViewModel.backgroundColor)) {
+        Column(Modifier.fillMaxSize()) {
+            Text(
+                "Indkøbsliste",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(16.dp)
+            )
 
-        SupermarketSelector(
-            selectedId = selectedSupermarket,
-            onSelect = viewModel::selectSupermarket
-        )
+            SupermarketSelector(
+                selectedId = selectedSupermarket,
+                onSelect = viewModel::selectSupermarket
+            )
 
-        LazyColumn(
-            modifier = Modifier.weight(1f)
-        ) {
-            grouped.forEach { (category, categoryItems) ->
-                item { CategoryHeader(category) }
-                items(categoryItems, key = { it.itemId }) { item ->
-                    ShoppingItemRow(
-                        item = item,
-                        onCheckedChange = {
-                            viewModel.setChecked(item.itemId, it)
-                        },
-                        onDelete = { viewModel.deleteItem(item.itemId) },
-                        modifier = Modifier.animateItem()
-                    )
+            LazyColumn(
+                modifier = Modifier.weight(1f)
+            ) {
+                grouped.forEach { (category, categoryItems) ->
+                    item { CategoryHeader(category) }
+                    items(categoryItems, key = { it.itemId }) { item ->
+                        ShoppingItemRow(
+                            item = item,
+                            themeViewModel = themeViewModel,
+                            onCheckedChange = {
+                                viewModel.setChecked(item.itemId, it)
+                            },
+                            onDelete = { viewModel.deleteItem(item.itemId) },
+                            modifier = Modifier.animateItem()
+                        )
 
+                    }
                 }
             }
-        }
-        //footer
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AddItem()
-            TotalFooter(total)
+            //footer
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TotalFooter(total)
+            }
         }
 
+        FloatingActionButton(
+            onClick = { /* Handle add item */ },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 32.dp),
+            shape = CircleShape,
+            containerColor = themeViewModel.addButtonColor,
+            contentColor = themeViewModel.onPrimaryColor
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Add Item")
+        }
     }
 }
 
@@ -134,6 +151,7 @@ fun CategoryHeader(category: String) {
 @Composable
 private fun ShoppingItemRow(
     item: ShoppingListEntryUi,
+    themeViewModel: ThemeViewModel,
     onCheckedChange: (Boolean) -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
@@ -174,7 +192,7 @@ private fun ShoppingItemRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White, RoundedCornerShape(8.dp))
+                .background(themeViewModel.backgroundColor, RoundedCornerShape(8.dp))
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -214,13 +232,15 @@ private fun ShoppingItemRow(
                         Text(
                             text = "${(unitPrice * qty).toInt()} kr",
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = themeViewModel.priceTagColor
                         )
                     } else {
                         Text(
                             text = "${unitPrice.toInt()} kr",
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            color = themeViewModel.priceTagColor
                         )
                     }
                 } else {
@@ -256,7 +276,7 @@ private fun TotalFooter(total: Float?) {
                 text = "Total",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color.DarkGray
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -264,31 +284,9 @@ private fun TotalFooter(total: Float?) {
             Text(
                 text = total?.let { "${it.toInt()} kr" } ?: "-",
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
         }
     }
 }
-
-@Composable
-private fun AddItem() {
-    Surface(
-        shape = RoundedCornerShape(50),
-        shadowElevation = 8.dp,
-        color = Color(0xfffff5cc)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "+",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
-

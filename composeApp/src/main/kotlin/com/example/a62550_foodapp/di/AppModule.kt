@@ -3,14 +3,14 @@ package com.example.a62550_foodapp.di
 import android.app.Application
 import androidx.room.Room
 import com.example.a62550_foodapp.db.AppDatabase
-import com.example.a62550_foodapp.viewmodel.MainViewModel
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
 import com.example.a62550_foodapp.viewmodel.ShoppingListViewModel
+import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import org.koin.core.module.dsl.viewModel
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import com.example.a62550_foodapp.api.MealDbApi
@@ -100,4 +100,6 @@ val appModule = module {
             api = get()
         )
     }
+
+    viewModel { ThemeViewModel() }
 }
