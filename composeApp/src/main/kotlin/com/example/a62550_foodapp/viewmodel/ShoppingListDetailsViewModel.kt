@@ -66,6 +66,8 @@ class ShoppingListDetailsViewModel(
                 initialValue = null
             )
 
+    var addItemsList: StateFlow<List<ShoppingListEntryUi>> = MutableStateFlow(emptyList())
+
     fun selectSupermarket(id: Int) {
         _selectedSupermarketId.value = id
     }

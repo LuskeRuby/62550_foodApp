@@ -1,5 +1,6 @@
 package com.example.a62550_foodapp.ui.shoppingList
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,6 +25,8 @@ import androidx.compose.ui.unit.sp
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.collections.component1
+import kotlin.collections.component2
 
 @Composable
 fun ShoppingListDetailsPage(
@@ -31,6 +37,31 @@ fun ShoppingListDetailsPage(
             key = "ShoppingListDetails-$shoppingListId",
             parameters = { parametersOf(shoppingListId) }
         )
+
+    var addItemsOverlay by remember { mutableStateOf(false) }
+
+    if (!addItemsOverlay) {
+        ViewShoppingList(
+            viewModel = viewModel,
+            onAddItemsButtonClick = { addItemsOverlay = true },
+            addItemsOverlay = addItemsOverlay
+        )
+    } else {
+        BackHandler() { addItemsOverlay = false }
+        AddShoppingListItems(
+            viewModel = viewModel,
+            addItemsOverlay = addItemsOverlay
+        )
+    }
+
+}
+
+@Composable
+private fun ViewShoppingList(
+    viewModel: ShoppingListDetailsViewModel,
+    onAddItemsButtonClick: () -> Unit = {},
+    addItemsOverlay: Boolean
+) {
     val items by viewModel.items.collectAsState()
     val total by viewModel.totalPrice.collectAsState()
     val selectedSupermarket by viewModel.selectedSupermarketId.collectAsState()
@@ -38,6 +69,8 @@ fun ShoppingListDetailsPage(
     val grouped = items.groupBy { it.category }
 
     Column(Modifier.fillMaxSize().background(Color.White)) {
+
+        // header
         Text(
             "Indkøbsliste",
             fontSize = 24.sp,
@@ -50,25 +83,14 @@ fun ShoppingListDetailsPage(
             onSelect = viewModel::selectSupermarket
         )
 
-        LazyColumn(
-            modifier = Modifier.weight(1f)
-        ) {
-            grouped.forEach { (category, categoryItems) ->
-                item { CategoryHeader(category) }
-                items(categoryItems, key = { it.itemId }) { item ->
-                    ShoppingItemRow(
-                        item = item,
-                        onCheckedChange = {
-                            viewModel.setChecked(item.itemId, it)
-                        },
-                        onDelete = { viewModel.deleteItem(item.itemId) },
-                        modifier = Modifier.animateItem()
-                    )
+        // body
+        ShoppingListContent(
+            grouped = grouped,
+            viewModel = viewModel,
+            addItemsOverlay = addItemsOverlay
+        )
 
-                }
-            }
-        }
-        //footer
+        // footer
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -76,10 +98,75 @@ fun ShoppingListDetailsPage(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AddItem()
+            AddItemButton(onClick = onAddItemsButtonClick)
             TotalFooter(total)
         }
 
+    }
+}
+
+@Composable
+private fun AddShoppingListItems(
+    viewModel: ShoppingListDetailsViewModel,
+    addItemsOverlay: Boolean
+) {
+    val items by viewModel.addItemsList.collectAsState()
+    val grouped = items.groupBy { it.category }
+
+    // header
+    Text(
+        "Tilføj til indkøbslisten",
+        fontSize = 24.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(16.dp)
+    )
+
+    // body
+
+    ShoppingListContent(
+        grouped = grouped,
+        viewModel = viewModel,
+        addItemsOverlay = addItemsOverlay
+    )
+
+    // footer
+
+
+
+}
+
+@Composable
+private fun ShoppingListContent(
+    grouped: Map<String, List<ShoppingListEntryUi>>,
+    viewModel: ShoppingListDetailsViewModel,
+    addItemsOverlay: Boolean
+){
+    LazyColumn() {
+        grouped.forEach { (category, categoryItems) ->
+            item { CategoryHeader(category) }
+            items(categoryItems, key = { it.itemId }) { item ->
+                ShoppingItemRow(
+                    item = item,
+                    onCheckedChange =
+                        if (!addItemsOverlay) {
+                            { checked: Boolean -> viewModel.setChecked(item.itemId, checked) }
+                        } else {
+                            // disable when checkbox not visible
+                            { _: Boolean -> }
+                        },
+                    checkboxVisible = !addItemsOverlay,
+                    onDelete =
+                        if (!addItemsOverlay) {
+                            { viewModel.deleteItem(item.itemId) }
+                        } else {
+                            // disable when delete not available
+                            { }
+                        },
+                    modifier = Modifier.animateItem()
+                )
+
+            }
+        }
     }
 }
 
@@ -135,13 +222,14 @@ fun CategoryHeader(category: String) {
 private fun ShoppingItemRow(
     item: ShoppingListEntryUi,
     onCheckedChange: (Boolean) -> Unit,
+    checkboxVisible: Boolean,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     //used for swiperemove
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { fullWidth ->
-            fullWidth * 0.4f   // //how much swipe before delete (40% her)
+            fullWidth * 0.6f   // how much swipe % before delete
         },
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart) {
@@ -232,11 +320,13 @@ private fun ShoppingItemRow(
                 }
             }
 
-            //checkbox
-            Checkbox(
-                checked = item.isChecked,
-                onCheckedChange = onCheckedChange
-            )
+            if (checkboxVisible) {
+                //checkbox
+                Checkbox(
+                    checked = item.isChecked,
+                    onCheckedChange = onCheckedChange
+                )
+            }
         }
     }
 }
@@ -271,24 +361,17 @@ private fun TotalFooter(total: Float?) {
 }
 
 @Composable
-private fun AddItem() {
-    Surface(
+private fun AddItemButton(onClick: () -> Unit = {}) {
+    Button(
+        onClick = onClick,
         shape = RoundedCornerShape(50),
-        shadowElevation = 8.dp,
-        color = Color(0xfffff5cc)
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xfffff5cc)),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "+",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Text(
+            text = "+",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
-
-
