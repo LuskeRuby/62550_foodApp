@@ -93,6 +93,7 @@ class RecipeViewModel(
 
     fun createRecipe(
         title: String,
+        preparationTimeMinutes: Int,
         description: String?,
         instructions: String?,
         imageUri: Uri?,
@@ -102,7 +103,7 @@ class RecipeViewModel(
             val recipeId = recipeDao.insert(
                 RecipeEntity(
                     title = title,
-                    preparationTimeMinutes = 30, //midlertidig default
+                    preparationTimeMinutes = preparationTimeMinutes,
                     description = description,
                     instructions = instructions,
                     imagePath = null,
