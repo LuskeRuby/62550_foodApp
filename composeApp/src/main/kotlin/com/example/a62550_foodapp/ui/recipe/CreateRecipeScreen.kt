@@ -16,35 +16,32 @@ import coil.compose.AsyncImage
 import com.example.a62550_foodapp.viewmodel.SelectedItemGroup
 import androidx.compose.ui.Alignment
 import kotlinx.coroutines.flow.first
+import androidx.compose.foundation.background
 
 
 @Composable
 fun CreateRecipeScreen(
     recipeViewModel: com.example.a62550_foodapp.viewmodel.RecipeViewModel,
     existingRecipeId: Int? = null,
-    onRecipeSaved: () -> Unit
+    onRecipeSaved: () -> Unit,
+    themeViewModel: com.example.a62550_foodapp.viewmodel.ThemeViewModel = org.koin.androidx.compose.koinViewModel()
 ) {
     var title by remember { mutableStateOf("") }
-    // Replace Int-backed preparationTime with a String so the text field can accept any numeric input
     var preparationTimeText by remember { mutableStateOf("") }
     var description by remember { mutableStateOf<String?>(null) }
     var instructions by remember { mutableStateOf<String?>(null) }
     var selectedImage by remember { mutableStateOf<Uri?>(null) }
     var existingImagePath by remember { mutableStateOf<String?>(null) }
 
-    // State for selecting existing item groups
     val allGroups by recipeViewModel.getAllItemGroups().collectAsState(initial = emptyList())
-    // search state replaces the previous dropdown/expanded UI
     var searchQuery by remember { mutableStateOf("") }
     var selectedGroupId by remember { mutableStateOf<Int?>(null) }
     var quantityText by remember { mutableStateOf("") }
     var selectedGroups by remember { mutableStateOf(listOf<SelectedItemGroup>()) }
 
-    // If editing, load existing recipe values
     LaunchedEffect(existingRecipeId) {
         if (existingRecipeId == null) return@LaunchedEffect
 
-        // Load recipe once
         val recipe = recipeViewModel.getRecipeById(existingRecipeId).first()
         recipe?.let {
             title = it.title
@@ -54,10 +51,8 @@ fun CreateRecipeScreen(
             existingImagePath = it.imagePath
         }
 
-        // Load recipe_items once
         selectedGroups = recipeViewModel.getSelectedGroupsForRecipe(existingRecipeId)
     }
-
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -67,14 +62,17 @@ fun CreateRecipeScreen(
 
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .background(themeViewModel.backgroundColor),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+
         item {
             Text(
                 text = if (existingRecipeId != null) "Edit Recipe" else "Create Recipe",
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.headlineSmall,
+                color = themeViewModel.textPrimary
             )
         }
 
@@ -88,13 +86,10 @@ fun CreateRecipeScreen(
         }
 
         item {
-            // Use the string-backed text field with numeric keyboard and digit-only filtering
             OutlinedTextField(
                 value = preparationTimeText,
                 onValueChange = { input ->
-                    // allow only digits
-                    val filtered = input.filter { it.isDigit() }
-                    preparationTimeText = filtered
+                    preparationTimeText = input.filter { it.isDigit() }
                 },
                 label = { Text("Preparation time (minutes)") },
                 modifier = Modifier.fillMaxWidth(),
@@ -118,25 +113,36 @@ fun CreateRecipeScreen(
                 label = { Text("Instructions") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp),
-                singleLine = false
+                    .height(120.dp)
             )
         }
 
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { imagePicker.launch("image/*") }) {
+
+                Button(
+                    onClick = { imagePicker.launch("image/*") },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = themeViewModel.primaryColor,
+                        contentColor = themeViewModel.onPrimaryColor
+                    )
+                ) {
                     Text("Choose image")
                 }
 
-                // Show remove image when editing and an existing image is present and no new image selected
                 if (existingImagePath != null && selectedImage == null) {
-                    Button(onClick = {
-                        existingRecipeId?.let { id ->
-                            recipeViewModel.removeImage(id)
-                            existingImagePath = null
-                        }
-                    }) {
+                    Button(
+                        onClick = {
+                            existingRecipeId?.let { id ->
+                                recipeViewModel.removeImage(id)
+                                existingImagePath = null
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = themeViewModel.errorColor,
+                            contentColor = themeViewModel.onPrimaryColor
+                        )
+                    ) {
                         Text("Remove image")
                     }
                 }
@@ -144,7 +150,6 @@ fun CreateRecipeScreen(
         }
 
         item {
-            // Show the selected image (or existing image if present)
             when {
                 selectedImage != null -> {
                     AsyncImage(
@@ -155,6 +160,7 @@ fun CreateRecipeScreen(
                             .height(200.dp)
                     )
                 }
+
                 existingImagePath != null -> {
                     AsyncImage(
                         model = existingImagePath,
@@ -167,29 +173,35 @@ fun CreateRecipeScreen(
             }
         }
 
-        // UI for selecting existing item groups
         item {
-            Text("Item groups (choose from existing)", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Item groups (choose from existing)",
+                style = MaterialTheme.typography.titleMedium,
+                color = themeViewModel.textPrimary
+            )
         }
 
         item {
             if (allGroups.isEmpty()) {
-                Text("No item groups available. Add item groups first.")
+                Text("No item groups available. Add item groups first.", color = themeViewModel.textSecondary)
             } else {
-                // Compute matches and the unit type to display
-                val matches = if (searchQuery.isNotBlank()) allGroups.filter { it.name.contains(searchQuery, ignoreCase = true) } else emptyList()
+
+                val matches =
+                    if (searchQuery.isNotBlank()) allGroups.filter { it.name.contains(searchQuery, ignoreCase = true) }
+                    else emptyList()
+
                 val displayedUnitType = when {
                     selectedGroupId != null -> allGroups.firstOrNull { it.id == selectedGroupId }?.unitType
                     matches.isNotEmpty() -> matches.first().unitType
                     else -> null
                 }
 
-                // Row with search field, quantity input, and unit type text
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
+
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
@@ -200,9 +212,7 @@ fun CreateRecipeScreen(
                     OutlinedTextField(
                         value = quantityText,
                         onValueChange = { input ->
-                            // allow digits and decimal point
-                            val filtered = input.filter { it.isDigit() || it == '.' }
-                            quantityText = filtered
+                            quantityText = input.filter { it.isDigit() || it == '.' }
                         },
                         label = { Text("Qty") },
                         modifier = Modifier.width(96.dp),
@@ -211,29 +221,34 @@ fun CreateRecipeScreen(
 
                     Text(
                         text = displayedUnitType ?: "",
+                        color = themeViewModel.textSecondary,
                         modifier = Modifier.padding(start = 4.dp)
                     )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Suggestions shown when user typed something
                 if (searchQuery.isNotBlank()) {
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = themeViewModel.secondaryColor)
+                    ) {
                         Column(modifier = Modifier.padding(4.dp)) {
+
                             if (matches.isEmpty()) {
                                 Text("No matches", modifier = Modifier.padding(8.dp))
                             } else {
                                 matches.take(8).forEach { g ->
-                                    Column(modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            selectedGroupId = g.id
-                                            // set searchQuery to the chosen name so user sees selection
-                                            searchQuery = g.name
-                                        }
-                                        .padding(8.dp)) {
-                                        Text(g.name)
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                selectedGroupId = g.id
+                                                searchQuery = g.name
+                                            }
+                                            .padding(8.dp)
+                                    ) {
+                                        Text(g.name, color = themeViewModel.textPrimary)
                                     }
                                     Divider()
                                 }
@@ -241,40 +256,51 @@ fun CreateRecipeScreen(
                         }
                     }
                 } else {
-                    // when search empty, show currently selected group (if any)
-                    val currentLabel = allGroups.firstOrNull { it.id == selectedGroupId }?.name ?: "No group selected"
-                    Text("Selected: $currentLabel", modifier = Modifier.fillMaxWidth())
+                    val currentLabel =
+                        allGroups.firstOrNull { it.id == selectedGroupId }?.name ?: "No group selected"
+
+                    Text("Selected: $currentLabel", modifier = Modifier.fillMaxWidth(), color = themeViewModel.textSecondary)
                 }
 
-
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = {
-                        val qty = quantityText.toFloatOrNull() ?: 0f
-                        val gid = selectedGroupId
-                        if (gid != null) {
-                            // avoid duplicates for the same group - replace quantity
-                            selectedGroups = (selectedGroups.filter { it.itemGroupId != gid } + SelectedItemGroup(gid, qty))
-                            // reset inputs
-                            selectedGroupId = null
-                            quantityText = ""
-                            searchQuery = ""
-                        }
-                    }) {
+
+                    Button(
+                        onClick = {
+                            val qty = quantityText.toFloatOrNull() ?: 0f
+                            val gid = selectedGroupId
+                            if (gid != null) {
+                                selectedGroups =
+                                    (selectedGroups.filter { it.itemGroupId != gid } + SelectedItemGroup(gid, qty))
+                                selectedGroupId = null
+                                quantityText = ""
+                                searchQuery = ""
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = themeViewModel.primaryColor,
+                            contentColor = themeViewModel.onPrimaryColor
+                        )
+                    ) {
                         Text("Add selected group")
                     }
 
-                    Button(onClick = {
-                        selectedGroupId = null
-                        quantityText = ""
-                        searchQuery = ""
-                    }) {
+                    Button(
+                        onClick = {
+                            selectedGroupId = null
+                            quantityText = ""
+                            searchQuery = ""
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = themeViewModel.secondaryColor,
+                            contentColor = themeViewModel.textPrimary
+                        )
+                    ) {
                         Text("Clear")
                     }
                 }
             }
         }
 
-        // Show the list of selected groups
         item {
             Column {
                 selectedGroups.forEachIndexed { idx, sg ->
@@ -286,12 +312,18 @@ fun CreateRecipeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
-                            Text(name, style = MaterialTheme.typography.bodyLarge)
-                            Text("${sg.quantity}", style = MaterialTheme.typography.bodySmall)
+                            Text(name, style = MaterialTheme.typography.bodyLarge, color = themeViewModel.textPrimary)
+                            Text("${sg.quantity}", style = MaterialTheme.typography.bodySmall, color = themeViewModel.textSecondary)
                         }
-                        Text("Remove", modifier = Modifier.clickable {
-                            selectedGroups = selectedGroups.filterIndexed { i, _ -> i != idx }
-                        }, style = MaterialTheme.typography.bodySmall)
+
+                        Text(
+                            "Remove",
+                            modifier = Modifier.clickable {
+                                selectedGroups = selectedGroups.filterIndexed { i, _ -> i != idx }
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = themeViewModel.errorColor
+                        )
                     }
                 }
             }
@@ -312,7 +344,6 @@ fun CreateRecipeScreen(
                             selectedGroups = selectedGroups
                         )
                     } else {
-                        // Pass selected existing groups to viewmodel
                         recipeViewModel.createRecipe(
                             title = title,
                             preparationTimeMinutes = prepMinutes,
@@ -325,7 +356,13 @@ fun CreateRecipeScreen(
                     onRecipeSaved()
                 },
                 enabled = title.isNotBlank(),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = themeViewModel.addButtonColor,
+                    contentColor = themeViewModel.onPrimaryColor,
+                    disabledContainerColor = themeViewModel.secondaryColor,
+                    disabledContentColor = themeViewModel.textSecondary
+                )
             ) {
                 Text(if (existingRecipeId != null) "Save changes" else "Save recipe")
             }

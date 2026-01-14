@@ -198,13 +198,17 @@ object DatabaseMockData {
 
         /* ---------- RECIPE ITEMS ---------- */
 
-        recipeItemDao.insert(RecipeItem(spaghettiId, pastaGroupId, 200f))
-        recipeItemDao.insert(RecipeItem(spaghettiId, beefGroupId, 300f))
-        recipeItemDao.insert(RecipeItem(spaghettiId, onionGroupId, 100f))
+        recipeItemDao.insertAll(
+            listOf(
+                RecipeItem(spaghettiId, pastaGroupId, 200f),
+                RecipeItem(spaghettiId, beefGroupId, 300f),
+                RecipeItem(spaghettiId, onionGroupId, 100f),
 
-        recipeItemDao.insert(RecipeItem(wokId, chickenGroupId, 300f))
-        recipeItemDao.insert(RecipeItem(wokId, pepperGroupId, 150f))
-        recipeItemDao.insert(RecipeItem(wokId, onionGroupId, 100f))
+                RecipeItem(wokId, chickenGroupId, 300f),
+                RecipeItem(wokId, pepperGroupId, 150f),
+                RecipeItem(wokId, onionGroupId, 100f)
+            )
+        )
 
         /* ---------- SHOPPING LIST ---------- */
 
