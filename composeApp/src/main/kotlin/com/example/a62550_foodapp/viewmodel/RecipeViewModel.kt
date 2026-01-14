@@ -87,9 +87,8 @@ class RecipeViewModel(
     fun getAllItemGroups(): Flow<List<ItemGroup>> = itemGroupDao.getAllItemGroups()
 
     // Expose recipe items (associations of item group + quantity) as a Flow for the UI
-    fun getItemsForRecipeFlow(recipeId: Int) = kotlinx.coroutines.flow.flow {
-        emit(recipeItemDao.getItemsForRecipe(recipeId))
-    }
+    fun getItemsForRecipeFlow(recipeId: Int): Flow<List<RecipeItem>> =
+        recipeItemDao.getItemsForRecipeFlow(recipeId)
 
     fun createRecipe(
         title: String,
@@ -269,4 +268,67 @@ class RecipeViewModel(
         }
     }
 
+    fun getRecipePriceFlow(recipeId: Int): Flow<Float> {
+
+        return recipeItemDao.getItemsForRecipeFlow(recipeId)
+            .mapLatest { recipeItems ->
+
+                if (recipeItems.isEmpty()) {
+                    0f
+                } else {
+
+                    combine(
+                        recipeItems.map { recipeItem ->
+
+                            itemWeeklyPriceDao
+                                .getItemSizesAndMinPricesFlow(recipeItem.itemGroupId)
+                                .map { itemPrices ->
+
+                                    if (itemPrices.isEmpty()) return@map 0f
+
+                                    var cheapestCost = Float.MAX_VALUE
+
+                                    for (item in itemPrices) {
+                                        if (item.size > 0f) {
+                                            val packagesNeeded =
+                                                kotlin.math.ceil(recipeItem.quantity / item.size).toInt()
+                                            val totalCost = packagesNeeded * item.price
+                                            cheapestCost = minOf(cheapestCost, totalCost.toFloat())
+                                        }
+                                    }
+
+                                    if (cheapestCost != Float.MAX_VALUE && cheapestCost > 0f)
+                                        cheapestCost
+                                    else
+                                        0f
+                                }
+                        }
+                    ) { ingredientCosts ->
+                        ingredientCosts.sum()
+                    }.first()   // wait for combined emission
+                }
+            }
+    }
+
+    fun getRecipesWithPricesFlow(): Flow<List<Pair<RecipeModel, Float>>> {
+
+        return recipes.mapLatest { recipeList ->
+
+            if (recipeList.isEmpty()) {
+                emptyList()
+            } else {
+
+                combine(
+                    recipeList.map { recipe ->
+                        getRecipePriceFlow(recipe.id)
+                            .map { price -> recipe to price }
+                    }
+                ) { recipePairs ->
+                    recipePairs
+                        .toList()
+                        .sortedBy { it.second }
+                }.first()   // wait for combined result
+            }
+        }
+    }
 }

@@ -28,30 +28,19 @@ import com.example.a62550_foodapp.ui.components.LocalImage
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.runtime.collectAsState
 
 @Composable
 fun RecipePage(
-    recipes: List<Recipe>,
     onAddRecipeClick: () -> Unit,
     onDiscoverRecipesClick: () -> Unit,
     onRecipeClick: (Int) -> Unit,
     recipeViewModel: RecipeViewModel = koinViewModel(),
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
-    var sortedRecipes by remember { mutableStateOf<List<Pair<Recipe, Float>>>(emptyList()) }
-
-    LaunchedEffect(recipes) {
-        if (recipes.isNotEmpty()) {
-            // Load prices for all recipes and sort by price (cheapest first)
-            val recipesWithPrices = recipes.map { recipe ->
-                val price = recipeViewModel.getRecipePrice(recipe.id)
-                recipe to price
-            }.sortedBy { it.second }
-            sortedRecipes = recipesWithPrices
-        } else {
-            sortedRecipes = emptyList()
-        }
-    }
+    val sortedRecipes by recipeViewModel
+        .getRecipesWithPricesFlow()
+        .collectAsState(initial = emptyList())
 
     Box(
         modifier = Modifier
