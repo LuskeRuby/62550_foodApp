@@ -16,11 +16,13 @@ import coil.compose.AsyncImage
 import com.example.a62550_foodapp.viewmodel.SelectedItemGroup
 import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.ui.Alignment
+import com.example.a62550_foodapp.viewmodel.RecipeViewModel
+import org.koin.androidx.compose.koinViewModel
 
 
 @Composable
 fun CreateRecipeScreen(
-    recipeViewModel: com.example.a62550_foodapp.viewmodel.RecipeViewModel,
+    recipeViewModel: RecipeViewModel = koinViewModel(),
     existingRecipeId: Int? = null,
     onRecipeSaved: () -> Unit
 ) {

@@ -33,10 +33,10 @@ import org.koin.core.parameter.parametersOf
 import kotlin.collections.component1
 import kotlin.collections.component2
 
-// top layer so we can reuse ShoppingListContnt and ShoppingItemRow
+// top layer so we can reuse ShoppingListContent and ShoppingItemRow
 @Composable
 fun ShoppingListDetailsPage(
-    shoppingListId: Int,
+    shoppingListId: Int
 ) {
     val viewModel: ShoppingListDetailsViewModel =
         koinViewModel(
