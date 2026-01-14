@@ -28,4 +28,16 @@ interface ItemWeeklyPriceDao {
     suspend fun getPricesForItemGroup(
         itemGroupId: Int
     ): List<ItemWithPrice>
+
+    @Query("""
+        SELECT MIN(p.price) as minPrice
+        FROM item_weekly_prices p
+        WHERE p.item_id IN (
+            SELECT i.id FROM items i
+            WHERE i.item_group_id = :itemGroupId
+        )
+    """)
+    suspend fun getMinimumPriceForItemGroup(
+        itemGroupId: Int
+    ): Float?
 }

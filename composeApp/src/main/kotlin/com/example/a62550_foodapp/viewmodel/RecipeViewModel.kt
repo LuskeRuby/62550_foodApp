@@ -221,4 +221,31 @@ class RecipeViewModel(
         }
     }
 
+    /**
+     * Calculate the total price of a recipe by summing the prices of all its items.
+     * For each item group in the recipe, the cheapest price is multiplied by the quantity.
+     *
+     * @param recipeId The ID of the recipe
+     * @return The total price of the recipe, or 0f if no prices are found
+     */
+    suspend fun getRecipePrice(recipeId: Int): Float {
+        return try {
+            val recipeItems = recipeItemDao.getItemsForRecipe(recipeId)
+            if (recipeItems.isEmpty()) {
+                return 0f
+            }
+
+            var totalPrice = 0f
+            for (recipeItem in recipeItems) {
+                val minimumPrice = itemWeeklyPriceDao.getMinimumPriceForItemGroup(recipeItem.itemGroupId)
+                if (minimumPrice != null && minimumPrice > 0) {
+                    totalPrice += minimumPrice * recipeItem.quantity
+                }
+            }
+            totalPrice
+        } catch (_: Exception) {
+            0f
+        }
+    }
+
 }
