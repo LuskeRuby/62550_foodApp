@@ -37,6 +37,7 @@ fun RecipeDetailScreen(
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     val recipe by recipeViewModel.getRecipeById(recipeId).collectAsState(initial = null)
+    val price by recipeViewModel.getRecipePriceFlow(recipeId).collectAsState(initial = 0f)
     var portions by remember { mutableStateOf(1) }
 
     val lightPink = Color(0xFFF3E5F5)
@@ -112,8 +113,8 @@ fun RecipeDetailScreen(
                             .padding(8.dp)
                     ) {
                         Text(
-                            text = "29 kr",
-                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
+                            text = String.format(Locale.getDefault(), "%.2f kr", price),
+                                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
                             style = MaterialTheme.typography.labelLarge,
                             color = Color.White,
                             fontWeight = FontWeight.Bold
