@@ -6,6 +6,13 @@ import androidx.room.Query
 import com.example.a62550_foodapp.db.entity.ItemWeeklyPrice
 import com.example.a62550_foodapp.db.projection.ItemWithPrice
 
+// Simple data class for holding item size and price information
+data class ItemSizePrice(
+    val id: Int,
+    val size: Float,
+    val price: Float
+)
+
 @Dao
 interface ItemWeeklyPriceDao {
 
@@ -28,4 +35,15 @@ interface ItemWeeklyPriceDao {
     suspend fun getPricesForItemGroup(
         itemGroupId: Int
     ): List<ItemWithPrice>
+
+    @Query("""
+        SELECT i.id, i.size, MIN(p.price) as price
+        FROM items i
+        JOIN item_weekly_prices p ON p.item_id = i.id
+        WHERE i.item_group_id = :itemGroupId
+        GROUP BY i.id, i.size
+    """)
+    suspend fun getItemSizesAndMinPrices(
+        itemGroupId: Int
+    ): List<ItemSizePrice>
 }

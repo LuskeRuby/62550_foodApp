@@ -105,7 +105,6 @@ object DatabaseMockData {
         val itemIds = items.map { itemDao.insert(it).toInt() }
 
         /* ---------- PRICES ---------- */
-
         itemIds.forEachIndexed { index, itemId ->
             itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 10f + index % 7, nettoId))
             itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 11f + index % 7, kvicklyId))
@@ -153,7 +152,7 @@ object DatabaseMockData {
                 RecipeItem(r7, broccoli, 200f), RecipeItem(r7, carrot, 150f), RecipeItem(r7, soy, 20f),
                 RecipeItem(r8, rice, 200f), RecipeItem(r8, beef, 250f), RecipeItem(r8, onion, 100f),
                 RecipeItem(r9, tomato, 300f), RecipeItem(r9, cream, 100f), RecipeItem(r9, garlic, 10f),
-                RecipeItem(r10, fish, 300f), RecipeItem(r10, broccoli, 200f), RecipeItem(r10, carrot, 100f)
+                RecipeItem(r10, fish, 300f), RecipeItem(r10, broccoli, 200f), RecipeItem(r10, carrot, 100f),
             )
         )
 
