@@ -13,6 +13,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -20,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.a62550_foodapp.model.Recipe
 import com.example.a62550_foodapp.ui.components.LocalImage
+import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -29,14 +35,30 @@ fun RecipePage(
     onAddRecipeClick: () -> Unit,
     onDiscoverRecipesClick: () -> Unit,
     onRecipeClick: (Int) -> Unit,
+    recipeViewModel: RecipeViewModel = koinViewModel(),
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
+    var sortedRecipes by remember { mutableStateOf<List<Pair<Recipe, Float>>>(emptyList()) }
+
+    LaunchedEffect(recipes) {
+        if (recipes.isNotEmpty()) {
+            // Load prices for all recipes and sort by price (cheapest first)
+            val recipesWithPrices = recipes.map { recipe ->
+                val price = recipeViewModel.getRecipePrice(recipe.id)
+                recipe to price
+            }.sortedBy { it.second }
+            sortedRecipes = recipesWithPrices
+        } else {
+            sortedRecipes = emptyList()
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(themeViewModel.backgroundColor)
     ) {
-        if (recipes.isEmpty()) {
+        if (sortedRecipes.isEmpty()) {
             Text(
                 text = "No recipes yet. Click + to add one!",
                 modifier = Modifier.align(Alignment.Center),
@@ -51,9 +73,10 @@ fun RecipePage(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(recipes) { recipe ->
+                items(sortedRecipes) { (recipe, price) ->
                     RecipeCard(
                         recipe = recipe,
+                        price = price,
                         themeViewModel = themeViewModel,
                         onClick = { onRecipeClick(recipe.id) }
                     )
@@ -98,9 +121,11 @@ fun RecipePage(
     }
 }
 
+
 @Composable
 fun RecipeCard(
     recipe: Recipe,
+    price: Float = 0f,
     themeViewModel: ThemeViewModel,
     onClick: () -> Unit
 ) {
@@ -127,7 +152,7 @@ fun RecipeCard(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // PRICE BADGE (hardcoded for now)
+                // PRICE BADGE
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -139,7 +164,7 @@ fun RecipeCard(
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "29 kr",
+                        text = String.format("%.2f kr", price),
                         color = themeViewModel.onPrimaryColor,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold

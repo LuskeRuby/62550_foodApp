@@ -223,4 +223,50 @@ class RecipeViewModel(
         }
     }
 
+    /**
+     * Calculate the total price of a recipe by finding the cheapest way to buy each ingredient.
+     * For each ingredient, considers all available package sizes and calculates the total cost
+     * of buying enough packages to meet the recipe's requirements.
+     *
+     * Example: Recipe needs 500g beef
+     * - Option 1: 400g @ 50kr (need 2 packs) = 100kr total
+     * - Option 2: 600g @ 70kr (need 1 pack) = 70kr total
+     * Result: Picks option 2 @ 70kr (cheapest to buy enough)
+     *
+     * @param recipeId The ID of the recipe
+     * @return The total price of the recipe, or 0f if no prices are found
+     */
+    suspend fun getRecipePrice(recipeId: Int): Float {
+        return try {
+            val recipeItems = recipeItemDao.getItemsForRecipe(recipeId)
+            if (recipeItems.isEmpty()) {
+                return 0f
+            }
+
+            var totalPrice = 0f
+            for (recipeItem in recipeItems) {
+                val itemPrices = itemWeeklyPriceDao.getItemSizesAndMinPrices(recipeItem.itemGroupId)
+                if (itemPrices.isEmpty()) continue
+
+                // Find the cheapest way to buy enough of this ingredient
+                var cheapestCost = Float.MAX_VALUE
+                for (item in itemPrices) {
+                    if (item.size > 0) {
+                        // Calculate how many packages we need
+                        val packagesNeeded = kotlin.math.ceil(recipeItem.quantity / item.size).toInt()
+                        val totalCost = packagesNeeded * item.price
+                        cheapestCost = minOf(cheapestCost, totalCost.toFloat())
+                    }
+                }
+
+                if (cheapestCost != Float.MAX_VALUE && cheapestCost > 0) {
+                    totalPrice += cheapestCost
+                }
+            }
+            totalPrice
+        } catch (_: Exception) {
+            0f
+        }
+    }
+
 }
