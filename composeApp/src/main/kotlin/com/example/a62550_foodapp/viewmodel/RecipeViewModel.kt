@@ -113,12 +113,14 @@ class RecipeViewModel(
 
             // Link selected existing item groups to the created recipe
             if (selectedGroups.isNotEmpty()) {
-                selectedGroups.forEach { sg ->
-                    try {
-                        recipeItemDao.insert(RecipeItem(recipeId, sg.itemGroupId, sg.quantity))
-                    } catch (_: Exception) {
-                        // ignore failures for now (minimal change)
-                    }
+                val items = selectedGroups.map { sg ->
+                    RecipeItem(recipeId, sg.itemGroupId, sg.quantity)
+                }
+
+                try {
+                    recipeItemDao.insertAll(items)
+                } catch (_: Exception) {
+                    // ignore failures for now (minimal change)
                 }
             }
 

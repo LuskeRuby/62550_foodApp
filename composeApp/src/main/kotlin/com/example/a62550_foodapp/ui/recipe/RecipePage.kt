@@ -15,7 +15,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -32,9 +31,10 @@ fun RecipePage(
     onRecipeClick: (Int) -> Unit,
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(themeViewModel.backgroundColor)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(themeViewModel.backgroundColor)
     ) {
         if (recipes.isEmpty()) {
             Text(
@@ -52,7 +52,11 @@ fun RecipePage(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(recipes) { recipe ->
-                    RecipeCard(recipe, themeViewModel, onClick = { onRecipeClick(recipe.id) })
+                    RecipeCard(
+                        recipe = recipe,
+                        themeViewModel = themeViewModel,
+                        onClick = { onRecipeClick(recipe.id) }
+                    )
                 }
             }
         }
@@ -95,7 +99,11 @@ fun RecipePage(
 }
 
 @Composable
-fun RecipeCard(recipe: Recipe, themeViewModel: ThemeViewModel, onClick: () -> Unit) {
+fun RecipeCard(
+    recipe: Recipe,
+    themeViewModel: ThemeViewModel,
+    onClick: () -> Unit
+) {
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -106,6 +114,8 @@ fun RecipeCard(recipe: Recipe, themeViewModel: ThemeViewModel, onClick: () -> Un
             .clickable(onClick = onClick)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
+
+            // IMAGE + PRICE BADGE
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -116,8 +126,28 @@ fun RecipeCard(recipe: Recipe, themeViewModel: ThemeViewModel, onClick: () -> Un
                     imagePath = recipe.imagePath,
                     modifier = Modifier.fillMaxSize()
                 )
+
+                // PRICE BADGE (hardcoded for now)
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .background(
+                            color = themeViewModel.priceTagColor,
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "29 kr",
+                        color = themeViewModel.onPrimaryColor,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
+            // TEXT
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -133,6 +163,7 @@ fun RecipeCard(recipe: Recipe, themeViewModel: ThemeViewModel, onClick: () -> Un
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+
                 recipe.description?.let {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
