@@ -59,4 +59,43 @@ interface ItemWeeklyPriceDao {
         itemGroupId: Int
     ): Flow<List<ItemSizePrice>>
 
+    @Query("""
+        SELECT i.id, i.size, MIN(p.price) as price
+        FROM items i
+        JOIN item_weekly_prices p ON p.item_id = i.id
+        WHERE i.item_group_id = :itemGroupId
+        AND p.supermarket_id = :supermarketId
+        GROUP BY i.id, i.size
+    """)
+    suspend fun getItemSizesAndMinPricesByStore(
+        itemGroupId: Int,
+        supermarketId: Int
+    ): List<ItemSizePrice>
+
+    @Query("""
+        SELECT i.id, i.size, MIN(p.price) as price
+        FROM items i
+        JOIN item_weekly_prices p ON p.item_id = i.id
+        WHERE i.item_group_id = :itemGroupId
+        AND p.supermarket_id = :supermarketId
+        GROUP BY i.id, i.size
+    """)
+    fun getItemSizesAndMinPricesByStoreFlow(
+        itemGroupId: Int,
+        supermarketId: Int
+    ): Flow<List<ItemSizePrice>>
+
+    @Query("""
+        SELECT i.id, i.size, MIN(p.price) as price
+        FROM items i
+        JOIN item_weekly_prices p ON p.item_id = i.id
+        WHERE i.item_group_id = :itemGroupId
+        AND p.supermarket_id IN (:supermarketIds)
+        GROUP BY i.id, i.size
+    """)
+    fun getItemSizesAndMinPricesByStoresFlow(
+        itemGroupId: Int,
+        supermarketIds: List<Int>
+    ): Flow<List<ItemSizePrice>>
+
 }

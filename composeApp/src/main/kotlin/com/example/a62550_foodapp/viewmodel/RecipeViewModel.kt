@@ -10,7 +10,9 @@ import com.example.a62550_foodapp.db.entity.RecipeItem
 import com.example.a62550_foodapp.db.entity.ItemGroup
 import com.example.a62550_foodapp.db.dao.ItemWeeklyPriceDao
 import com.example.a62550_foodapp.db.dao.ItemGroupDao
+import com.example.a62550_foodapp.db.dao.SupermarketDao
 import com.example.a62550_foodapp.db.entity.Recipe as RecipeEntity
+import com.example.a62550_foodapp.db.entity.Supermarket
 import com.example.a62550_foodapp.model.Recipe as RecipeModel
 import com.example.a62550_foodapp.utils.saveRecipeImage
 import kotlinx.coroutines.flow.*
@@ -29,8 +31,16 @@ class RecipeViewModel(
     private val recipeItemDao: RecipeItemDao,
     private val itemWeeklyPriceDao: ItemWeeklyPriceDao,
     private val appContext: Context,
-    private val itemGroupDao: ItemGroupDao
+    private val itemGroupDao: ItemGroupDao,
+    private val supermarketDao: SupermarketDao
 ) : ViewModel() {
+
+    // Track selected supermarkets for filtering
+    private val _selectedSupermarkets = MutableStateFlow<Set<Int>>(emptySet())
+    val selectedSupermarkets: StateFlow<Set<Int>> = _selectedSupermarkets.asStateFlow()
+
+    // Get all available supermarkets
+    val allSupermarkets: Flow<List<Supermarket>> = supermarketDao.getAll()
 
     val recipes: StateFlow<List<RecipeModel>> = recipeDao.getAllRecipes()
         .map { entities ->
@@ -222,6 +232,19 @@ class RecipeViewModel(
         }
     }
 
+    fun toggleSupermarket(supermarketId: Int) {
+        val current = _selectedSupermarkets.value
+        _selectedSupermarkets.value = if (current.contains(supermarketId)) {
+            current - supermarketId
+        } else {
+            current + supermarketId
+        }
+    }
+
+    fun clearSupermarketFilter() {
+        _selectedSupermarkets.value = emptySet()
+    }
+
     /**
      * Calculate the total price of a recipe by finding the cheapest way to buy each ingredient.
      * For each ingredient, considers all available package sizes and calculates the total cost
@@ -269,45 +292,50 @@ class RecipeViewModel(
     }
 
     fun getRecipePriceFlow(recipeId: Int): Flow<Float> {
-
-        return recipeItemDao.getItemsForRecipeFlow(recipeId)
-            .mapLatest { recipeItems ->
-
-                if (recipeItems.isEmpty()) {
-                    0f
-                } else {
-
-                    combine(
-                        recipeItems.map { recipeItem ->
-
-                            itemWeeklyPriceDao
-                                .getItemSizesAndMinPricesFlow(recipeItem.itemGroupId)
-                                .map { itemPrices ->
-
-                                    if (itemPrices.isEmpty()) return@map 0f
-
-                                    var cheapestCost = Float.MAX_VALUE
-
-                                    for (item in itemPrices) {
-                                        if (item.size > 0f) {
-                                            val packagesNeeded =
-                                                kotlin.math.ceil(recipeItem.quantity / item.size).toInt()
-                                            val totalCost = packagesNeeded * item.price
-                                            cheapestCost = minOf(cheapestCost, totalCost.toFloat())
-                                        }
-                                    }
-
-                                    if (cheapestCost != Float.MAX_VALUE && cheapestCost > 0f)
-                                        cheapestCost
-                                    else
-                                        0f
-                                }
+        return combine(
+            recipeItemDao.getItemsForRecipeFlow(recipeId),
+            _selectedSupermarkets
+        ) { recipeItems, selectedSupermarkets ->
+            if (recipeItems.isEmpty()) {
+                0f
+            } else {
+                combine(
+                    recipeItems.map { recipeItem ->
+                        // Use filtered prices if supermarkets are selected, otherwise use all prices
+                        val pricesFlow = if (selectedSupermarkets.isEmpty()) {
+                            itemWeeklyPriceDao.getItemSizesAndMinPricesFlow(recipeItem.itemGroupId)
+                        } else {
+                            itemWeeklyPriceDao.getItemSizesAndMinPricesByStoresFlow(
+                                recipeItem.itemGroupId,
+                                selectedSupermarkets.toList()
+                            )
                         }
-                    ) { ingredientCosts ->
-                        ingredientCosts.sum()
-                    }.first()   // wait for combined emission
-                }
+
+                        pricesFlow.map { itemPrices ->
+                            if (itemPrices.isEmpty()) return@map 0f
+
+                            var cheapestCost = Float.MAX_VALUE
+
+                            for (item in itemPrices) {
+                                if (item.size > 0f) {
+                                    val packagesNeeded =
+                                        kotlin.math.ceil(recipeItem.quantity / item.size).toInt()
+                                    val totalCost = packagesNeeded * item.price
+                                    cheapestCost = minOf(cheapestCost, totalCost.toFloat())
+                                }
+                            }
+
+                            if (cheapestCost != Float.MAX_VALUE && cheapestCost > 0f)
+                                cheapestCost
+                            else
+                                0f
+                        }
+                    }
+                ) { ingredientCosts ->
+                    ingredientCosts.sum()
+                }.first()   // wait for combined emission
             }
+        }.mapLatest { it }
     }
 
     fun getRecipesWithPricesFlow(): Flow<List<Pair<RecipeModel, Float>>> {
@@ -329,6 +357,50 @@ class RecipeViewModel(
                         .sortedBy { it.second }
                 }.first()   // wait for combined result
             }
+        }
+    }
+
+    /**
+     * Calculate the price of a recipe based on the portion size.
+     * Scales the ingredient quantities by the portion multiplier and calculates the total cost.
+     *
+     * @param recipeId The ID of the recipe
+     * @param portions The number of portions
+     * @return The total price for the given number of portions, or 0f if no price is found
+     */
+    suspend fun getRecipePriceByPortions(recipeId: Int, portions: Int): Float {
+        return try {
+            val recipeItems = recipeItemDao.getItemsForRecipe(recipeId)
+            if (recipeItems.isEmpty()) {
+                return 0f
+            }
+
+            var totalPrice = 0f
+            for (recipeItem in recipeItems) {
+                // Scale the quantity by the number of portions
+                val scaledQuantity = recipeItem.quantity * portions
+
+                val itemPrices = itemWeeklyPriceDao.getItemSizesAndMinPrices(recipeItem.itemGroupId)
+                if (itemPrices.isEmpty()) continue
+
+                // Find the cheapest way to buy enough of this ingredient
+                var cheapestCost = Float.MAX_VALUE
+                for (item in itemPrices) {
+                    if (item.size > 0) {
+                        // Calculate how many packages we need based on scaled quantity
+                        val packagesNeeded = kotlin.math.ceil(scaledQuantity / item.size).toInt()
+                        val totalCost = packagesNeeded * item.price
+                        cheapestCost = minOf(cheapestCost, totalCost.toFloat())
+                    }
+                }
+
+                if (cheapestCost != Float.MAX_VALUE && cheapestCost > 0) {
+                    totalPrice += cheapestCost
+                }
+            }
+            totalPrice
+        } catch (_: Exception) {
+            0f
         }
     }
 }

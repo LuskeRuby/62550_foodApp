@@ -6,10 +6,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -42,6 +45,14 @@ fun RecipePage(
         .getRecipesWithPricesFlow()
         .collectAsState(initial = emptyList())
 
+    val allSupermarkets by recipeViewModel.allSupermarkets
+        .collectAsState(initial = emptyList())
+
+    val selectedSupermarkets by recipeViewModel.selectedSupermarkets
+        .collectAsState()
+
+    var showFilterDialog by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -55,20 +66,65 @@ fun RecipePage(
                 color = themeViewModel.textSecondary
             )
         } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+            Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(sortedRecipes) { (recipe, price) ->
-                    RecipeCard(
-                        recipe = recipe,
-                        price = price,
-                        themeViewModel = themeViewModel,
-                        onClick = { onRecipeClick(recipe.id) }
-                    )
+                // Filter button at the top
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(
+                        onClick = { showFilterDialog = true },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = themeViewModel.primaryColor
+                        ),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FilterList,
+                            contentDescription = "Filter",
+                            modifier = Modifier
+                                .size(18.dp)
+                                .padding(end = 8.dp)
+                        )
+                        Text(
+                            text = if (selectedSupermarkets.isEmpty()) "Alle Butikker"
+                                   else if (selectedSupermarkets.size == 1) "${selectedSupermarkets.size} Butik"
+                                   else "${selectedSupermarkets.size} Butikker",
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+
+                    if (selectedSupermarkets.isNotEmpty()) {
+                        TextButton(
+                            onClick = { recipeViewModel.clearSupermarketFilter() }
+                        ) {
+                            Text("Clear")
+                        }
+                    }
+                }
+
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    items(sortedRecipes) { (recipe, price) ->
+                        RecipeCard(
+                            recipe = recipe,
+                            price = price,
+                            themeViewModel = themeViewModel,
+                            onClick = { onRecipeClick(recipe.id) }
+                        )
+                    }
                 }
             }
         }
@@ -106,6 +162,53 @@ fun RecipePage(
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Recipe")
             }
+        }
+
+        // Supermarket filter dialog
+        if (showFilterDialog) {
+            AlertDialog(
+                onDismissRequest = { showFilterDialog = false },
+                title = { Text("Filter butikker") },
+                text = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        allSupermarkets.forEach { supermarket ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        recipeViewModel.toggleSupermarket(supermarket.id)
+                                    }
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Checkbox(
+                                    checked = supermarket.id in selectedSupermarkets,
+                                    onCheckedChange = {
+                                        recipeViewModel.toggleSupermarket(supermarket.id)
+                                    }
+                                )
+                                Text(
+                                    text = supermarket.name,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = { showFilterDialog = false }
+                    ) {
+                        Text("Done")
+                    }
+                }
+            )
         }
     }
 }
