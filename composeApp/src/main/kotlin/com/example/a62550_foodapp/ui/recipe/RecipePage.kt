@@ -32,6 +32,13 @@ import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+
 
 @Composable
 fun RecipePage(
@@ -41,7 +48,8 @@ fun RecipePage(
     recipeViewModel: RecipeViewModel = koinViewModel(),
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
-    val sortedRecipes by recipeViewModel
+    // --- DATA ---
+    val allRecipes by recipeViewModel
         .getRecipesWithPricesFlow()
         .collectAsState(initial = emptyList())
 
@@ -51,73 +59,135 @@ fun RecipePage(
     val selectedSupermarkets by recipeViewModel.selectedSupermarkets
         .collectAsState()
 
+    // --- UI STATE ---
     var showFilterDialog by remember { mutableStateOf(false) }
+    var searchText by remember { mutableStateOf("") }
 
+    val visibleRecipes = remember(allRecipes, searchText) {
+        if (searchText.isBlank()) {
+            allRecipes
+        } else {
+            allRecipes.filter { (recipe, _) ->
+                recipe.title.contains(searchText, ignoreCase = true)
+            }
+        }
+    }
+
+    val gridState = rememberLazyGridState()
+
+    val showSearchBar by remember {
+        derivedStateOf {
+            gridState.firstVisibleItemIndex == 0 &&
+                    gridState.firstVisibleItemScrollOffset == 0
+        }
+    }
+
+    val searchBarHeight by animateDpAsState(
+        targetValue = if (showSearchBar) 56.dp else 0.dp,
+        label = "searchBarHeight"
+    )
+
+    // --- UI ---
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(themeViewModel.backgroundColor)
     ) {
-        if (sortedRecipes.isEmpty()) {
-            Text(
-                text = "No recipes yet. Click + to add one!",
-                modifier = Modifier.align(Alignment.Center),
-                style = MaterialTheme.typography.bodyLarge,
-                color = themeViewModel.textSecondary
-            )
-        } else {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // Filter button at the top
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Button(
-                        onClick = { showFilterDialog = true },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = themeViewModel.primaryColor
-                        ),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filter",
-                            modifier = Modifier
-                                .size(18.dp)
-                                .padding(end = 8.dp)
-                        )
-                        Text(
-                            text = if (selectedSupermarkets.isEmpty()) "Alle Butikker"
-                                   else if (selectedSupermarkets.size == 1) "${selectedSupermarkets.size} Butik"
-                                   else "${selectedSupermarkets.size} Butikker",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
 
-                    if (selectedSupermarkets.isNotEmpty()) {
-                        TextButton(
-                            onClick = { recipeViewModel.clearSupermarketFilter() }
-                        ) {
-                            Text("Clear")
-                        }
-                    }
+        Column(modifier = Modifier.fillMaxSize()) {
+
+            // ===== FILTER ROW =====
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = { showFilterDialog = true },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = themeViewModel.primaryColor
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FilterList,
+                        contentDescription = "Filter",
+                        modifier = Modifier
+                            .size(18.dp)
+                            .padding(end = 8.dp)
+                    )
+                    Text(
+                        text = if (selectedSupermarkets.isEmpty()) "Alle Butikker"
+                        else if (selectedSupermarkets.size == 1) "${selectedSupermarkets.size} Butik"
+                        else "${selectedSupermarkets.size} Butikker",
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
 
+                if (selectedSupermarkets.isNotEmpty()) {
+                    TextButton(
+                        onClick = { recipeViewModel.clearSupermarketFilter() }
+                    ) {
+                        Text("Clear")
+                    }
+                }
+            }
+
+            // ===== SEARCH BAR =====
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateContentSize()
+            ) {
+                if (showSearchBar) {
+                    OutlinedTextField(
+                        value = searchText,
+                        onValueChange = { searchText = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        placeholder = { Text("Søg opskrift") },
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(Icons.Default.Search, contentDescription = null)
+                        }
+                    )
+                }
+            }
+
+            // ===== GRID =====
+            if (visibleRecipes.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 32.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Text(
+                        text = "Ingen opskrifter fundet",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = themeViewModel.textSecondary
+                    )
+                }
+            } else {
                 LazyVerticalGrid(
+                    state = gridState,
                     columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 16.dp,
+                        bottom = 96.dp
+                    ),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
                 ) {
-                    items(sortedRecipes) { (recipe, price) ->
+                    items(visibleRecipes) { (recipe, price) ->
                         RecipeCard(
                             recipe = recipe,
                             price = price,
@@ -129,6 +199,20 @@ fun RecipePage(
             }
         }
 
+        // ===== CREATE RECIPE BOTTOM =====
+        FloatingActionButton(
+            onClick = onAddRecipeClick,
+            containerColor = themeViewModel.addButtonColor,
+            contentColor = themeViewModel.onPrimaryColor,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 20.dp) // above bottom nav, to the right
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Add Recipe")
+        }
+
+        /* ved ikke helt hvad jeg skal gøre med denne her rasmus
+        // ===== BOTTOM BUTTONS =====
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -141,30 +225,16 @@ fun RecipePage(
                 containerColor = themeViewModel.secondaryColor,
                 contentColor = themeViewModel.onSecondaryColor,
                 icon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Discover recipes"
-                    )
+                    Icon(Icons.Default.Search, contentDescription = null)
                 },
                 text = {
-                    Text(
-                        text = "Find opskrifter på engelsk",
-                        style = MaterialTheme.typography.labelLarge
-                    )
+                    Text("Find opskrifter på engelsk")
                 }
             )
-
-            FloatingActionButton(
-                onClick = onAddRecipeClick,
-                shape = CircleShape,
-                containerColor = themeViewModel.addButtonColor,
-                contentColor = themeViewModel.onPrimaryColor
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Recipe")
-            }
         }
+         */
 
-        // Supermarket filter dialog
+        // ===== FILTER DIALOG =====
         if (showFilterDialog) {
             AlertDialog(
                 onDismissRequest = { showFilterDialog = false },
@@ -202,9 +272,7 @@ fun RecipePage(
                     }
                 },
                 confirmButton = {
-                    TextButton(
-                        onClick = { showFilterDialog = false }
-                    ) {
+                    TextButton(onClick = { showFilterDialog = false }) {
                         Text("Done")
                     }
                 }
@@ -224,19 +292,19 @@ fun RecipeCard(
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
             .clickable(onClick = onClick)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column {
 
-            // IMAGE + PRICE BADGE
+            // ===== IMAGE =====
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.6f)
+                    .height(140.dp)
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                     .background(themeViewModel.secondaryColor)
             ) {
                 LocalImage(
@@ -244,13 +312,13 @@ fun RecipeCard(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // PRICE BADGE
+                // PRICE — bottom right on image
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
+                        .align(Alignment.BottomEnd)
                         .padding(8.dp)
                         .background(
-                            color = themeViewModel.priceTagColor,
+                            color = themeViewModel.priceTagColor.copy(alpha = 0.95f),
                             shape = RoundedCornerShape(12.dp)
                         )
                         .padding(horizontal = 10.dp, vertical = 4.dp)
@@ -258,40 +326,31 @@ fun RecipeCard(
                     Text(
                         text = String.format("%.2f kr", price),
                         color = themeViewModel.onPrimaryColor,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            // TEXT
-            Column(
+            // ===== TITLE AREA =====
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.4f)
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.Top
+                    .height(52.dp) // fixed title area
+                    .background(Color.White)
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                contentAlignment = Alignment.CenterStart
             ) {
                 Text(
                     text = recipe.title,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     color = themeViewModel.textPrimary,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-
-                recipe.description?.let {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = themeViewModel.textSecondary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
             }
         }
     }
 }
+
+
