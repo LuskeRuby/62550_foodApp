@@ -33,6 +33,10 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.animateContentSize
+
 
 @Composable
 fun RecipePage(
@@ -68,6 +72,18 @@ fun RecipePage(
     }
 
     val gridState = rememberLazyGridState()
+
+    val showSearchBar by remember {
+        derivedStateOf {
+            gridState.firstVisibleItemIndex == 0 &&
+                    gridState.firstVisibleItemScrollOffset == 0
+        }
+    }
+
+    val searchBarHeight by animateDpAsState(
+        targetValue = if (showSearchBar) 56.dp else 0.dp,
+        label = "searchBarHeight"
+    )
 
     // --- UI ---
     Box(
@@ -118,18 +134,26 @@ fun RecipePage(
             }
 
             // ===== SEARCH BAR =====
-            OutlinedTextField(
-                value = searchText,
-                onValueChange = { searchText = it },
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                placeholder = { Text("Søg opskrift") },
-                singleLine = true,
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = null)
+                    .animateContentSize()
+            ) {
+                if (showSearchBar) {
+                    OutlinedTextField(
+                        value = searchText,
+                        onValueChange = { searchText = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        placeholder = { Text("Søg opskrift") },
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(Icons.Default.Search, contentDescription = null)
+                        }
+                    )
                 }
-            )
+            }
 
             // ===== GRID =====
             if (visibleRecipes.isEmpty()) {
