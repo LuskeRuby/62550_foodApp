@@ -2,11 +2,9 @@ package com.example.a62550_foodapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.a62550_foodapp.db.dao.ItemGroupDao
-import com.example.a62550_foodapp.db.dao.ItemWeeklyPriceDao
 import com.example.a62550_foodapp.db.dao.ShoppingListItemDao
-import com.example.a62550_foodapp.db.entity.Item
 import com.example.a62550_foodapp.db.entity.ShoppingListItem
+import com.example.a62550_foodapp.db.projection.ItemWithPriceAndCategory
 import com.example.a62550_foodapp.model.ShoppingListEntryUi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,9 +17,7 @@ import kotlinx.coroutines.launch
 
 class ShoppingListDetailsViewModel(
     private val shoppingListId: Int,
-    private val shoppingListItemDao: ShoppingListItemDao,
-    private val itemWeeklyPriceDao: ItemWeeklyPriceDao,
-    private val itemGroupDao: ItemGroupDao
+    private val shoppingListItemDao: ShoppingListItemDao
 ) : ViewModel() {
 
    //select a supermarket
@@ -111,28 +107,23 @@ class ShoppingListDetailsViewModel(
     }
 
     // temp list kept in memory (not in DB)
-    private val _tempItemsList = MutableStateFlow<List<ShoppingListEntryUi>>(emptyList())
-
+    private val _tempItemsList  = MutableStateFlow<List<ShoppingListEntryUi>>(emptyList())
     val tempItemsList: StateFlow<List<ShoppingListEntryUi>> = _tempItemsList
 
-    fun addTempItem(item: Item) {
-        viewModelScope.launch{
-            val itemPrice = itemWeeklyPriceDao.getPriceOfItem(item.id)
-            val itemCategory = itemGroupDao.getCategoryOfItem(item.id)
+    fun addTempItem(item: ItemWithPriceAndCategory) {
 
             val itemToShoppingListEntryUi = ShoppingListEntryUi(
-                itemId = item.id,
-                name = item.name,
+                itemId = item.item.id,
+                name = item.item.name,
                 quantity = 1,
-                unitType = item.unitType,
+                unitType = item.item.unitType,
                 isChecked = false,
-                category = itemCategory?:"",   // <-- problem
-                size = item.size,
-                price = itemPrice          // <-- problem
+                category = item.itemGroup.category,   // <-- problem
+                size = item.item.size,
+                price = item.weeklyPrices.maxWithOrNull(compareBy({ it.year }, { it.week }))?.price ?: 0f   // <-- problem
             )
 
             _tempItemsList.value += itemToShoppingListEntryUi
-        }
     }
 
     fun removeTempItem(itemId: Int) {

@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.a62550_foodapp.db.entity.Item as ItemEntity
+import com.example.a62550_foodapp.db.projection.ItemWithPriceAndCategory
 import com.example.a62550_foodapp.model.ShoppingListEntryUi
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
@@ -151,7 +151,7 @@ private fun AddItemToShoppingListPage(
         )
 
         ItemSearchField(
-            onAddItemsToTempList = { entry: ItemEntity -> viewModel.addTempItem(entry)}
+            onAddItemsToTempList = { entry: ItemWithPriceAndCategory -> viewModel.addTempItem(entry)}
         )
 
         // body

@@ -29,13 +29,4 @@ interface ItemWeeklyPriceDao {
         itemGroupId: Int
     ): List<ItemWithPrice>
 
-    @Query("""
-        SELECT price
-        FROM item_weekly_prices
-        WHERE item_id = :itemId
-        ORDER BY year DESC, week DESC
-        LIMIT 1
-    """)
-    suspend fun getPriceOfItem(itemId: Int): Float?
-
 }
