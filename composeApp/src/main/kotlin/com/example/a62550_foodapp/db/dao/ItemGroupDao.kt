@@ -26,4 +26,13 @@ interface ItemGroupDao {
 
     @Query("DELETE FROM item_groups")
     suspend fun deleteAll()
+
+    @Query("""
+        SELECT category
+        FROM item_groups
+        WHERE id = :itemId
+        LIMIT 1
+    """)
+    suspend fun getCategoryOfItem(itemId: Int): String?
+
 }
