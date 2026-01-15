@@ -91,13 +91,15 @@ val appModule = module {
 
     viewModel{ ShoppingListViewModel(get()) }
 
-
     viewModel { (shoppingListId: Int) ->
         ShoppingListDetailsViewModel(
             shoppingListId = shoppingListId,
-            shoppingListItemDao = get()
+            shoppingListItemDao = get(),
+            itemWeeklyPriceDao = get(),
+            itemGroupDao = get()
         )
     }
+
     viewModel {
         DiscoverRecipeViewModel(
             api = get()
@@ -106,9 +108,6 @@ val appModule = module {
 
     viewModel { ThemeViewModel() }
 
-    viewModel {
-        ItemViewModel(
-            itemDao = get()
-        )
-    }
+    viewModel { ItemViewModel( itemDao = get() ) }
+
 }
