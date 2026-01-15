@@ -110,7 +110,12 @@ fun RecipePage(
 
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 16.dp,
+                        bottom = 140.dp
+                    ),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier
@@ -227,7 +232,7 @@ fun RecipeCard(
         colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
+            .aspectRatio(0.85f)
             .clickable(onClick = onClick)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -236,7 +241,7 @@ fun RecipeCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.6f)
+                    .weight(0.8f)
                     .background(themeViewModel.secondaryColor)
             ) {
                 LocalImage(
@@ -250,7 +255,7 @@ fun RecipeCard(
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
                         .background(
-                            color = themeViewModel.priceTagColor,
+                            color = themeViewModel.priceTagColor.copy(alpha = 0.95f),
                             shape = RoundedCornerShape(12.dp)
                         )
                         .padding(horizontal = 10.dp, vertical = 4.dp)
@@ -258,8 +263,8 @@ fun RecipeCard(
                     Text(
                         text = String.format("%.2f kr", price),
                         color = themeViewModel.onPrimaryColor,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
             }
@@ -268,9 +273,8 @@ fun RecipeCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.4f)
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.Top
+                    .weight(0.2f)
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
             ) {
                 Text(
                     text = recipe.title,
@@ -280,17 +284,6 @@ fun RecipeCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
-                recipe.description?.let {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = themeViewModel.textSecondary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
             }
         }
     }
