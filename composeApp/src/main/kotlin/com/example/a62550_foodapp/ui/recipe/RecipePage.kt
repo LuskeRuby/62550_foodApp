@@ -32,6 +32,7 @@ import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 
 @Composable
 fun RecipePage(
@@ -41,7 +42,8 @@ fun RecipePage(
     recipeViewModel: RecipeViewModel = koinViewModel(),
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
-    val sortedRecipes by recipeViewModel
+    // --- DATA ---
+    val allRecipes by recipeViewModel
         .getRecipesWithPricesFlow()
         .collectAsState(initial = emptyList())
 
@@ -51,64 +53,101 @@ fun RecipePage(
     val selectedSupermarkets by recipeViewModel.selectedSupermarkets
         .collectAsState()
 
+    // --- UI STATE ---
     var showFilterDialog by remember { mutableStateOf(false) }
+    var searchText by remember { mutableStateOf("") }
 
+    val visibleRecipes = remember(allRecipes, searchText) {
+        if (searchText.isBlank()) {
+            allRecipes
+        } else {
+            allRecipes.filter { (recipe, _) ->
+                recipe.title.contains(searchText, ignoreCase = true)
+            }
+        }
+    }
+
+    val gridState = rememberLazyGridState()
+
+    // --- UI ---
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(themeViewModel.backgroundColor)
     ) {
-        if (sortedRecipes.isEmpty()) {
-            Text(
-                text = "No recipes yet. Click + to add one!",
-                modifier = Modifier.align(Alignment.Center),
-                style = MaterialTheme.typography.bodyLarge,
-                color = themeViewModel.textSecondary
-            )
-        } else {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // Filter button at the top
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Button(
-                        onClick = { showFilterDialog = true },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = themeViewModel.primaryColor
-                        ),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filter",
-                            modifier = Modifier
-                                .size(18.dp)
-                                .padding(end = 8.dp)
-                        )
-                        Text(
-                            text = if (selectedSupermarkets.isEmpty()) "Alle Butikker"
-                                   else if (selectedSupermarkets.size == 1) "${selectedSupermarkets.size} Butik"
-                                   else "${selectedSupermarkets.size} Butikker",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
 
-                    if (selectedSupermarkets.isNotEmpty()) {
-                        TextButton(
-                            onClick = { recipeViewModel.clearSupermarketFilter() }
-                        ) {
-                            Text("Clear")
-                        }
-                    }
+        Column(modifier = Modifier.fillMaxSize()) {
+
+            // ===== FILTER ROW =====
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = { showFilterDialog = true },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = themeViewModel.primaryColor
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.FilterList,
+                        contentDescription = "Filter",
+                        modifier = Modifier
+                            .size(18.dp)
+                            .padding(end = 8.dp)
+                    )
+                    Text(
+                        text = if (selectedSupermarkets.isEmpty()) "Alle Butikker"
+                        else if (selectedSupermarkets.size == 1) "${selectedSupermarkets.size} Butik"
+                        else "${selectedSupermarkets.size} Butikker",
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
 
+                if (selectedSupermarkets.isNotEmpty()) {
+                    TextButton(
+                        onClick = { recipeViewModel.clearSupermarketFilter() }
+                    ) {
+                        Text("Clear")
+                    }
+                }
+            }
+
+            // ===== SEARCH BAR =====
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                placeholder = { Text("Søg opskrift") },
+                singleLine = true,
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = null)
+                }
+            )
+
+            // ===== GRID =====
+            if (visibleRecipes.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 32.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Text(
+                        text = "Ingen opskrifter fundet",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = themeViewModel.textSecondary
+                    )
+                }
+            } else {
                 LazyVerticalGrid(
+                    state = gridState,
                     columns = GridCells.Fixed(2),
                     contentPadding = PaddingValues(
                         start = 16.dp,
@@ -122,7 +161,7 @@ fun RecipePage(
                         .fillMaxWidth()
                         .weight(1f)
                 ) {
-                    items(sortedRecipes) { (recipe, price) ->
+                    items(visibleRecipes) { (recipe, price) ->
                         RecipeCard(
                             recipe = recipe,
                             price = price,
@@ -134,6 +173,7 @@ fun RecipePage(
             }
         }
 
+        // ===== BOTTOM BUTTONS =====
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -146,16 +186,10 @@ fun RecipePage(
                 containerColor = themeViewModel.secondaryColor,
                 contentColor = themeViewModel.onSecondaryColor,
                 icon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Discover recipes"
-                    )
+                    Icon(Icons.Default.Search, contentDescription = null)
                 },
                 text = {
-                    Text(
-                        text = "Find opskrifter på engelsk",
-                        style = MaterialTheme.typography.labelLarge
-                    )
+                    Text("Find opskrifter på engelsk")
                 }
             )
 
@@ -169,7 +203,7 @@ fun RecipePage(
             }
         }
 
-        // Supermarket filter dialog
+        // ===== FILTER DIALOG =====
         if (showFilterDialog) {
             AlertDialog(
                 onDismissRequest = { showFilterDialog = false },
@@ -207,9 +241,7 @@ fun RecipePage(
                     }
                 },
                 confirmButton = {
-                    TextButton(
-                        onClick = { showFilterDialog = false }
-                    ) {
+                    TextButton(onClick = { showFilterDialog = false }) {
                         Text("Done")
                     }
                 }
@@ -288,3 +320,4 @@ fun RecipeCard(
         }
     }
 }
+
