@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -234,7 +235,7 @@ fun CreateRecipeScreen(
                                         .padding(8.dp)) {
                                         Text(g.name)
                                     }
-                                    Divider()
+                                    HorizontalDivider()
                                 }
                             }
                         }
@@ -286,7 +287,7 @@ fun CreateRecipeScreen(
                     ) {
                         Column {
                             Text(name, style = MaterialTheme.typography.bodyLarge)
-                            Text("${sg.quantity}", style = MaterialTheme.typography.bodySmall)
+                            Text("${sg.size}", style = MaterialTheme.typography.bodySmall)
                         }
                         Text("Remove", modifier = Modifier.clickable {
                             selectedGroups = selectedGroups.filterIndexed { i, _ -> i != idx }

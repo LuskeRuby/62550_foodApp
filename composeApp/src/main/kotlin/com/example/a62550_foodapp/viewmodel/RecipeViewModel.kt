@@ -21,7 +21,7 @@ import java.io.File
 // Represent a selection of an existing ItemGroup when creating a recipe
 data class SelectedItemGroup(
     val itemGroupId: Int,
-    val quantity: Float
+    val size: Float
 )
 
 class RecipeViewModel(
@@ -114,7 +114,7 @@ class RecipeViewModel(
             if (selectedGroups.isNotEmpty()) {
                 selectedGroups.forEach { sg ->
                     try {
-                        recipeItemDao.insert(RecipeItem(recipeId, sg.itemGroupId, sg.quantity))
+                        recipeItemDao.insert(RecipeItem(recipeId, sg.itemGroupId, sg.size))
                     } catch (_: Exception) {
                         // ignore failures for now (minimal change)
                     }
