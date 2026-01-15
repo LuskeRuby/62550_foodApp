@@ -173,6 +173,19 @@ fun RecipePage(
             }
         }
 
+        // ===== CREATE RECIPE BOTTOM =====
+        FloatingActionButton(
+            onClick = onAddRecipeClick,
+            containerColor = themeViewModel.addButtonColor,
+            contentColor = themeViewModel.onPrimaryColor,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 90.dp) // above bottom nav, to the right
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Add Recipe")
+        }
+
+        /* ved ikke helt hvad jeg skal gøre med denne her rasmus
         // ===== BOTTOM BUTTONS =====
         Column(
             modifier = Modifier
@@ -192,16 +205,8 @@ fun RecipePage(
                     Text("Find opskrifter på engelsk")
                 }
             )
-
-            FloatingActionButton(
-                onClick = onAddRecipeClick,
-                shape = CircleShape,
-                containerColor = themeViewModel.addButtonColor,
-                contentColor = themeViewModel.onPrimaryColor
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Recipe")
-            }
         }
+         */
 
         // ===== FILTER DIALOG =====
         if (showFilterDialog) {
