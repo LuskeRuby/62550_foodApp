@@ -36,6 +36,8 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 
 
 @Composable
@@ -177,7 +179,7 @@ fun RecipePage(
                         start = 16.dp,
                         end = 16.dp,
                         top = 16.dp,
-                        bottom = 140.dp
+                        bottom = 96.dp
                     ),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -204,7 +206,7 @@ fun RecipePage(
             contentColor = themeViewModel.onPrimaryColor,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 90.dp) // above bottom nav, to the right
+                .padding(end = 20.dp, bottom = 20.dp) // above bottom nav, to the right
         ) {
             Icon(Icons.Default.Add, contentDescription = "Add Recipe")
         }
@@ -290,19 +292,19 @@ fun RecipeCard(
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(0.85f)
             .clickable(onClick = onClick)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column {
 
-            // IMAGE + PRICE BADGE
+            // ===== IMAGE =====
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.8f)
+                    .height(140.dp)
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                     .background(themeViewModel.secondaryColor)
             ) {
                 LocalImage(
@@ -310,10 +312,10 @@ fun RecipeCard(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // PRICE BADGE
+                // PRICE — bottom right on image
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
+                        .align(Alignment.BottomEnd)
                         .padding(8.dp)
                         .background(
                             color = themeViewModel.priceTagColor.copy(alpha = 0.95f),
@@ -324,29 +326,31 @@ fun RecipeCard(
                     Text(
                         text = String.format("%.2f kr", price),
                         color = themeViewModel.onPrimaryColor,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.ExtraBold
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            // TEXT
-            Column(
+            // ===== TITLE AREA =====
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.2f)
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                    .height(52.dp) // fixed title area
+                    .background(Color.White)
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                contentAlignment = Alignment.CenterStart
             ) {
                 Text(
                     text = recipe.title,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     color = themeViewModel.textPrimary,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
         }
     }
 }
+
 

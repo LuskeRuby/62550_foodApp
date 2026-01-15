@@ -14,6 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.a62550_foodapp.ui.recipe.RecipePage
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.unit.sp
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,7 +31,8 @@ fun MainView(
         bottomBar = {
             NavigationBar(
                 containerColor = Color.White,
-                tonalElevation = 6.dp
+                tonalElevation = 6.dp,
+                windowInsets = NavigationBarDefaults.windowInsets //so it does not go behind the android bar
             ) {
                 NavigationBarItem(
                     selected = selectedTab == 0,
@@ -35,12 +40,14 @@ fun MainView(
                     icon = {
                         Icon(
                             Icons.Default.Restaurant,
-                            contentDescription = "Recipes"
+                            contentDescription = "Recipes",
+                            modifier = Modifier.size(20.dp)
                         )
                     },
                     label = {
                         Text(
                             "Opskrifter",
+                            fontSize = 11.sp,
                             fontWeight = if (selectedTab == 0)
                                 FontWeight.SemiBold
                             else
@@ -62,12 +69,14 @@ fun MainView(
                     icon = {
                         Icon(
                             Icons.Default.List,
-                            contentDescription = "Shopping List"
+                            contentDescription = "Shopping List",
+                            modifier = Modifier.size(20.dp)
                         )
                     },
                     label = {
                         Text(
                             "Indkøbsliste",
+                            fontSize = 11.sp,
                             fontWeight = if (selectedTab == 1)
                                 FontWeight.SemiBold
                             else
@@ -85,7 +94,11 @@ fun MainView(
             }
         }
     ) { innerPadding ->
-        Surface(modifier = Modifier.padding(innerPadding)) {
+        Surface(modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize(),
+            color = Color(0xFFF5F5F5) // light grey app background
+        ) {
             when (selectedTab) {
                 0 -> recipeContent()
                 1 -> ShoppingListPage()
