@@ -33,6 +33,10 @@ object DatabaseMockData {
 
         val nettoId = supermarketDao.insert(Supermarket(name = "Netto", logo = null)).toInt()
         val kvicklyId = supermarketDao.insert(Supermarket(name = "Kvickly", logo = null)).toInt()
+        val foetexId = supermarketDao.insert(Supermarket(name = "Føtex", logo = null)).toInt()
+        val menyId = supermarketDao.insert(Supermarket(name = "Meny", logo = null)).toInt()
+        val bilkaId = supermarketDao.insert(Supermarket(name = "Bilka", logo = null)).toInt()
+        val rema1000Id = supermarketDao.insert(Supermarket(name = "Rema 1000", logo = null)).toInt()
 
         /* ---------- ITEM GROUPS ---------- */
 
@@ -64,6 +68,18 @@ object DatabaseMockData {
         val butter = g("Smør", "Mejeri", "g")
         val mushrooms = g("Champignon", "Grøntsager", "g")
         val fish = g("Laks", "Fisk", "g")
+        val bacon = g("Bacon", "Kød", "g")
+        val potatoes = g("Kartofler", "Grøntsager", "g")
+        val peas = g("Ærter", "Kolonial", "g")
+        val groundMeat = g("Hakket kød", "Kød", "g")
+        val leek = g("Purløg", "Grøntsager", "g")
+        val beetroot = g("Rødbede", "Grøntsager", "g")
+        val redCabbage = g("Rødkål", "Grøntsager", "g")
+        val ham = g("Skinke", "Kød", "g")
+        val herring = g("Sild", "Fisk", "g")
+        val appleSyrup = g("Æbleskivemasse", "Kolonial", "g")
+        val flour = g("Mel", "Kolonial", "g")
+        val pork_flank = g("Stegt flæsk", "Kød", "g")
 
         /* ---------- ITEMS ---------- */
 
@@ -99,7 +115,21 @@ object DatabaseMockData {
             item(eggs, "Æg 10 stk", 10f, "stk"),
             item(butter, "Smør 200g", 200f, "g"),
             item(mushrooms, "Champignon 250g", 250f, "g"),
-            item(fish, "Laks 300g", 300f, "g")
+            item(fish, "Laks 300g", 300f, "g"),
+            item(bacon, "Bacon i skiver 200g", 200f, "g"),
+            item(potatoes, "Kartofler 2kg", 2000f, "g"),
+            item(peas, "Ærter 400g", 400f, "g"),
+            item(groundMeat, "Hakket svinekød 400g", 400f, "g"),
+            item(pork, "Svinemorbrád 800g", 800f, "g"),
+            item(leek, "Purløg 500g", 500f, "g"),
+            item(beetroot, "Rødbeder 500g", 500f, "g"),
+            item(redCabbage, "Rødkål 1kg", 1000f, "g"),
+            item(ham, "Rugbrødsskinke 200g", 200f, "g"),
+            item(herring, "Sildefilet 150g", 150f, "g"),
+            item(appleSyrup, "Æbleskivemasse 200g", 200f, "g"),
+            item(flour, "Hvedemel 1kg", 1000f, "g"),
+            item(pork_flank, "Stegt flæsk 200g", 200f, "g"),
+            item(tomato, "Tomatskiver i glas 400g", 400f, "g")
         )
 
         val itemIds = items.map { itemDao.insert(it).toInt() }
@@ -108,6 +138,10 @@ object DatabaseMockData {
         itemIds.forEachIndexed { index, itemId ->
             itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 10f + index % 7, nettoId))
             itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 11f + index % 7, kvicklyId))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 9.5f + index % 7, foetexId))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 12.5f + index % 7, menyId))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 9f + index % 7, bilkaId))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 10.5f + index % 7, rema1000Id))
         }
 
         /* ---------- RECIPES ---------- */
@@ -138,21 +172,61 @@ object DatabaseMockData {
         val r8 = recipe("Ris med oksekød", 35, "Hurtig hverdagsret", R.drawable.recipe_8)
         val r9 = recipe("Tomatsuppe", 30, "Varm suppe", R.drawable.recipe_9)
         val r10 = recipe("Laks med grønt", 35, "Sund fiskeret", R.drawable.recipe_10)
+        val r11 = recipe("Mørbrad gryde", 40, "Lækkert stegt mel fra Sverige", R.drawable.recipe_11)
+        val r12 = recipe("Frikadeller", 40, "Danske klassiker med rødkål", R.drawable.recipe_12)
+        val r13 = recipe("Æbleskiver", 35, "Søde danske æbleskiver", R.drawable.recipe_13)
+        val r14 = recipe("Stegt flæsk og løg", 45, "Dansk klassiker med kartofler", R.drawable.recipe_14)
+        val r15 = recipe("Rugbrødsmørrebrød", 20, "Let frokost med skinke", R.drawable.recipe_15)
+        val r16 = recipe("Rødkål gryde", 50, "Varm og behagelig ret", R.drawable.recipe_16)
+        val r17 = recipe("Medister med kartofler", 35, "Klassisk dansk medisterpølse", R.drawable.recipe_17)
+        val r18 = recipe("Karbonader", 40, "Stegt kød med sauce", R.drawable.recipe_18)
+        val r19 = recipe("Pølser med kartofler", 30, "Dansk husmannskost", R.drawable.recipe_19)
+        val r20 = recipe("Kylling i flødesauce", 45, "Cremet og lækker", R.drawable.recipe_20)
 
         /* ---------- RECIPE ITEMS ---------- */
 
         recipeItemDao.insertAll(
             listOf(
-                RecipeItem(r1, pasta, 200), RecipeItem(r1, beef, 300), RecipeItem(r1, tomato, 200),
-                RecipeItem(r2, chicken, 300), RecipeItem(r2, pepper, 150), RecipeItem(r2, soy, 30),
-                RecipeItem(r3, beef, 300), RecipeItem(r3, beans, 200), RecipeItem(r3, chili, 5),
-                RecipeItem(r4, pasta, 200), RecipeItem(r4, cream, 150), RecipeItem(r4, cheese, 80),
-                RecipeItem(r5, chicken, 300), RecipeItem(r5, curry, 10), RecipeItem(r5, rice, 200),
-                RecipeItem(r6, wraps, 4), RecipeItem(r6, chicken, 200), RecipeItem(r6, corn, 100),
-                RecipeItem(r7, broccoli, 200), RecipeItem(r7, carrot, 150), RecipeItem(r7, soy, 20),
-                RecipeItem(r8, rice, 200), RecipeItem(r8, beef, 250), RecipeItem(r8, onion, 100),
-                RecipeItem(r9, tomato, 300), RecipeItem(r9, cream, 100), RecipeItem(r9, garlic, 10),
-                RecipeItem(r10, fish, 300), RecipeItem(r10, broccoli, 200), RecipeItem(r10, carrot, 100),
+                RecipeItem(r1, pasta, 200f), RecipeItem(r1, beef, 300f), RecipeItem(r1, tomato, 200f),
+                RecipeItem(r2, chicken, 300f), RecipeItem(r2, pepper, 150f), RecipeItem(r2, soy, 30f),
+                RecipeItem(r3, beef, 300f), RecipeItem(r3, beans, 200f), RecipeItem(r3, chili, 5f),
+                RecipeItem(r4, pasta, 200f), RecipeItem(r4, cream, 150f), RecipeItem(r4, cheese, 80f),
+                RecipeItem(r5, chicken, 300f), RecipeItem(r5, curry, 10f), RecipeItem(r5, rice, 200f),
+                RecipeItem(r6, wraps, 4f), RecipeItem(r6, chicken, 200f), RecipeItem(r6, corn, 100f),
+                RecipeItem(r7, broccoli, 200f), RecipeItem(r7, carrot, 150f), RecipeItem(r7, soy, 20f),
+                RecipeItem(r8, rice, 200f), RecipeItem(r8, beef, 250f), RecipeItem(r8, onion, 100f),
+                RecipeItem(r9, tomato, 300f), RecipeItem(r9, cream, 100f), RecipeItem(r9, garlic, 10f),
+                RecipeItem(r10, fish, 300f), RecipeItem(r10, broccoli, 200f), RecipeItem(r10, carrot, 100f),
+                RecipeItem(r11, groundMeat, 200f), RecipeItem(r11, bacon, 37.5f), RecipeItem(r11, mushrooms, 37.5f),
+                RecipeItem(r11, potatoes, 300f), RecipeItem(r11, carrot, 75f), RecipeItem(r11, peas, 62.5f),
+                RecipeItem(r11, butter, 15f), RecipeItem(r11, onion, 0.5f), RecipeItem(r11, pork, 0.3f),
+                // Frikadeller
+                RecipeItem(r12, groundMeat, 300f), RecipeItem(r12, eggs, 1f), RecipeItem(r12, flour, 50f),
+                RecipeItem(r12, onion, 50f), RecipeItem(r12, butter, 25f), RecipeItem(r12, redCabbage, 200f),
+                // Æbleskiver
+                RecipeItem(r13, flour, 200f), RecipeItem(r13, eggs, 3f), RecipeItem(r13, milk, 250f),
+                RecipeItem(r13, appleSyrup, 100f), RecipeItem(r13, butter, 30f),
+                // Stegt flæsk og løg
+                RecipeItem(r14, pork_flank, 300f), RecipeItem(r14, onion, 200f), RecipeItem(r14, potatoes, 600f),
+                RecipeItem(r14, butter, 20f),
+                // Rugbrødsmørrebrød
+                RecipeItem(r15, bread, 2f), RecipeItem(r15, ham, 100f), RecipeItem(r15, butter, 10f),
+                RecipeItem(r15, tomato, 50f),
+                // Rødkål gryde
+                RecipeItem(r16, redCabbage, 500f), RecipeItem(r16, beetroot, 200f), RecipeItem(r16, onion, 100f),
+                RecipeItem(r16, carrot, 150f), RecipeItem(r16, butter, 25f),
+                // Medister med kartofler
+                RecipeItem(r17, pork, 300f), RecipeItem(r17, potatoes, 500f), RecipeItem(r17, onion, 100f),
+                RecipeItem(r17, butter, 20f), RecipeItem(r17, carrot, 100f),
+                // Karbonader
+                RecipeItem(r18, groundMeat, 350f), RecipeItem(r18, eggs, 1f), RecipeItem(r18, flour, 30f),
+                RecipeItem(r18, onion, 50f), RecipeItem(r18, butter, 30f), RecipeItem(r18, cream, 100f),
+                // Pølser med kartofler
+                RecipeItem(r19, pork, 250f), RecipeItem(r19, potatoes, 600f), RecipeItem(r19, onion, 100f),
+                RecipeItem(r19, butter, 15f),
+                // Kylling i flødesauce
+                RecipeItem(r20, chicken, 400f), RecipeItem(r20, cream, 200f), RecipeItem(r20, mushrooms, 150f),
+                RecipeItem(r20, onion, 75f), RecipeItem(r20, butter, 25f), RecipeItem(r20, garlic, 5f)
             )
         )
 
