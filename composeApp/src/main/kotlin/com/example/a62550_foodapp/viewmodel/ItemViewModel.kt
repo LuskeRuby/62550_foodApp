@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 
 class ItemViewModel(
-    private val itemDao: ItemDao
+    itemDao: ItemDao
 ): ViewModel() {
 
     val items: StateFlow<List<ItemWithPriceAndCategory>> =

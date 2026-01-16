@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -40,11 +39,8 @@ fun ItemSearchField(
     // search state replaces the previous dropdown/expanded UI
     var searchQuery by remember { mutableStateOf("") }
     var selectedItemId by remember { mutableStateOf<Int?>(null) }
-    val coroutineScope = rememberCoroutineScope()
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

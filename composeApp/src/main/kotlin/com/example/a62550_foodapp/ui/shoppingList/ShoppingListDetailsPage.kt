@@ -53,7 +53,8 @@ fun ShoppingListDetailsPage(
         BackHandler() { addItemsOverlay = false }
         AddItemToShoppingListPage(
             shoppingListId  = shoppingListId,
-            addItemsOverlay = addItemsOverlay
+            addItemsOverlay = addItemsOverlay,
+            disableItemOverlay = { addItemsOverlay = false }
         )
     }
 
@@ -130,6 +131,7 @@ private fun ShoppingListPage(
 private fun AddItemToShoppingListPage(
     shoppingListId: Int,
     addItemsOverlay: Boolean,
+    disableItemOverlay: () -> Unit = {},
     themeViewModel: ThemeViewModel = koinViewModel(),
     viewModel: ShoppingListDetailsViewModel =
         koinViewModel(
@@ -162,10 +164,51 @@ private fun AddItemToShoppingListPage(
         )
 
         // footer
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Button(
+                onClick = {
+                    viewModel.addItem(items)
+                    viewModel.clearTempItems()
+                    disableItemOverlay()
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF269900),
+                    contentColor = Color.White
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(text = "Tilføj")
+            }
 
+            Spacer(modifier = Modifier.width(8.dp))
 
+            Button(
+                onClick = {
+                    viewModel.clearTempItems()
+                    disableItemOverlay()
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Gray,
+                    contentColor = Color.White
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(text = "Fortryd")
+            }
+        }
     }
-
 }
 
 @Composable
@@ -192,8 +235,7 @@ private fun ShoppingListContent(
                         if (!addItemsOverlay) {
                             { viewModel.deleteItem(item.itemId) }
                         } else {
-                            // disable when delete not available
-                            { }
+                            { viewModel.removeTempItem(item.itemId)}
                         },
                     modifier = Modifier.animateItem()
                 )

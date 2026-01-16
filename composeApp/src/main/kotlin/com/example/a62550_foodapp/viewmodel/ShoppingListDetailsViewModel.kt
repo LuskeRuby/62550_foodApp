@@ -76,14 +76,39 @@ class ShoppingListDetailsViewModel(
 
     fun addItem(itemId: Int, quantity: Int) {
         viewModelScope.launch {
-            shoppingListItemDao.addItemToList(
-                ShoppingListItem(
-                    shoppingListId = shoppingListId,
-                    itemId = itemId,
-                    calcQuantity = quantity,
-                    isChecked = false
+            try {
+                shoppingListItemDao.addItemToList(
+                    ShoppingListItem(
+                        shoppingListId = shoppingListId,
+                        itemId = itemId,
+                        calcQuantity = quantity,
+                        isChecked = false
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                // Handle exception (e.g., log it)
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun addItem(items: List<ShoppingListEntryUi>) {
+        viewModelScope.launch {
+            try {
+                val newEntry = items.map { entry ->
+                    ShoppingListItem(
+                        shoppingListId = shoppingListId,
+                        itemId = entry.itemId,
+                        calcQuantity = entry.quantity,
+                        isChecked = false
+                    )
+                }
+                shoppingListItemDao.addItemsToList(newEntry)
+
+            } catch (e: Exception) {
+                // Handle exception (e.g., log it)
+                e.printStackTrace()
+            }
         }
     }
 
