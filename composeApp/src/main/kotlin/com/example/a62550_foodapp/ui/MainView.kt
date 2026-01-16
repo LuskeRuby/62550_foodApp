@@ -3,8 +3,7 @@ package com.example.a62550_foodapp.ui
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Fastfood
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -68,7 +67,7 @@ fun MainView(
                     onClick = { selectedTab = 1 },
                     icon = {
                         Icon(
-                            Icons.Default.List,
+                            Icons.AutoMirrored.Filled.List,
                             contentDescription = "Shopping List",
                             modifier = Modifier.size(20.dp)
                         )

@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface RecipeItemDao {
 
+    @Insert
+    suspend fun insert(item: RecipeItem): Long
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(items: List<RecipeItem>)
 

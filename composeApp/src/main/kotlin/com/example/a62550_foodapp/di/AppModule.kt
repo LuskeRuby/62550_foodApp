@@ -15,8 +15,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import com.example.a62550_foodapp.api.MealDbApi
 import com.example.a62550_foodapp.viewmodel.DiscoverRecipeViewModel
+import com.example.a62550_foodapp.viewmodel.ItemViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import org.koin.android.ext.koin.androidLogger
 
 
 /**
@@ -24,6 +26,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
  */
 fun startKoinApp(app: Application) {
     startKoin {
+        androidLogger()
         androidContext(app)
         modules(appModule)
     }
@@ -89,13 +92,13 @@ val appModule = module {
 
     viewModel{ ShoppingListViewModel(get()) }
 
-
     viewModel { (shoppingListId: Int) ->
         ShoppingListDetailsViewModel(
             shoppingListId = shoppingListId,
             shoppingListItemDao = get()
         )
     }
+
     viewModel {
         DiscoverRecipeViewModel(
             api = get()
@@ -103,4 +106,7 @@ val appModule = module {
     }
 
     viewModel { ThemeViewModel() }
+
+    viewModel { ItemViewModel( itemDao = get() ) }
+
 }
