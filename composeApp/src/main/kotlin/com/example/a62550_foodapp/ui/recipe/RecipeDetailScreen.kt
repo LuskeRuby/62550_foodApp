@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextAlign
 
 @Composable
@@ -50,6 +51,22 @@ fun RecipeDetailScreen(
     }
 
     val lightPink = Color(0xFFF3E5F5)
+    val scrollState = rememberScrollState()
+
+    //for scrollable image
+    val maxImageHeight = 260.dp
+    val minImageHeight = 96.dp
+    val collapseRange = 300f
+
+    val collapseFraction =
+        (scrollState.value / collapseRange).coerceIn(0f, 1f)
+
+    val imageHeight =
+        maxImageHeight - (maxImageHeight - minImageHeight) * collapseFraction
+
+    val titleOffsetY = (-40 * collapseFraction).dp
+    val titleAlpha = collapseFraction
+
 
     recipe?.let { r ->
 
@@ -63,7 +80,7 @@ fun RecipeDetailScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
                     .padding(bottom = 96.dp) // space for bottom bar
             ) {
 
@@ -71,7 +88,7 @@ fun RecipeDetailScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(260.dp)
+                        .height(imageHeight)
                 ) {
                     AsyncImage(
                         model = r.imagePath,
@@ -116,19 +133,20 @@ fun RecipeDetailScreen(
                             tint = Color.White
                         )
                     }
-                }
 
-                // ===== TITLE =====
-                Text(
-                    text = r.title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = themeViewModel.textPrimary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                )
+                    // 📝 FLOATING TITLE
+                    Text(
+                        text = r.title,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 16.dp)
+                            .offset(y = titleOffsetY)
+                            .alpha(titleAlpha)
+                    )
+                }
 
                 // ===== INGREDIENTS =====
                 Surface(
