@@ -26,4 +26,5 @@ interface ItemGroupDao {
 
     @Query("DELETE FROM item_groups")
     suspend fun deleteAll()
+
 }

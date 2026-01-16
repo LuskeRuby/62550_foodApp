@@ -7,14 +7,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +25,8 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+
 
 @Composable
 fun RecipeDetailScreen(
@@ -91,7 +91,7 @@ fun RecipeDetailScreen(
                             .padding(12.dp)
                             .background(Color.Black.copy(alpha = 0.4f), CircleShape)
                     ) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
 
                     // TIME badge (left)
@@ -186,7 +186,7 @@ fun RecipeDetailScreen(
                                 val unit = group?.unitType ?: ""
                                 val scaledQty = ri.quantity * portions
 
-                                fun formatQty(q: Float): String =
+                                fun formatQty(q: Int): String =
                                     if (q % 1f == 0f) q.toInt().toString()
                                     else String.format(Locale.getDefault(), "%.1f", q)
 
@@ -197,7 +197,7 @@ fun RecipeDetailScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(groupName)
-                                    Text("${formatQty(scaledQty)} $unit")
+                                    Text("$scaledQty $unit")
                                 }
                             }
                         }
@@ -272,7 +272,6 @@ fun RecipeDetailScreen(
                 }
             }
         }
-
     } ?: Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -280,4 +279,3 @@ fun RecipeDetailScreen(
         CircularProgressIndicator()
     }
 }
-

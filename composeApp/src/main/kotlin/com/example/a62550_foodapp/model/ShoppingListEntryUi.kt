@@ -1,9 +1,9 @@
-package com.example.a62550_foodapp.ui.shoppingList
+package com.example.a62550_foodapp.model
 
 data class ShoppingListEntryUi(
     val itemId: Int,
     val name: String,
-    val quantity: Float,
+    val quantity: Int,
     val unitType: String,
     val isChecked: Boolean,
     val category: String,

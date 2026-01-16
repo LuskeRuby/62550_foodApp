@@ -10,21 +10,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.a62550_foodapp.viewmodel.SelectedItemGroup
 import androidx.compose.ui.Alignment
+import com.example.a62550_foodapp.viewmodel.RecipeViewModel
+import org.koin.androidx.compose.koinViewModel
 import kotlinx.coroutines.flow.first
 import androidx.compose.foundation.background
-
+import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 
 @Composable
 fun CreateRecipeScreen(
-    recipeViewModel: com.example.a62550_foodapp.viewmodel.RecipeViewModel,
+    recipeViewModel: RecipeViewModel = koinViewModel(),
     existingRecipeId: Int? = null,
     onRecipeSaved: () -> Unit,
-    themeViewModel: com.example.a62550_foodapp.viewmodel.ThemeViewModel = org.koin.androidx.compose.koinViewModel()
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     var title by remember { mutableStateOf("") }
     var preparationTimeText by remember { mutableStateOf("") }
@@ -33,12 +36,15 @@ fun CreateRecipeScreen(
     var selectedImage by remember { mutableStateOf<Uri?>(null) }
     var existingImagePath by remember { mutableStateOf<String?>(null) }
 
+    // State for selecting existing item groups
     val allGroups by recipeViewModel.getAllItemGroups().collectAsState(initial = emptyList())
+    // search state replaces the previous dropdown/expanded UI
     var searchQuery by remember { mutableStateOf("") }
     var selectedGroupId by remember { mutableStateOf<Int?>(null) }
     var quantityText by remember { mutableStateOf("") }
     var selectedGroups by remember { mutableStateOf(listOf<SelectedItemGroup>()) }
 
+    // If editing, load existing recipe values
     LaunchedEffect(existingRecipeId) {
         if (existingRecipeId == null) return@LaunchedEffect
 
@@ -130,6 +136,7 @@ fun CreateRecipeScreen(
                     Text("Choose image")
                 }
 
+                // Show remove image when editing and an existing image is present and no new image selected
                 if (existingImagePath != null && selectedImage == null) {
                     Button(
                         onClick = {
@@ -150,6 +157,7 @@ fun CreateRecipeScreen(
         }
 
         item {
+            // Show the selected image (or existing image if present)
             when {
                 selectedImage != null -> {
                     AsyncImage(
@@ -173,6 +181,7 @@ fun CreateRecipeScreen(
             }
         }
 
+        // UI for selecting existing item groups
         item {
             Card(
                 colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
@@ -232,6 +241,7 @@ fun CreateRecipeScreen(
 
                     Spacer(Modifier.height(8.dp))
 
+                    // Suggestions shown when user typed something
                     if (searchQuery.isNotBlank()) {
                         Card(
                             colors = CardDefaults.cardColors(containerColor = themeViewModel.secondaryColor),
@@ -257,7 +267,7 @@ fun CreateRecipeScreen(
                                         ) {
                                             Text(g.name, color = themeViewModel.textPrimary)
                                         }
-                                        Divider()
+                                        HorizontalDivider()
                                     }
                                 }
                             }
@@ -279,7 +289,7 @@ fun CreateRecipeScreen(
 
                         Button(
                             onClick = {
-                                val qty = quantityText.toFloatOrNull() ?: 0f
+                                val qty = quantityText.toIntOrNull() ?: 0
                                 val gid = selectedGroupId
                                 if (gid != null) {
                                     selectedGroups =
@@ -312,6 +322,7 @@ fun CreateRecipeScreen(
             }
         }
 
+        // Show the list of selected groups
         item {
             if (selectedGroups.isNotEmpty()) {
                 Card(
@@ -360,7 +371,7 @@ fun CreateRecipeScreen(
                                 )
                             }
 
-                            if (idx != selectedGroups.lastIndex) Divider()
+                            if (idx != selectedGroups.lastIndex) HorizontalDivider()
                         }
                     }
                 }
@@ -382,6 +393,7 @@ fun CreateRecipeScreen(
                             selectedGroups = selectedGroups
                         )
                     } else {
+                        // Pass selected existing groups to viewmodel
                         recipeViewModel.createRecipe(
                             title = title,
                             preparationTimeMinutes = prepMinutes,
