@@ -29,6 +29,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.ui.text.style.TextAlign
+
 @Composable
 fun RecipeDetailScreen(
     recipeId: Int,
@@ -114,23 +116,6 @@ fun RecipeDetailScreen(
                             tint = Color.White
                         )
                     }
-
-                    // 💰 PRICE — bottom right
-                    Surface(
-                        shape = RoundedCornerShape(24.dp),
-                        color = themeViewModel.priceTagColor,
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(12.dp)
-                    ) {
-                        Text(
-                            text = String.format(Locale.getDefault(), "%.2f kr", scaledPrice),
-                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = themeViewModel.onPrimaryColor,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
                 }
 
                 // ===== TITLE =====
@@ -139,7 +124,10 @@ fun RecipeDetailScreen(
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = themeViewModel.textPrimary,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
                 )
 
                 // ===== INGREDIENTS =====
@@ -227,11 +215,11 @@ fun RecipeDetailScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    // PERSONS CONTROL
+                    // 👥 PERSONER
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             IconButton(onClick = { if (portions > 1) portions-- }) {
-                                Icon(Icons.Default.RemoveCircle, contentDescription = null, tint = Color.Red)
+                                Icon(Icons.Default.RemoveCircle, contentDescription = null, tint = themeViewModel.priceTagColor)
                             }
                             Text(
                                 text = portions.toString(),
@@ -239,13 +227,31 @@ fun RecipeDetailScreen(
                                 fontSize = 18.sp
                             )
                             IconButton(onClick = { portions++ }) {
-                                Icon(Icons.Default.AddCircle, contentDescription = null, tint = Color.Red)
+                                Icon(Icons.Default.AddCircle, contentDescription = null, tint = themeViewModel.priceTagColor)
                             }
                         }
-                        Text("Personer", color = Color.Red)
+                        Text("Personer", color = themeViewModel.priceTagColor)
                     }
 
-                    // ADD TO LIST
+                    // ⏱ TID
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "⏱ ${r.preparationTimeMinutes} min",
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text("Tid", color = themeViewModel.priceTagColor)
+                    }
+
+                    // 💰 PRIS
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = String.format(Locale.getDefault(), "%.2f kr", scaledPrice),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text("Pris", color = themeViewModel.priceTagColor)
+                    }
+
+                    // ➕ TILFØJ TIL LISTE
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.clickable { /* TODO */ }
@@ -253,11 +259,11 @@ fun RecipeDetailScreen(
                         Icon(
                             imageVector = Icons.Default.AddCircle,
                             contentDescription = null,
-                            tint = Color.Red,
+                            tint = themeViewModel.priceTagColor,
                             modifier = Modifier.size(28.dp)
                         )
                         Spacer(Modifier.height(4.dp))
-                        Text("Tilføj til liste", color = Color.Red)
+                        Text("Tilføj", color = themeViewModel.priceTagColor)
                     }
                 }
             }
