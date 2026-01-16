@@ -17,14 +17,17 @@ import com.example.a62550_foodapp.viewmodel.SelectedItemGroup
 import androidx.compose.ui.Alignment
 import kotlinx.coroutines.flow.first
 import androidx.compose.foundation.background
+import com.example.a62550_foodapp.viewmodel.RecipeViewModel
+import com.example.a62550_foodapp.viewmodel.ThemeViewModel
+import org.koin.androidx.compose.koinViewModel
 
 
 @Composable
 fun CreateRecipeScreen(
-    recipeViewModel: com.example.a62550_foodapp.viewmodel.RecipeViewModel,
+    recipeViewModel: RecipeViewModel,
     existingRecipeId: Int? = null,
     onRecipeSaved: () -> Unit,
-    themeViewModel: com.example.a62550_foodapp.viewmodel.ThemeViewModel = org.koin.androidx.compose.koinViewModel()
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     var title by remember { mutableStateOf("") }
     var preparationTimeText by remember { mutableStateOf("") }
@@ -373,7 +376,7 @@ fun CreateRecipeScreen(
                     val prepMinutes = preparationTimeText.toIntOrNull() ?: 0
                     if (existingRecipeId != null) {
                         recipeViewModel.updateRecipe(
-                            id = existingRecipeId,
+                            recipeId = existingRecipeId,
                             title = title,
                             preparationTimeMinutes = prepMinutes,
                             description = description,
