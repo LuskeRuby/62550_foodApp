@@ -187,46 +187,37 @@ object DatabaseMockData {
 
         recipeItemDao.insertAll(
             listOf(
-                RecipeItem(r1, pasta, 200f), RecipeItem(r1, beef, 300f), RecipeItem(r1, tomato, 200f),
-                RecipeItem(r2, chicken, 300f), RecipeItem(r2, pepper, 150f), RecipeItem(r2, soy, 30f),
-                RecipeItem(r3, beef, 300f), RecipeItem(r3, beans, 200f), RecipeItem(r3, chili, 5f),
-                RecipeItem(r4, pasta, 200f), RecipeItem(r4, cream, 150f), RecipeItem(r4, cheese, 80f),
-                RecipeItem(r5, chicken, 300f), RecipeItem(r5, curry, 10f), RecipeItem(r5, rice, 200f),
-                RecipeItem(r6, wraps, 4f), RecipeItem(r6, chicken, 200f), RecipeItem(r6, corn, 100f),
-                RecipeItem(r7, broccoli, 200f), RecipeItem(r7, carrot, 150f), RecipeItem(r7, soy, 20f),
-                RecipeItem(r8, rice, 200f), RecipeItem(r8, beef, 250f), RecipeItem(r8, onion, 100f),
-                RecipeItem(r9, tomato, 300f), RecipeItem(r9, cream, 100f), RecipeItem(r9, garlic, 10f),
-                RecipeItem(r10, fish, 300f), RecipeItem(r10, broccoli, 200f), RecipeItem(r10, carrot, 100f),
-                RecipeItem(r11, groundMeat, 200f), RecipeItem(r11, bacon, 37.5f), RecipeItem(r11, mushrooms, 37.5f),
-                RecipeItem(r11, potatoes, 300f), RecipeItem(r11, carrot, 75f), RecipeItem(r11, peas, 62.5f),
-                RecipeItem(r11, butter, 15f), RecipeItem(r11, onion, 0.5f), RecipeItem(r11, pork, 0.3f),
-                // Frikadeller
-                RecipeItem(r12, groundMeat, 300f), RecipeItem(r12, eggs, 1f), RecipeItem(r12, flour, 50f),
-                RecipeItem(r12, onion, 50f), RecipeItem(r12, butter, 25f), RecipeItem(r12, redCabbage, 200f),
-                // Æbleskiver
-                RecipeItem(r13, flour, 200f), RecipeItem(r13, eggs, 3f), RecipeItem(r13, milk, 250f),
-                RecipeItem(r13, appleSyrup, 100f), RecipeItem(r13, butter, 30f),
-                // Stegt flæsk og løg
-                RecipeItem(r14, pork_flank, 300f), RecipeItem(r14, onion, 200f), RecipeItem(r14, potatoes, 600f),
-                RecipeItem(r14, butter, 20f),
-                // Rugbrødsmørrebrød
-                RecipeItem(r15, bread, 2f), RecipeItem(r15, ham, 100f), RecipeItem(r15, butter, 10f),
-                RecipeItem(r15, tomato, 50f),
-                // Rødkål gryde
-                RecipeItem(r16, redCabbage, 500f), RecipeItem(r16, beetroot, 200f), RecipeItem(r16, onion, 100f),
-                RecipeItem(r16, carrot, 150f), RecipeItem(r16, butter, 25f),
-                // Medister med kartofler
-                RecipeItem(r17, pork, 300f), RecipeItem(r17, potatoes, 500f), RecipeItem(r17, onion, 100f),
-                RecipeItem(r17, butter, 20f), RecipeItem(r17, carrot, 100f),
-                // Karbonader
-                RecipeItem(r18, groundMeat, 350f), RecipeItem(r18, eggs, 1f), RecipeItem(r18, flour, 30f),
-                RecipeItem(r18, onion, 50f), RecipeItem(r18, butter, 30f), RecipeItem(r18, cream, 100f),
-                // Pølser med kartofler
-                RecipeItem(r19, pork, 250f), RecipeItem(r19, potatoes, 600f), RecipeItem(r19, onion, 100f),
-                RecipeItem(r19, butter, 15f),
-                // Kylling i flødesauce
-                RecipeItem(r20, chicken, 400f), RecipeItem(r20, cream, 200f), RecipeItem(r20, mushrooms, 150f),
-                RecipeItem(r20, onion, 75f), RecipeItem(r20, butter, 25f), RecipeItem(r20, garlic, 5f)
+                RecipeItem(r1, pasta, 200), RecipeItem(r1, beef, 300), RecipeItem(r1, tomato, 200),
+                RecipeItem(r2, chicken, 300), RecipeItem(r2, pepper, 150), RecipeItem(r2, soy, 30),
+                RecipeItem(r3, beef, 300), RecipeItem(r3, beans, 200), RecipeItem(r3, chili, 5),
+                RecipeItem(r4, pasta, 200), RecipeItem(r4, cream, 150), RecipeItem(r4, cheese, 80),
+                RecipeItem(r5, chicken, 300), RecipeItem(r5, curry, 10), RecipeItem(r5, rice, 200),
+                RecipeItem(r6, wraps, 4), RecipeItem(r6, chicken, 200), RecipeItem(r6, corn, 100),
+                RecipeItem(r7, broccoli, 200), RecipeItem(r7, carrot, 150), RecipeItem(r7, soy, 20),
+                RecipeItem(r8, rice, 200), RecipeItem(r8, beef, 250), RecipeItem(r8, onion, 100),
+                RecipeItem(r9, tomato, 300), RecipeItem(r9, cream, 100), RecipeItem(r9, garlic, 10),
+                RecipeItem(r10, fish, 300), RecipeItem(r10, broccoli, 200), RecipeItem(r10, carrot, 100),
+                RecipeItem(r11, groundMeat, 200), RecipeItem(r11, bacon, 38), RecipeItem(r11, mushrooms, 38),
+                RecipeItem(r11, potatoes, 300), RecipeItem(r11, carrot, 75), RecipeItem(r11, peas, 63),
+                RecipeItem(r11, butter, 15), RecipeItem(r11, onion, 1), RecipeItem(r11, pork, 1),
+                RecipeItem(r12, groundMeat, 300), RecipeItem(r12, eggs, 1), RecipeItem(r12, flour, 50),
+                RecipeItem(r12, onion, 50), RecipeItem(r12, butter, 25), RecipeItem(r12, redCabbage, 200),
+                RecipeItem(r13, flour, 200), RecipeItem(r13, eggs, 3), RecipeItem(r13, milk, 250),
+                RecipeItem(r13, appleSyrup, 100), RecipeItem(r13, butter, 30),
+                RecipeItem(r14, pork_flank, 300), RecipeItem(r14, onion, 200), RecipeItem(r14, potatoes, 600),
+                RecipeItem(r14, butter, 20),
+                RecipeItem(r15, bread, 2), RecipeItem(r15, ham, 100), RecipeItem(r15, butter, 10),
+                RecipeItem(r15, tomato, 50),
+                RecipeItem(r16, redCabbage, 500), RecipeItem(r16, beetroot, 200), RecipeItem(r16, onion, 100),
+                RecipeItem(r16, carrot, 150), RecipeItem(r16, butter, 25),
+                RecipeItem(r17, pork, 300), RecipeItem(r17, potatoes, 500), RecipeItem(r17, onion, 100),
+                RecipeItem(r17, butter, 20), RecipeItem(r17, carrot, 100),
+                RecipeItem(r18, groundMeat, 350), RecipeItem(r18, eggs, 1), RecipeItem(r18, flour, 30),
+                RecipeItem(r18, onion, 50), RecipeItem(r18, butter, 30), RecipeItem(r18, cream, 100),
+                RecipeItem(r19, pork, 250), RecipeItem(r19, potatoes, 600), RecipeItem(r19, onion, 100),
+                RecipeItem(r19, butter, 15),
+                RecipeItem(r20, chicken, 400), RecipeItem(r20, cream, 200), RecipeItem(r20, mushrooms, 150),
+                RecipeItem(r20, onion, 75), RecipeItem(r20, butter, 25), RecipeItem(r20, garlic, 5)
             )
         )
 
