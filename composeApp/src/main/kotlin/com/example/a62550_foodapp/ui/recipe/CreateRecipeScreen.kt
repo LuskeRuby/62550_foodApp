@@ -15,7 +15,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.a62550_foodapp.viewmodel.SelectedItemGroup
-import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.ui.Alignment
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -290,7 +289,7 @@ fun CreateRecipeScreen(
 
                         Button(
                             onClick = {
-                                val qty = quantityText.toFloatOrNull() ?: 0f
+                                val qty = quantityText.toIntOrNull() ?: 0
                                 val gid = selectedGroupId
                                 if (gid != null) {
                                     selectedGroups =
@@ -372,7 +371,7 @@ fun CreateRecipeScreen(
                                 )
                             }
 
-                            if (idx != selectedGroups.lastIndex) Divider()
+                            if (idx != selectedGroups.lastIndex) HorizontalDivider()
                         }
                     }
                 }
