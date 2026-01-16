@@ -80,6 +80,11 @@ object DatabaseMockData {
         val appleSyrup = g("Æbleskivemasse", "Kolonial", "g")
         val flour = g("Mel", "Kolonial", "g")
         val pork_flank = g("Stegt flæsk", "Kød", "g")
+        val fallbackGroup = g(
+            name = "Mystisk ingrediens",
+            cat = "Ukendt",
+            unit = "g"
+        )
 
         /* ---------- ITEMS ---------- */
 
@@ -182,7 +187,12 @@ object DatabaseMockData {
         val r18 = recipe("Karbonader", 40, "Stegt kød med sauce", R.drawable.recipe_18)
         val r19 = recipe("Pølser med kartofler", 30, "Dansk husmannskost", R.drawable.recipe_19)
         val r20 = recipe("Kylling i flødesauce", 45, "Cremet og lækker", R.drawable.recipe_20)
-
+        val fallbackRecipe = recipe(
+            "Fallback Opskrift",
+            10,
+            "Tester opskrift fallback uden konkrete items",
+            null
+        )
         /* ---------- RECIPE ITEMS ---------- */
 
         recipeItemDao.insertAll(
@@ -220,10 +230,35 @@ object DatabaseMockData {
                 RecipeItem(r20, onion, 75), RecipeItem(r20, butter, 25), RecipeItem(r20, garlic, 5)
             )
         )
-
+        recipeItemDao.insertAll(
+            listOf(
+                RecipeItem(fallbackRecipe, fallbackGroup, 150),
+                RecipeItem(fallbackRecipe, fallbackGroup, 75)
+            )
+        )
         /* ---------- SHOPPING LIST ---------- */
 
         val shoppingListId = shoppingListDao.insert(ShoppingList(name = "Weekly groceries")).toInt()
+        val fallbackItem = itemDao.insert(
+            Item(
+                id = 0,
+                itemGroupId = fallbackGroup,
+                name = "Ukendt vare",
+                size = 100f,
+                unitType = "g",
+                imagePath = null
+            )
+        ).toInt()
+
+        shoppingListItemDao.insert(
+            ShoppingListItem(
+                shoppingListId = shoppingListId,
+                itemId = fallbackItem,
+                calcQuantity = 2,
+                isChecked = false
+            )
+        )
+
 
         shoppingListItemDao.insert(ShoppingListItem(shoppingListId, itemIds[0], 1, false))
         shoppingListItemDao.insert(ShoppingListItem(shoppingListId, itemIds[4], 1, false))
