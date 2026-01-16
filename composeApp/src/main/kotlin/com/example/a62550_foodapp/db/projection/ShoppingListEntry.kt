@@ -5,7 +5,7 @@ data class ShoppingListEntry(
     val itemName: String,
     val size: Float,
     val unitType: String,
-    val quantity: Float,
+    val quantity: Int,
     val price: Float?,
     val isChecked: Boolean,
     val category: String

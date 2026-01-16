@@ -26,7 +26,6 @@ object DatabaseMockData {
         val shoppingListDao = database.shoppingListDao()
         val shoppingListItemDao = database.shoppingListItemDao()
 
-
         val year = 2025
         val week = 1
 
@@ -65,11 +64,7 @@ object DatabaseMockData {
         val butter = g("Smør", "Mejeri", "g")
         val mushrooms = g("Champignon", "Grøntsager", "g")
         val fish = g("Laks", "Fisk", "g")
-        val brownSugar = g("Brown sugar", "Kolonial", "g")
-        val groundGinger = g("Ground ginger", "Krydderier", "g")
-        val cornstarch = g("Cornstarch", "Kolonial", "g")
-        val stirFryVeg = g("Stir-fry vegetables", "Grøntsager", "g")
-        val brownRice = g("Brown rice", "Tørvarer", "g")
+
         /* ---------- ITEMS ---------- */
 
         fun item(g: Int, name: String, size: Float, unit: String) =
@@ -143,35 +138,21 @@ object DatabaseMockData {
         val r8 = recipe("Ris med oksekød", 35, "Hurtig hverdagsret", R.drawable.recipe_8)
         val r9 = recipe("Tomatsuppe", 30, "Varm suppe", R.drawable.recipe_9)
         val r10 = recipe("Laks med grønt", 35, "Sund fiskeret", R.drawable.recipe_10)
-        val teriyaki = recipe(
-            "Teriyaki Chicken Casserole",
-            50,
-            "Japanese chicken casserole",
-            null
-        )
 
         /* ---------- RECIPE ITEMS ---------- */
 
         recipeItemDao.insertAll(
             listOf(
-                RecipeItem(r1, pasta, 200f), RecipeItem(r1, beef, 300f), RecipeItem(r1, tomato, 200f),
-                RecipeItem(r2, chicken, 300f), RecipeItem(r2, pepper, 150f), RecipeItem(r2, soy, 30f),
-                RecipeItem(r3, beef, 300f), RecipeItem(r3, beans, 200f), RecipeItem(r3, chili, 5f),
-                RecipeItem(r4, pasta, 200f), RecipeItem(r4, cream, 150f), RecipeItem(r4, cheese, 80f),
-                RecipeItem(r5, chicken, 300f), RecipeItem(r5, curry, 10f), RecipeItem(r5, rice, 200f),
-                RecipeItem(r6, wraps, 4f), RecipeItem(r6, chicken, 200f), RecipeItem(r6, corn, 100f),
-                RecipeItem(r7, broccoli, 200f), RecipeItem(r7, carrot, 150f), RecipeItem(r7, soy, 20f),
-                RecipeItem(r8, rice, 200f), RecipeItem(r8, beef, 250f), RecipeItem(r8, onion, 100f),
-                RecipeItem(r9, tomato, 300f), RecipeItem(r9, cream, 100f), RecipeItem(r9, garlic, 10f),
-                RecipeItem(r10, fish, 300f), RecipeItem(r10, broccoli, 200f), RecipeItem(r10, carrot, 100f),
-                RecipeItem(teriyaki, soy, 180f),
-                RecipeItem(teriyaki, brownSugar, 50f),
-                RecipeItem(teriyaki, groundGinger, 5f),
-                RecipeItem(teriyaki, garlic, 5f),
-                RecipeItem(teriyaki, cornstarch, 30f),
-                RecipeItem(teriyaki, chicken, 400f),
-                RecipeItem(teriyaki, stirFryVeg, 340f),
-                RecipeItem(teriyaki, brownRice, 600f)
+                RecipeItem(r1, pasta, 200), RecipeItem(r1, beef, 300), RecipeItem(r1, tomato, 200),
+                RecipeItem(r2, chicken, 300), RecipeItem(r2, pepper, 150), RecipeItem(r2, soy, 30),
+                RecipeItem(r3, beef, 300), RecipeItem(r3, beans, 200), RecipeItem(r3, chili, 5),
+                RecipeItem(r4, pasta, 200), RecipeItem(r4, cream, 150), RecipeItem(r4, cheese, 80),
+                RecipeItem(r5, chicken, 300), RecipeItem(r5, curry, 10), RecipeItem(r5, rice, 200),
+                RecipeItem(r6, wraps, 4), RecipeItem(r6, chicken, 200), RecipeItem(r6, corn, 100),
+                RecipeItem(r7, broccoli, 200), RecipeItem(r7, carrot, 150), RecipeItem(r7, soy, 20),
+                RecipeItem(r8, rice, 200), RecipeItem(r8, beef, 250), RecipeItem(r8, onion, 100),
+                RecipeItem(r9, tomato, 300), RecipeItem(r9, cream, 100), RecipeItem(r9, garlic, 10),
+                RecipeItem(r10, fish, 300), RecipeItem(r10, broccoli, 200), RecipeItem(r10, carrot, 100),
             )
         )
 

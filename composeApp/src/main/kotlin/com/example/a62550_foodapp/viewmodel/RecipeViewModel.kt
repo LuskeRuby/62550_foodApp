@@ -20,7 +20,7 @@ import kotlin.math.ceil
 
 data class SelectedItemGroup(
     val itemGroupId: Int,
-    val quantity: Float
+    val quantity: Int
 )
 
 class RecipeViewModel(
@@ -212,7 +212,7 @@ class RecipeViewModel(
 
     suspend fun resolveIngredient(
         itemGroupId: Int,
-        quantity: Float
+        quantity: Int
     ): Ingredient {
 
         val group = itemGroupDao.getById(itemGroupId)

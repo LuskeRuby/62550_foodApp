@@ -3,8 +3,9 @@ package com.example.a62550_foodapp.db.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import com.example.a62550_foodapp.db.entity.Item
-import com.example.a62550_foodapp.db.projection.ItemWithPrice
+import com.example.a62550_foodapp.db.projection.ItemWithPriceAndCategory
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -21,6 +22,10 @@ interface ItemDao {
 
 
     @Query("SELECT * FROM items WHERE id = :id")
-    suspend fun getItemById(id: Int): Item?
+    fun getItemById(id: Int): Item?
+
+    @Transaction
+    @Query("SELECT * FROM items")
+    fun getAllItemWithPriceAndCategory(): Flow<List<ItemWithPriceAndCategory>>
 
 }

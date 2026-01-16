@@ -7,12 +7,12 @@ data class Ingredient(
     val itemGroupId: Int,
     val groupName: String,
     val unitType: String,
-    
+
     val itemId: Int?,
     val itemName: String?,
     val itemSize: Float?,
 
     val price: Float?,
 
-    val quantity: Float
+    val quantity: Int
 )

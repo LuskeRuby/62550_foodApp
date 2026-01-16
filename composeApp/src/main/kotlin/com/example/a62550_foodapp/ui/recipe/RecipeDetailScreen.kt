@@ -25,7 +25,6 @@ import coil.compose.AsyncImage
 import com.example.a62550_foodapp.model.Ingredient
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
 import androidx.compose.ui.graphics.Brush
