@@ -30,6 +30,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextAlign
 
 @Composable
@@ -76,77 +77,85 @@ fun RecipeDetailScreen(
                 .background(themeViewModel.backgroundColor)
         ) {
 
-            // ================= SCROLL CONTENT =================
+            // ===== COLLAPSING IMAGE HEADER (STICKY) =====
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(imageHeight)
+                    .align(Alignment.TopCenter)
+            ) {
+                AsyncImage(
+                    model = r.imagePath,
+                    contentDescription = r.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+
+                // gradient
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp)
+                        .align(Alignment.TopCenter)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                listOf(
+                                    Color.Black.copy(alpha = 0.6f * collapseFraction),
+                                    Color.Transparent
+                                )
+                            )
+                        )
+                )
+
+                // EDIT
+                IconButton(
+                    onClick = { onEdit(r.id) },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(12.dp)
+                ) {
+                    Icon(Icons.Default.Edit, null, tint = Color.White)
+                }
+
+                // CLOSE
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(12.dp)
+                ) {
+                    Icon(Icons.Default.Close, null, tint = Color.White)
+                }
+            }
+
+            // ===== MOVING TITLE =====
+            val titleY = imageHeight - scrollState.value.dp
+
+            Text(
+                text = r.title,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = if (scrollState.value > 120) Color.White else themeViewModel.textPrimary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .offset(y = titleY.coerceAtLeast(minImageHeight))
+            )
+
+
+
+
+            // ===== SCROLLING CONTENT =====
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(bottom = 96.dp) // space for bottom bar
+                    .padding(
+                        top = imageHeight + 56.dp,
+                        bottom = 96.dp
+                    )
             ) {
-
-                // ===== IMAGE HEADER =====
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(imageHeight)
-                ) {
-                    AsyncImage(
-                        model = r.imagePath,
-                        contentDescription = r.title,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-
-                    // dark overlay for readability
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color(0x33000000))
-                    )
-
-                    // ✏ EDIT — top left
-                    IconButton(
-                        onClick = { onEdit(r.id) },
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(12.dp)
-                            .background(Color.Black.copy(alpha = 0.45f), CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit recipe",
-                            tint = Color.White
-                        )
-                    }
-
-                    // ❌ CLOSE — top right
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(12.dp)
-                            .background(Color.Black.copy(alpha = 0.45f), CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = Color.White
-                        )
-                    }
-
-                    // 📝 FLOATING TITLE
-                    Text(
-                        text = r.title,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = 16.dp)
-                            .offset(y = titleOffsetY)
-                            .alpha(titleAlpha)
-                    )
-                }
 
                 // ===== INGREDIENTS =====
                 Surface(
