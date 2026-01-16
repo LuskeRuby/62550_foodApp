@@ -22,9 +22,11 @@ import kotlinx.coroutines.flow.first
 import androidx.compose.foundation.background
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 
+
+
 @Composable
 fun CreateRecipeScreen(
-    recipeViewModel: RecipeViewModel = koinViewModel(),
+    recipeViewModel: RecipeViewModel,
     existingRecipeId: Int? = null,
     onRecipeSaved: () -> Unit,
     themeViewModel: ThemeViewModel = koinViewModel()
@@ -384,7 +386,7 @@ fun CreateRecipeScreen(
                     val prepMinutes = preparationTimeText.toIntOrNull() ?: 0
                     if (existingRecipeId != null) {
                         recipeViewModel.updateRecipe(
-                            id = existingRecipeId,
+                            recipeId = existingRecipeId,
                             title = title,
                             preparationTimeMinutes = prepMinutes,
                             description = description,
