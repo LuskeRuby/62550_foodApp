@@ -27,7 +27,8 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.clickable
-
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 @Composable
 fun RecipeDetailScreen(
     recipeId: Int,
@@ -77,68 +78,57 @@ fun RecipeDetailScreen(
                         contentScale = ContentScale.Crop
                     )
 
+                    // dark overlay for readability
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(Color(0x33000000))
                     )
 
-                    // Back button
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(12.dp)
-                            .background(Color.Black.copy(alpha = 0.4f), CircleShape)
-                    ) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
-                    }
-
-                    // TIME badge (left)
-                    Surface(
-                        shape = RoundedCornerShape(24.dp),
-                        color = themeViewModel.secondaryColor,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            text = "⏱ ${r.preparationTimeMinutes} min",
-                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = themeViewModel.onSecondaryColor
-                        )
-                    }
-
-                    // PRICE badge (right)
-                    Surface(
-                        shape = RoundedCornerShape(24.dp),
-                        color = Color(0xFFD32F2F),
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            text = String.format(Locale.getDefault(), "%.2f kr", scaledPrice),
-                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    // Edit button (top right)
+                    // ✏ EDIT — top left
                     IconButton(
                         onClick = { onEdit(r.id) },
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
+                            .align(Alignment.TopStart)
                             .padding(12.dp)
-                            .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                            .background(Color.Black.copy(alpha = 0.45f), CircleShape)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Edit recipe",
                             tint = Color.White
+                        )
+                    }
+
+                    // ❌ CLOSE — top right
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(12.dp)
+                            .background(Color.Black.copy(alpha = 0.45f), CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = Color.White
+                        )
+                    }
+
+                    // 💰 PRICE — bottom right
+                    Surface(
+                        shape = RoundedCornerShape(24.dp),
+                        color = themeViewModel.priceTagColor,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            text = String.format(Locale.getDefault(), "%.2f kr", scaledPrice),
+                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = themeViewModel.onPrimaryColor,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
