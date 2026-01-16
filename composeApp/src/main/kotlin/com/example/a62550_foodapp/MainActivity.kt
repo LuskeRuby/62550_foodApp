@@ -38,14 +38,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             var navigationState by remember { mutableStateOf<NavState>(NavState.RecipeList) }
             val recipeViewModel: RecipeViewModel = koinViewModel()
-            val recipes by recipeViewModel.recipes.collectAsState()
 
             MainView(
                 recipeContent = {
                     when (val state = navigationState) {
                         is NavState.RecipeList -> {
                             RecipePage(
-                                recipes = recipes,
+                                recipeViewModel = recipeViewModel,
                                 onAddRecipeClick = {
                                     navigationState = CreateRecipe(null)
                                 },

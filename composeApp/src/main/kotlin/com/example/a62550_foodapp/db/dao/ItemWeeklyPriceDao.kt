@@ -5,6 +5,14 @@ import androidx.room.Insert
 import androidx.room.Query
 import com.example.a62550_foodapp.db.entity.ItemWeeklyPrice
 import com.example.a62550_foodapp.db.projection.ItemWithPrice
+import kotlinx.coroutines.flow.Flow
+
+// Simple data class for holding item size and price information
+data class ItemSizePrice(
+    val id: Int,
+    val size: Float,
+    val price: Float
+)
 
 @Dao
 interface ItemWeeklyPriceDao {
@@ -28,5 +36,66 @@ interface ItemWeeklyPriceDao {
     suspend fun getPricesForItemGroup(
         itemGroupId: Int
     ): List<ItemWithPrice>
+
+    @Query("""
+        SELECT i.id, i.size, MIN(p.price) as price
+        FROM items i
+        JOIN item_weekly_prices p ON p.item_id = i.id
+        WHERE i.item_group_id = :itemGroupId
+        GROUP BY i.id, i.size
+    """)
+    suspend fun getItemSizesAndMinPrices(
+        itemGroupId: Int
+    ): List<ItemSizePrice>
+
+    @Query("""
+    SELECT i.id, i.size, MIN(p.price) as price
+    FROM items i
+    JOIN item_weekly_prices p ON p.item_id = i.id
+    WHERE i.item_group_id = :itemGroupId
+    GROUP BY i.id, i.size
+""")
+    fun getItemSizesAndMinPricesFlow(
+        itemGroupId: Int
+    ): Flow<List<ItemSizePrice>>
+
+    @Query("""
+        SELECT i.id, i.size, MIN(p.price) as price
+        FROM items i
+        JOIN item_weekly_prices p ON p.item_id = i.id
+        WHERE i.item_group_id = :itemGroupId
+        AND p.supermarket_id = :supermarketId
+        GROUP BY i.id, i.size
+    """)
+    suspend fun getItemSizesAndMinPricesByStore(
+        itemGroupId: Int,
+        supermarketId: Int
+    ): List<ItemSizePrice>
+
+    @Query("""
+        SELECT i.id, i.size, MIN(p.price) as price
+        FROM items i
+        JOIN item_weekly_prices p ON p.item_id = i.id
+        WHERE i.item_group_id = :itemGroupId
+        AND p.supermarket_id = :supermarketId
+        GROUP BY i.id, i.size
+    """)
+    fun getItemSizesAndMinPricesByStoreFlow(
+        itemGroupId: Int,
+        supermarketId: Int
+    ): Flow<List<ItemSizePrice>>
+
+    @Query("""
+        SELECT i.id, i.size, MIN(p.price) as price
+        FROM items i
+        JOIN item_weekly_prices p ON p.item_id = i.id
+        WHERE i.item_group_id = :itemGroupId
+        AND p.supermarket_id IN (:supermarketIds)
+        GROUP BY i.id, i.size
+    """)
+    fun getItemSizesAndMinPricesByStoresFlow(
+        itemGroupId: Int,
+        supermarketIds: List<Int>
+    ): Flow<List<ItemSizePrice>>
 
 }
