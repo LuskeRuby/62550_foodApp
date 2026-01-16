@@ -4,22 +4,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -29,6 +28,7 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
+import androidx.compose.ui.graphics.Brush
 
 @Composable
 fun RecipeDetailScreen(
@@ -45,130 +45,173 @@ fun RecipeDetailScreen(
 
     var portions by remember { mutableStateOf(1) }
     var scaledPrice by remember { mutableStateOf(0f) }
-    var resolvedIngredients by remember { mutableStateOf<List<Ingredient>>(emptyList()) }
+    var ingredients by remember { mutableStateOf<List<Ingredient>>(emptyList()) }
 
     LaunchedEffect(portions) {
         scaledPrice = recipeViewModel.getRecipePriceByPortions(recipeId, portions)
     }
 
     LaunchedEffect(recipeItems, portions) {
-        resolvedIngredients = recipeItems.map { ri ->
+        ingredients = recipeItems.map {
             recipeViewModel.resolveIngredient(
-                itemGroupId = ri.itemGroupId,
-                quantity = ri.quantity * portions
+                itemGroupId = it.itemGroupId,
+                quantity = it.quantity * portions
             )
         }
     }
 
-    val lightPink = Color(0xFFF3E5F5)
+    val scrollState = rememberScrollState()
+
+    val maxImageHeight = 260.dp
+    val minImageHeight = 96.dp
+    val collapseFraction = (scrollState.value / 300f).coerceIn(0f, 1f)
+    val imageHeight =
+        maxImageHeight - (maxImageHeight - minImageHeight) * collapseFraction
 
     recipe?.let { r ->
 
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(themeViewModel.backgroundColor)
         ) {
 
-            Column(
+            // ================= HEADER =================
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(bottom = 96.dp)
+                    .fillMaxWidth()
+                    .height(imageHeight)
             ) {
+                AsyncImage(
+                    model = r.imagePath,
+                    contentDescription = r.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(260.dp)
+                        .height(120.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color.Black.copy(alpha = 0.6f),
+                                    Color.Transparent
+                                )
+                            )
+                        )
+                )
+
+                IconButton(
+                    onClick = { onEdit(r.id) },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(12.dp)
                 ) {
-                    AsyncImage(
-                        model = r.imagePath,
-                        contentDescription = r.title,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color(0x33000000))
-                    )
-
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(12.dp)
-                            .background(Color.Black.copy(alpha = 0.4f), CircleShape)
-                    ) {
-                        Icon(Icons.Filled.ArrowBack, null, tint = Color.White)
-                    }
-
-                    Surface(
-                        shape = RoundedCornerShape(24.dp),
-                        color = themeViewModel.secondaryColor,
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            "⏱ ${r.preparationTimeMinutes} min",
-                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
-                            color = themeViewModel.onSecondaryColor
-                        )
-                    }
-
-                    Surface(
-                        shape = RoundedCornerShape(24.dp),
-                        color = Color(0xFFD32F2F),
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            String.format(Locale.getDefault(), "%.2f kr", scaledPrice),
-                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    IconButton(
-                        onClick = { onEdit(r.id) },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(12.dp)
-                            .background(Color.Black.copy(alpha = 0.4f), CircleShape)
-                    ) {
-                        Icon(Icons.Default.Edit, null, tint = Color.White)
-                    }
+                    Icon(Icons.Default.Edit, null, tint = Color.White)
                 }
+
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(12.dp)
+                ) {
+                    Icon(Icons.Default.Close, null, tint = Color.White)
+                }
+
+                val titleY =
+                    (imageHeight - 48.dp) - (imageHeight - minImageHeight) * collapseFraction
 
                 Text(
                     text = r.title,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = themeViewModel.textPrimary,
-                    modifier = Modifier.padding(16.dp)
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 64.dp)
+                        .offset(y = titleY)
+                        .align(Alignment.TopCenter)
                 )
+            }
+
+            // ================= ACTION BAR =================
+            Surface(
+                tonalElevation = 4.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(onClick = { if (portions > 1) portions-- }) {
+                                Icon(Icons.Default.RemoveCircle, null, tint = themeViewModel.priceTagColor)
+                            }
+                            Text(portions.toString(), fontWeight = FontWeight.Bold)
+                            IconButton(onClick = { portions++ }) {
+                                Icon(Icons.Default.AddCircle, null, tint = themeViewModel.priceTagColor)
+                            }
+                        }
+                        Text("Personer", color = themeViewModel.priceTagColor)
+                    }
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("⏱ ${r.preparationTimeMinutes} min", fontWeight = FontWeight.Bold)
+                        Text("Tid", color = themeViewModel.priceTagColor)
+                    }
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            String.format(Locale.getDefault(), "%.2f kr", scaledPrice),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text("Pris", color = themeViewModel.priceTagColor)
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.clickable { }
+                    ) {
+                        Icon(Icons.Default.AddCircle, null, tint = themeViewModel.priceTagColor)
+                        Text("Tilføj", color = themeViewModel.priceTagColor)
+                    }
+                }
+            }
+
+            // ================= CONTENT =================
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(scrollState)
+                    .padding(bottom = 24.dp)
+            ) {
+
+                Spacer(Modifier.height(16.dp))
 
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    color = lightPink,
+                    color = Color(0xFFF3E5F5),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-
+                    Column(Modifier.padding(16.dp)) {
                         Text("Ingredienser", fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(8.dp))
 
-                        if (resolvedIngredients.isEmpty()) {
+                        if (ingredients.isEmpty()) {
                             Text("Ingen ingredienser angivet.")
                         } else {
-                            resolvedIngredients.forEach { ing ->
+                            ingredients.forEach { ing ->
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -180,11 +223,10 @@ fun RecipeDetailScreen(
                                         buildString {
                                             val q = ing.quantity
                                             append(
-                                                if (q % 1f == 0f) q.toInt() else String.format(
-                                                    Locale.getDefault(),
-                                                    "%.1f",
-                                                    q
-                                                )
+                                                if (q % 1f == 0f)
+                                                    q.toInt()
+                                                else
+                                                    String.format(Locale.getDefault(), "%.1f", q)
                                             )
                                             append(" ")
                                             append(ing.unitType)
@@ -200,60 +242,19 @@ fun RecipeDetailScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    color = lightPink,
+                    color = Color(0xFFF3E5F5),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = r.instructions ?: "Ingen instruktioner tilgængelige.",
-                            lineHeight = 20.sp
-                        )
-                    }
-                }
-            }
-
-            Surface(
-                tonalElevation = 6.dp,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 14.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = { if (portions > 1) portions-- }) {
-                                Icon(Icons.Default.RemoveCircle, null, tint = Color.Red)
-                            }
-                            Text(portions.toString(), fontWeight = FontWeight.Bold)
-                            IconButton(onClick = { portions++ }) {
-                                Icon(Icons.Default.AddCircle, null, tint = Color.Red)
-                            }
-                        }
-                        Text("Personer", color = Color.Red)
-                    }
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.clickable { }
-                    ) {
-                        Icon(Icons.Default.AddCircle, null, tint = Color.Red)
-                        Text("Tilføj til liste", color = Color.Red)
-                    }
+                    Text(
+                        r.instructions ?: "Ingen instruktioner",
+                        modifier = Modifier.padding(16.dp),
+                        lineHeight = 20.sp
+                    )
                 }
             }
         }
 
-    } ?: Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+    } ?: Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator()
     }
 }
