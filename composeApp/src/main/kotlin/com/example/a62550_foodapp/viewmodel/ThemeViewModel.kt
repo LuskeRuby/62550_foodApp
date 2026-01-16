@@ -16,7 +16,7 @@ class ThemeViewModel : ViewModel() {
     val onSecondaryColor = Color(0xFF333333) // Deep Charcoal for text on secondary
     
     // Background and Surface
-    val backgroundColor = Color(0xFFFAFAFA) // Very light neutral background
+    val backgroundColor = Color(0xFFF5F5F5) // light grey neutral background
     val surfaceColor = Color(0xFFFFFFFF)    // Pure white for elevated surfaces
     
     // Nav Bar / Header Color (Matching the user's preferred creamy orange)

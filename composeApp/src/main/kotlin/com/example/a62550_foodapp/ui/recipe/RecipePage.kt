@@ -38,6 +38,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
+import androidx.compose.material.icons.filled.Public
 
 
 @Composable
@@ -136,24 +137,47 @@ fun RecipePage(
             }
 
             // ===== SEARCH BAR =====
+            // ===== SEARCH + DISCOVER ROW =====
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .animateContentSize()
             ) {
                 if (showSearchBar) {
-                    OutlinedTextField(
-                        value = searchText,
-                        onValueChange = { searchText = it },
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 4.dp),
-                        placeholder = { Text("Søg opskrift") },
-                        singleLine = true,
-                        leadingIcon = {
-                            Icon(Icons.Default.Search, contentDescription = null)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        // 🔍 Search field
+                        OutlinedTextField(
+                            value = searchText,
+                            onValueChange = { searchText = it },
+                            modifier = Modifier.weight(1f),
+                            placeholder = { Text("Søg opskrift") },
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(Icons.Default.Search, contentDescription = null)
+                            }
+                        )
+
+                        // 🌍 Discover button
+                        FloatingActionButton(
+                            onClick = onDiscoverRecipesClick,
+                            containerColor = themeViewModel.secondaryColor,
+                            contentColor = themeViewModel.onSecondaryColor,
+                            modifier = Modifier.size(48.dp), // smaller than normal FAB
+                            elevation = FloatingActionButtonDefaults.elevation(0.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Public,
+                                contentDescription = "Find opskrifter på engelsk"
+                            )
                         }
-                    )
+                    }
                 }
             }
 
@@ -179,7 +203,7 @@ fun RecipePage(
                         start = 16.dp,
                         end = 16.dp,
                         top = 16.dp,
-                        bottom = 96.dp
+                        bottom = 16.dp
                     ),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -211,28 +235,22 @@ fun RecipePage(
             Icon(Icons.Default.Add, contentDescription = "Add Recipe")
         }
 
-        /* ved ikke helt hvad jeg skal gøre med denne her rasmus
-        // ===== BOTTOM BUTTONS =====
-        Column(
+
+        // ===== DISCOVER (GLOBUS) BUTTON =====
+        FloatingActionButton(
+            onClick = onDiscoverRecipesClick,
+            containerColor = themeViewModel.secondaryColor,
+            contentColor = themeViewModel.onSecondaryColor,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .align(Alignment.BottomStart)
+                .padding(start = 20.dp, bottom = 20.dp)
         ) {
-            ExtendedFloatingActionButton(
-                onClick = onDiscoverRecipesClick,
-                containerColor = themeViewModel.secondaryColor,
-                contentColor = themeViewModel.onSecondaryColor,
-                icon = {
-                    Icon(Icons.Default.Search, contentDescription = null)
-                },
-                text = {
-                    Text("Find opskrifter på engelsk")
-                }
+            Icon(
+                imageVector = Icons.Default.Public, // 🌍 globus icon
+                contentDescription = "Find opskrifter på engelsk"
             )
         }
-         */
+
 
         // ===== FILTER DIALOG =====
         if (showFilterDialog) {
