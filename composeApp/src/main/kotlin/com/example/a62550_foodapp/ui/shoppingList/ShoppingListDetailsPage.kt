@@ -5,12 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -21,7 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -118,9 +115,8 @@ private fun ShoppingListPage(
         FloatingActionButton(
             onClick = onAddItemsButtonClick,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp),
-            shape = CircleShape,
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 20.dp),
             containerColor = themeViewModel.addButtonColor,
             contentColor = themeViewModel.onPrimaryColor
         ) {
@@ -274,12 +270,12 @@ fun categoryColor(
     themeViewModel: ThemeViewModel = koinViewModel()
 ): Color =
     when (category.lowercase()) {
-        "tørvarer" -> Color(0xFF996600)
-        "kød" -> Color(0xFFD32F2F)
-        "grøntsager" -> Color(0xFF388E3C)
-        "mejeri" -> Color(0xFF1976D2)
-        "kolonial" -> Color(0xFF6A1B9A)
-        else -> themeViewModel.grayedOutColor
+        "tørvarer" -> themeViewModel.dryGoods
+        "kød" -> themeViewModel.meat
+        "grøntsager" -> themeViewModel.vegetables
+        "mejeri" -> themeViewModel.dairy
+        "kolonial" -> themeViewModel.kolonial
+        else -> themeViewModel.other
     }
 
 @Composable
@@ -345,7 +341,7 @@ private fun ShoppingItemRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    if (item.isChecked) themeViewModel.greyedOutColor
+                    if (item.isChecked) themeViewModel.fadedBackground
                     else themeViewModel.backgroundColor,
                     RoundedCornerShape(8.dp))
                 .padding(horizontal = 16.dp, vertical = 10.dp),
@@ -358,7 +354,7 @@ private fun ShoppingItemRow(
                 text = "${item.quantity} x ${item.name}",
                 modifier = Modifier.weight(1f),
                 fontSize = 15.sp,
-                color = if (item.isChecked) themeViewModel.textPrimary else themeViewModel.greyedOutColor,
+                color = themeViewModel.textPrimary,
                 fontWeight = FontWeight.Medium
             )
 
