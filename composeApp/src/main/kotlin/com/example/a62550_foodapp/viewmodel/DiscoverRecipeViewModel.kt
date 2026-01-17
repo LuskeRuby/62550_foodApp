@@ -64,7 +64,7 @@ class DiscoverRecipeViewModel(
                     MealSummary(
                         id = it.idMeal,
                         name = it.strMeal,
-                        thumbnail = it.strMealThumb
+                        thumbnail = it.strMealThumb ?: ""
                     )
                 }
             } catch (e: Exception) {
