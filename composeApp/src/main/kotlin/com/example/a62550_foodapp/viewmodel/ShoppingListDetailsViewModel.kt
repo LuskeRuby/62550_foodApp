@@ -55,20 +55,29 @@ class ShoppingListDetailsViewModel(
             )
 
     //total price per supermarket
+    data class TotalUi(
+        val total: Float,
+        val missingCount: Int
+    )
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    val totalPrice: StateFlow<Float?> =
-        selectedSupermarketId
-            .flatMapLatest { supermarketId ->
-                shoppingListItemDao.getTotalPrice(
-                    shoppingListId = shoppingListId,
-                    supermarketId = supermarketId
-                )
-            }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = null
+    val totalUi: StateFlow<TotalUi> =
+        items.map { list ->
+            val missing = list.count { it.price == null }
+
+            val sum = list.sumOf {
+                ((it.price ?: 0f) * it.quantity).toDouble()
+            }.toFloat()
+
+            TotalUi(
+                total = sum,
+                missingCount = missing
             )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = TotalUi(0f, 0)
+        )
 
     fun selectSupermarket(id: Int) {
         _selectedSupermarketId.value = id
@@ -145,7 +154,9 @@ class ShoppingListDetailsViewModel(
                 isChecked = false,
                 category = item.itemGroup.category,   // <-- problem
                 size = item.item.size,
-                price = item.weeklyPrices.maxWithOrNull(compareBy({ it.year }, { it.week }))?.price ?: 0f   // <-- problem
+                price = item.weeklyPrices
+                    .maxWithOrNull(compareBy({ it.year }, { it.week }))
+                    ?.price
             )
 
             _tempItemsList.value += itemToShoppingListEntryUi

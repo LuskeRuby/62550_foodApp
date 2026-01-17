@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -20,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -73,7 +75,7 @@ private fun ShoppingListPage(
         )
 ) {
     val items by viewModel.items.collectAsState()
-    val total by viewModel.totalPrice.collectAsState()
+    val totalUi by viewModel.totalUi.collectAsState()
     val selectedSupermarket by viewModel.selectedSupermarketId.collectAsState()
 
     val grouped = items.groupBy { it.category }
@@ -109,7 +111,7 @@ private fun ShoppingListPage(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TotalFooter(total)
+                TotalFooter(totalUi)
             }
         }
 
@@ -384,7 +386,7 @@ private fun ShoppingItemRow(
                             checked = item.isChecked,
                             text = "${item.quantity} x ${unitPrice.toInt()} kr",
                             fontSize = 12.sp,
-                            color =  Color.Gray,
+                            color = Color.Gray,
                             textAlign = TextAlign.End
                         )
                         CheckboxText(
@@ -392,7 +394,7 @@ private fun ShoppingItemRow(
                             text = "${(unitPrice * qty).toInt()} kr",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color =  themeViewModel.priceTagColor
+                            color = themeViewModel.priceTagColor
                         )
                     } else {
                         CheckboxText(
@@ -403,12 +405,15 @@ private fun ShoppingItemRow(
                             color = themeViewModel.priceTagColor
                         )
                     }
-                } else {
+                }
+                //fallback
+                else {
                     CheckboxText(
                         checked = item.isChecked,
-                        text = "-",
+                        text = "Utilgængelig",
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        fontWeight = FontWeight.Medium,
+                        color = themeViewModel.priceTagColor
                     )
                 }
             }
@@ -447,31 +452,33 @@ private fun CheckboxText(
 
 
 @Composable
-private fun TotalFooter(total: Float?) {
+private fun TotalFooter(totalUi: ShoppingListDetailsViewModel.TotalUi) {
     Surface(
         shape = RoundedCornerShape(50),
         shadowElevation = 8.dp,
         color = Color(0xFF269900)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Text(
-                text = "Total",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
+                text =
+                        "Total ${totalUi.total.toInt()} kr",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
                 color = Color.White
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = total?.let { "${it.toInt()} kr" } ?: "-",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
+            if (totalUi.missingCount > 0) {
+                Text(
+                    text = "* Nogle varer mangler pris",
+                    fontSize = 16.sp,
+                    color = Color.White.copy(alpha = 0.85f)
+                )
+            }
         }
     }
 }
