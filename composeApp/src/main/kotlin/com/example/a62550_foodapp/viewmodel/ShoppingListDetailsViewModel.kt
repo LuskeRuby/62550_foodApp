@@ -148,7 +148,11 @@ class ShoppingListDetailsViewModel(
                 price = item.weeklyPrices.maxWithOrNull(compareBy({ it.year }, { it.week }))?.price ?: 0f   // <-- problem
             )
 
-            _tempItemsList.value += itemToShoppingListEntryUi
+            // added guard condition so dublicate items cannot be added
+            if (_tempItemsList.value.none { it.itemId == item.item.id }) {
+                _tempItemsList.value += itemToShoppingListEntryUi
+            }
+
     }
 
     fun removeTempItem(itemId: Int) {
