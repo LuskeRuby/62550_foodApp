@@ -18,6 +18,7 @@ import com.example.a62550_foodapp.NavState.*
 import com.example.a62550_foodapp.db.AppDatabase
 import com.example.a62550_foodapp.db.DatabaseMockData
 import com.example.a62550_foodapp.ui.discover.DiscoverRecipesScreen
+import com.example.a62550_foodapp.ui.recipe.ApiRecipeDetailScreen
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
 
@@ -36,13 +37,13 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            var navigationState by remember { mutableStateOf<NavState>(NavState.RecipeList) }
+            var navigationState by remember { mutableStateOf<NavState>(RecipeList) }
             val recipeViewModel: RecipeViewModel = koinViewModel()
 
             MainView(
                 recipeContent = {
                     when (val state = navigationState) {
-                        is NavState.RecipeList -> {
+                        is RecipeList -> {
                             RecipePage(
                                 recipeViewModel = recipeViewModel,
                                 onAddRecipeClick = {
@@ -52,45 +53,60 @@ class MainActivity : ComponentActivity() {
                                     navigationState = RecipeDetail(id)
                                 },
                                 onDiscoverRecipesClick = {
-                                    navigationState = NavState.DiscoverRecipes
+                                    navigationState = DiscoverRecipes
                                 }
                             )
                         }
-                        is NavState.CreateRecipe -> {
+                        is CreateRecipe -> {
                             BackHandler {
-                                navigationState = NavState.RecipeList
+                                navigationState = RecipeList
                             }
                             CreateRecipeScreen(
                                 recipeViewModel = recipeViewModel,
                                 existingRecipeId = state.existingRecipeId,
                                 onRecipeSaved = {
-                                    navigationState = NavState.RecipeList
+                                    navigationState = RecipeList
                                 }
                             )
                         }
-                        is NavState.RecipeDetail -> {
+                        is RecipeDetail -> {
                             BackHandler {
-                                navigationState = NavState.RecipeList
+                                navigationState = RecipeList
                             }
                             RecipeDetailScreen(
                                 recipeId = state.id,
                                 recipeViewModel = recipeViewModel,
                                 onBack = {
-                                    navigationState = NavState.RecipeList
+                                    navigationState = RecipeList
                                 },
                                 onEdit = { id ->
                                     navigationState = CreateRecipe(id)
                                 }
                             )
                         }
-                        is NavState.DiscoverRecipes -> {
+                        is DiscoverRecipes -> {
                             BackHandler {
-                                navigationState = NavState.RecipeList
+                                navigationState = RecipeList
                             }
 
                             DiscoverRecipesScreen(
                                 onBack = {
-                                    navigationState = NavState.RecipeList
+                                    navigationState = RecipeList
+                                },
+                                onMealClick = { mealId ->
+                                    navigationState = NavState.ApiRecipeDetail(mealId)
+                                }
+                            )
+                        }
+                        is NavState.ApiRecipeDetail -> {
+                            BackHandler {
+                                navigationState = DiscoverRecipes
+                            }
+
+                            ApiRecipeDetailScreen(
+                                mealId = state.mealId,
+                                onBack = {
+                                    navigationState = DiscoverRecipes
                                 }
                             )
                         }
@@ -106,6 +122,8 @@ sealed class NavState {
     object DiscoverRecipes : NavState()
     data class CreateRecipe(val existingRecipeId: Int? = null) : NavState()
     data class RecipeDetail(val id: Int) : NavState()
+
+    data class ApiRecipeDetail(val mealId: String) : NavState()
 }
 
 @Preview
