@@ -35,7 +35,7 @@ class DiscoverRecipeViewModel(
 
             try {
                 val response = api.getCategories()
-                _categories.value = response.categories.map {
+                val mapped = response.categories.map {
                     MealCategory(
                         id = it.idCategory,
                         name = it.strCategory,
@@ -43,6 +43,17 @@ class DiscoverRecipeViewModel(
                         description = it.strCategoryDescription
                     )
                 }
+
+                _categories.value = mapped
+
+                //autoselect beef category
+                if (_selectedCategory.value == null) {
+                    mapped.firstOrNull { it.name.equals("Beef", ignoreCase = true) }
+                        ?.let { beef ->
+                            selectCategory(beef.name)
+                        }
+                }
+
             } catch (e: Exception) {
                 e.printStackTrace()
                 _error.value = e.message
