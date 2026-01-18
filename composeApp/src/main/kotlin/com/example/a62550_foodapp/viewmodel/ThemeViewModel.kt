@@ -37,6 +37,11 @@ class ThemeViewModel : ViewModel() {
     val successColor = Color(0xFF388E3C)
     val errorColor = Color(0xFFD32F2F)
 
+    // Button Colors
+    val confirmDelete = Color(0xFFD32F2F) // Red for delete confirmation
+    val cancelButton = Color(0xFF757575)   // Grey for cancel actions
+
+
     // Shopping List
     val fadedBackground = Color(0xFFDEDEDE)
 
