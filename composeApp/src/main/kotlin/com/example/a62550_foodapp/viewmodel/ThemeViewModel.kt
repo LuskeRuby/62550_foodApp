@@ -26,6 +26,8 @@ class ThemeViewModel : ViewModel() {
     // Text Colors
     val textPrimary = Color(0xFF212121)    // Near Black
     val textSecondary = Color(0xFF757575)  // Medium Grey
+    val greyedOutColor = Color(0xFF757575) // Medium Grey for disabled elements
+    val grayedOutColor = greyedOutColor
     
     // Functional Colors
     val priceTagColor = Color(0xFFE64A19)   // Vibrant Terracotta/Orange for prices
@@ -35,7 +37,19 @@ class ThemeViewModel : ViewModel() {
     val successColor = Color(0xFF388E3C)
     val errorColor = Color(0xFFD32F2F)
 
-    val greyedOutColor = Color(0xFF757575) // Medium Grey for disabled elements
-    val grayedOutColor = greyedOutColor
+    // Button Colors
+    val confirmDelete = Color(0xFFD32F2F) // Red for delete confirmation
+    val cancelButton = Color(0xFF757575)   // Grey for cancel actions
+
+
+    // Shopping List
+    val fadedBackground = Color(0xFFDEDEDE)
+
+    val dryGoods = Color(0xFF996600)
+    val meat = Color(0xFFD32F2F)
+    val vegetables = Color(0xFF388E3C)
+    val dairy = Color(0xFF1976D2)
+    val kolonial = Color(0xFF6A1B9A)
+    val other = Color.Gray
 
 }

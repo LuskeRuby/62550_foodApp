@@ -3,6 +3,7 @@ package com.example.a62550_foodapp.db.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.example.a62550_foodapp.db.entity.ShoppingListItem
 import com.example.a62550_foodapp.db.projection.ShoppingListEntry
 import kotlinx.coroutines.flow.Flow
@@ -11,13 +12,18 @@ import kotlinx.coroutines.flow.Flow
 interface ShoppingListItemDao {
 
     @Insert
-    suspend fun insert(item: ShoppingListItem)
+    suspend fun insert(item: ShoppingListItem): Long
 
     @Insert
-    suspend fun addItemToList(shoppingListItem: ShoppingListItem): Long
+    suspend fun insert(items: List<ShoppingListItem>): List<Long>
 
-    @Insert
-    suspend fun addItemsToList(shoppingListItems: List<ShoppingListItem>): List<Long>
+    @Update
+    suspend fun update(item: ShoppingListItem)
+
+    //TODO avoid race condition when updating items
+    @Update
+    suspend fun update(items: List<ShoppingListItem>)
+
 
     @Query("""
         SELECT *

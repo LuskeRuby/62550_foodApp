@@ -8,7 +8,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,11 +18,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BorderColor
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -42,7 +41,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.a62550_foodapp.model.ShoppingList
@@ -62,6 +60,7 @@ fun ShoppingListPage(
     // onClick booleans
     var newListOverlay by remember { mutableStateOf(false) }
     var editListNameOverlay by remember { mutableStateOf(false) }
+    var deleteListOverlay by remember { mutableStateOf(false) }
     var selectListPage by remember { mutableStateOf(false) }
 
     var selectedShoppingList by remember { mutableStateOf<ShoppingList?>(null) }
@@ -88,6 +87,10 @@ fun ShoppingListPage(
                             selectedShoppingList = clicked
                             editListNameOverlay = true
                         },
+                        deleteClick = { clicked ->
+                            selectedShoppingList = clicked
+                            deleteListOverlay = true
+                        },
                         selectClick = { clicked ->
                             selectedShoppingList = clicked
                             selectListPage = true
@@ -100,9 +103,8 @@ fun ShoppingListPage(
         FloatingActionButton(
             onClick = { newListOverlay = true },
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp),
-            shape = CircleShape,
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 20.dp),
             containerColor = themeViewModel.addButtonColor,
             contentColor = themeViewModel.onPrimaryColor
         ) {
@@ -123,9 +125,7 @@ fun ShoppingListPage(
                     )
                 }
             }
-        }
-
-        else if (newListOverlay) {
+        } else if (newListOverlay) {
             BackHandler { newListOverlay = false }
             NewShoppingListFormOverlay(
                 onDismiss = { newListOverlay = false },
@@ -147,6 +147,19 @@ fun ShoppingListPage(
                 },
                 selectedShoppingList = selectedShoppingList
             )
+        } else if (deleteListOverlay) {
+            BackHandler { deleteListOverlay = false }
+            DeleteShoppingListFormOverlay(
+                onDismiss = {deleteListOverlay = false},
+                onDelete = { id: Int, name: String ->
+                    shoppingListViewModel.deleteShoppingList(
+                        id = id,
+                        name = name
+                    )
+                    deleteListOverlay = false
+                },
+                selectedShoppingList = selectedShoppingList
+            )
         }
 
     }
@@ -155,9 +168,10 @@ fun ShoppingListPage(
 @Composable
 private fun ShoppingListPageRow(
     shoppingList: ShoppingList,
-    themeViewModel: ThemeViewModel,
     editClick: (shoppingList: ShoppingList) -> Unit,
-    selectClick: (shoppingList: ShoppingList) -> Unit
+    deleteClick: (shoppingList: ShoppingList) -> Unit,
+    selectClick: (shoppingList: ShoppingList) -> Unit,
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -196,6 +210,18 @@ private fun ShoppingListPageRow(
                        indication = LocalIndication.current,
                        interactionSource = interactionSource
                     ) { editClick(shoppingList) }
+            )
+
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Delete",
+                tint = themeViewModel.textSecondary,
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable(
+                        indication = LocalIndication.current,
+                        interactionSource = interactionSource
+                    ) { deleteClick(shoppingList) }
             )
         }
     }
@@ -333,6 +359,69 @@ private fun EditShoppingListFormOverlay(
                     Button(
                         onClick = onDismiss,
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
+                    ) {
+                        Text("Cancel", color = Color.Black)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DeleteShoppingListFormOverlay(
+    onDismiss: () -> Unit,
+    onDelete: (Int, String) -> Unit,
+    selectedShoppingList: ShoppingList?,
+    themeViewModel : ThemeViewModel = koinViewModel()
+) {
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f)),
+        contentAlignment = Alignment.Center
+    ) {
+
+        var newName by remember { mutableStateOf(selectedShoppingList?.name?: "") }
+
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .width(340.dp)
+                .wrapContentHeight()
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(24.dp)
+            ) {
+                Text(
+                    text = "Deleting: \n${selectedShoppingList?.name}",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = Color.Black
+                )
+
+                Spacer(modifier = Modifier.size(24.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Button(
+                        onClick = {
+                            selectedShoppingList?.let {onDelete(it.id, newName)}
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.confirmDelete)
+                    ) {
+                        Text("Delete")
+                    }
+
+                    Spacer(modifier = Modifier.size(8.dp))
+
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.cancelButton)
                     ) {
                         Text("Cancel", color = Color.Black)
                     }
