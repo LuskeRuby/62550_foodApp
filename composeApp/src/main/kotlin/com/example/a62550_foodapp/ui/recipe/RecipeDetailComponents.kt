@@ -26,7 +26,7 @@ import coil.compose.AsyncImage
 import java.util.Locale
 import androidx.compose.foundation.ScrollState
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
-
+import androidx.compose.ui.text.style.TextOverflow
 //API og main screen
 @Composable
 fun RecipeHeaderCollapsing(
@@ -90,17 +90,33 @@ fun RecipeHeaderCollapsing(
 
         val titleY =
             (imageHeight - 48.dp) - (imageHeight - minImageHeight) * collapseFraction
-
+        //black textoutline (ensure visible on white recipe)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .align(Alignment.BottomCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.65f)
+                        )
+                    )
+                )
+        )
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = Color.White,
             textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 64.dp)
-                .offset(y = titleY)
+                .padding(horizontal = 48.dp)
+                .offset(y = titleY.coerceAtLeast(16.dp))
                 .align(Alignment.TopCenter)
         )
     }
