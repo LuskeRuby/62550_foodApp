@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -74,7 +73,7 @@ private fun ShoppingListPage(
         )
 ) {
     val items by viewModel.items.collectAsState()
-    val total by viewModel.totalPrice.collectAsState()
+    val totalUi by viewModel.totalUi.collectAsState()
     val selectedSupermarket by viewModel.selectedSupermarketId.collectAsState()
 
     val grouped = items.groupBy { it.category }
@@ -110,16 +109,15 @@ private fun ShoppingListPage(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TotalFooter(total)
+                TotalFooter(totalUi)
             }
         }
 
         FloatingActionButton(
             onClick = onAddItemsButtonClick,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp),
-            shape = CircleShape,
+                .align(Alignment.BottomEnd)
+                .padding(end = 20.dp, bottom = 20.dp),
             containerColor = themeViewModel.addButtonColor,
             contentColor = themeViewModel.onPrimaryColor
         ) {
@@ -282,12 +280,12 @@ fun categoryColor(
     themeViewModel: ThemeViewModel = koinViewModel()
 ): Color =
     when (category.lowercase()) {
-        "tørvarer" -> Color(0xFF996600)
-        "kød" -> Color(0xFFD32F2F)
-        "grøntsager" -> Color(0xFF388E3C)
-        "mejeri" -> Color(0xFF1976D2)
-        "kolonial" -> Color(0xFF6A1B9A)
-        else -> themeViewModel.grayedOutColor
+        "tørvarer" -> themeViewModel.dryGoods
+        "kød" -> themeViewModel.meat
+        "grøntsager" -> themeViewModel.vegetables
+        "mejeri" -> themeViewModel.dairy
+        "kolonial" -> themeViewModel.kolonial
+        else -> themeViewModel.other
     }
 
 @Composable
@@ -353,7 +351,7 @@ private fun ShoppingItemRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    if (item.isChecked) themeViewModel.greyedOutColor
+                    if (item.isChecked) themeViewModel.fadedBackground
                     else themeViewModel.backgroundColor,
                     RoundedCornerShape(8.dp))
                 .padding(horizontal = 16.dp, vertical = 10.dp),
@@ -366,7 +364,7 @@ private fun ShoppingItemRow(
                 text = "${item.quantity} x ${item.name}",
                 modifier = Modifier.weight(1f),
                 fontSize = 15.sp,
-                color = if (item.isChecked) themeViewModel.textPrimary else themeViewModel.greyedOutColor,
+                color = themeViewModel.textPrimary,
                 fontWeight = FontWeight.Medium
             )
 
@@ -394,7 +392,7 @@ private fun ShoppingItemRow(
                             checked = item.isChecked,
                             text = "${item.quantity} x ${unitPrice.toInt()} kr",
                             fontSize = 12.sp,
-                            color =  Color.Gray,
+                            color = Color.Gray,
                             textAlign = TextAlign.End
                         )
                         CheckboxText(
@@ -402,7 +400,7 @@ private fun ShoppingItemRow(
                             text = "${(unitPrice * qty).toInt()} kr",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color =  themeViewModel.priceTagColor
+                            color = themeViewModel.priceTagColor
                         )
                     } else {
                         CheckboxText(
@@ -413,12 +411,15 @@ private fun ShoppingItemRow(
                             color = themeViewModel.priceTagColor
                         )
                     }
-                } else {
+                }
+                //fallback
+                else {
                     CheckboxText(
                         checked = item.isChecked,
-                        text = "-",
+                        text = "Utilgængelig",
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        fontWeight = FontWeight.Medium,
+                        color = themeViewModel.priceTagColor
                     )
                 }
             }
@@ -457,31 +458,33 @@ private fun CheckboxText(
 
 
 @Composable
-private fun TotalFooter(total: Float?) {
+private fun TotalFooter(totalUi: ShoppingListDetailsViewModel.TotalUi) {
     Surface(
         shape = RoundedCornerShape(50),
         shadowElevation = 8.dp,
         color = Color(0xFF269900)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Text(
-                text = "Total",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
+                text =
+                        "Total ${totalUi.total.toInt()} kr",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
                 color = Color.White
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = total?.let { "${it.toInt()} kr" } ?: "-",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
+            if (totalUi.missingCount > 0) {
+                Text(
+                    text = "* Nogle varer mangler pris",
+                    fontSize = 16.sp,
+                    color = Color.White.copy(alpha = 0.85f)
+                )
+            }
         }
     }
 }

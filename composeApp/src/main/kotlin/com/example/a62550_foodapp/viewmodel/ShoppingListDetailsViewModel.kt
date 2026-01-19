@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.Int
 
 class ShoppingListDetailsViewModel(
     private val shoppingListId: Int,
@@ -55,20 +56,29 @@ class ShoppingListDetailsViewModel(
             )
 
     //total price per supermarket
+    data class TotalUi(
+        val total: Float,
+        val missingCount: Int
+    )
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    val totalPrice: StateFlow<Float?> =
-        selectedSupermarketId
-            .flatMapLatest { supermarketId ->
-                shoppingListItemDao.getTotalPrice(
-                    shoppingListId = shoppingListId,
-                    supermarketId = supermarketId
-                )
-            }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = null
+    val totalUi: StateFlow<TotalUi> =
+        items.map { list ->
+            val missing = list.count { it.price == null }
+
+            val sum = list.sumOf {
+                ((it.price ?: 0f) * it.quantity).toDouble()
+            }.toFloat()
+
+            TotalUi(
+                total = sum,
+                missingCount = missing
             )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = TotalUi(0f, 0)
+        )
 
     fun selectSupermarket(id: Int) {
         _selectedSupermarketId.value = id
@@ -77,7 +87,7 @@ class ShoppingListDetailsViewModel(
     fun addItem(itemId: Int, quantity: Int) {
         viewModelScope.launch {
             try {
-                shoppingListItemDao.addItemToList(
+                shoppingListItemDao.insert(
                     ShoppingListItem(
                         shoppingListId = shoppingListId,
                         itemId = itemId,
@@ -92,19 +102,35 @@ class ShoppingListDetailsViewModel(
         }
     }
 
-    fun addItem(items: List<ShoppingListEntryUi>) {
+    fun addItem(addedItems: List<ShoppingListEntryUi>) {
         viewModelScope.launch {
-            try {
-                val newEntry = items.map { entry ->
-                    ShoppingListItem(
-                        shoppingListId = shoppingListId,
-                        itemId = entry.itemId,
-                        calcQuantity = entry.quantity,
-                        isChecked = false
-                    )
-                }
-                shoppingListItemDao.addItemsToList(newEntry)
 
+            val mappedItems = addedItems.map { entry ->
+                ShoppingListItem(
+                    shoppingListId = shoppingListId,
+                    itemId = entry.itemId,
+                    calcQuantity = entry.quantity,
+                    isChecked = false
+                )
+            }
+
+            val (updateEntryTemp, newEntry) = mappedItems.partition { mappedItem ->
+                items.value.any { db -> mappedItem.itemId == db.itemId }
+            }
+
+            val updateEntry = updateEntryTemp.map { mappedItem ->
+                val previousQuantity = items.value.first { it.itemId == mappedItem.itemId }.quantity
+                ShoppingListItem(
+                    shoppingListId = mappedItem.shoppingListId,
+                    itemId = mappedItem.itemId,
+                    calcQuantity = mappedItem.calcQuantity + previousQuantity,
+                    isChecked = mappedItem.isChecked
+                )
+            }
+
+            try {
+                shoppingListItemDao.insert(newEntry)
+                shoppingListItemDao.update(updateEntry)
             } catch (e: Exception) {
                 // Handle exception (e.g., log it)
                 e.printStackTrace()

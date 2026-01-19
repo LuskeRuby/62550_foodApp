@@ -14,6 +14,7 @@ import org.koin.core.module.dsl.viewModel
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import com.example.a62550_foodapp.api.MealDbApi
+import com.example.a62550_foodapp.viewmodel.ApiRecipeDetailViewModel
 import com.example.a62550_foodapp.viewmodel.DiscoverRecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ItemViewModel
 import com.squareup.moshi.Moshi
@@ -101,6 +102,12 @@ val appModule = module {
 
     viewModel {
         DiscoverRecipeViewModel(
+            api = get()
+        )
+    }
+
+    viewModel {
+        ApiRecipeDetailViewModel(
             api = get()
         )
     }

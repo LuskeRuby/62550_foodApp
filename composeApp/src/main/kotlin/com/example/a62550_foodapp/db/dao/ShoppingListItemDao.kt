@@ -3,6 +3,7 @@ package com.example.a62550_foodapp.db.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.example.a62550_foodapp.db.entity.ShoppingListItem
 import com.example.a62550_foodapp.db.projection.ShoppingListEntry
 import kotlinx.coroutines.flow.Flow
@@ -11,13 +12,18 @@ import kotlinx.coroutines.flow.Flow
 interface ShoppingListItemDao {
 
     @Insert
-    suspend fun insert(item: ShoppingListItem)
+    suspend fun insert(item: ShoppingListItem): Long
 
     @Insert
-    suspend fun addItemToList(shoppingListItem: ShoppingListItem): Long
+    suspend fun insert(items: List<ShoppingListItem>): List<Long>
 
-    @Insert
-    suspend fun addItemsToList(shoppingListItems: List<ShoppingListItem>): List<Long>
+    @Update
+    suspend fun update(item: ShoppingListItem)
+
+    //TODO avoid race condition when updating items
+    @Update
+    suspend fun update(items: List<ShoppingListItem>)
+
 
     @Query("""
         SELECT *
@@ -55,9 +61,15 @@ WHERE sli.shopping_list_id = :shoppingListId
 
     //get price
     @Query("""
-    SELECT SUM(p.price * sli.calc_quantity)
+    SELECT SUM(
+        CASE 
+            WHEN p.price IS NOT NULL 
+            THEN p.price * sli.calc_quantity
+            ELSE 0
+        END
+    )
     FROM shopping_list_items sli
-    JOIN item_weekly_prices p
+    LEFT JOIN item_weekly_prices p
         ON p.item_id = sli.item_id
        AND p.supermarket_id = :supermarketId
     WHERE sli.shopping_list_id = :shoppingListId
@@ -66,6 +78,7 @@ WHERE sli.shopping_list_id = :shoppingListId
         shoppingListId: Int,
         supermarketId: Int
     ): Flow<Float?>
+
 
 
     //update checkmark
