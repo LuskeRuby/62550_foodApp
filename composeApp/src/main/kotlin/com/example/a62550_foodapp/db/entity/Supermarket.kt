@@ -12,7 +12,7 @@ data class Supermarket(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val name: String,
-    val logo: ByteArray?
+    val logo: String? = null
 )
 
 
