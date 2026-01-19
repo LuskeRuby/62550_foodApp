@@ -331,6 +331,7 @@ private fun ShoppingItemRow(
 
     SwipeToDismissBox(
         state = dismissState,
+        enableDismissFromStartToEnd = false,
         backgroundContent = {
             Box(
                 modifier = Modifier
@@ -353,7 +354,7 @@ private fun ShoppingItemRow(
                 .background(
                     if (item.isChecked) themeViewModel.fadedBackground
                     else themeViewModel.backgroundColor,
-                    RoundedCornerShape(8.dp))
+                    RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
