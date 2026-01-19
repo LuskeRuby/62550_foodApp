@@ -41,6 +41,8 @@ class ThemeViewModel : ViewModel() {
     val confirmDelete = Color(0xFFD32F2F) // Red for delete confirmation
     val cancelButton = Color(0xFF757575)   // Grey for cancel actions
 
+    val softFabColor = Color(0xFF4A90E2)  // light blue for globus icon on recipepage
+
 
     // Shopping List
     val fadedBackground = Color(0xFFDEDEDE)
