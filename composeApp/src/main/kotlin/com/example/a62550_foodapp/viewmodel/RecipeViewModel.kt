@@ -17,6 +17,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import java.io.File
 import kotlin.math.ceil
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+
+
 
 data class SelectedItemGroup(
     val itemGroupId: Int,
@@ -277,4 +282,29 @@ class RecipeViewModel(
             quantity
         )
     }
+
+    private val _tempGroups = MutableStateFlow<List<SelectedItemGroup>>(emptyList())
+    val tempGroups = _tempGroups.asStateFlow()
+
+    fun setTempGroups(groups: List<SelectedItemGroup>) {
+        _tempGroups.value = groups
+    }
+
+    fun addTempGroup(groupId: Int, qty: Int) {
+        _tempGroups.update { list ->
+            list.filter { it.itemGroupId != groupId } +
+                    SelectedItemGroup(groupId, qty)
+        }
+    }
+
+    fun removeTempGroup(groupId: Int) {
+        _tempGroups.update { list ->
+            list.filter { it.itemGroupId != groupId }
+        }
+    }
+
+    fun clearTempGroups() {
+        _tempGroups.value = emptyList()
+    }
+
 }

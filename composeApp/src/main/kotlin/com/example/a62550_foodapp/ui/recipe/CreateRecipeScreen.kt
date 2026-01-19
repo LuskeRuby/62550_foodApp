@@ -20,8 +20,11 @@ import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import org.koin.androidx.compose.koinViewModel
 import kotlinx.coroutines.flow.first
 import androidx.compose.foundation.background
+import com.example.a62550_foodapp.db.entity.ItemGroup
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
-
+import com.example.a62550_foodapp.ui.components.SearchSelectField
+import androidx.compose.foundation.lazy.items
+import androidx.activity.compose.BackHandler
 
 
 @Composable
@@ -31,6 +34,33 @@ fun CreateRecipeScreen(
     onRecipeSaved: () -> Unit,
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
+    var addIngredientsOverlay by remember { mutableStateOf(false) }
+
+    if (!addIngredientsOverlay) {
+        CreateRecipeForm(
+            recipeViewModel = recipeViewModel,
+            existingRecipeId = existingRecipeId,
+            onRecipeSaved = onRecipeSaved,
+            onAddIngredients = { addIngredientsOverlay = true }
+        )
+    } else {
+        BackHandler { addIngredientsOverlay = false }
+        AddIngredientsOverlay(
+            recipeViewModel = recipeViewModel,
+            onDone = { addIngredientsOverlay = false },
+            onCancel = { addIngredientsOverlay = false }
+        )
+    }
+}
+
+@Composable
+private fun CreateRecipeForm(
+    recipeViewModel: RecipeViewModel,
+    existingRecipeId: Int?,
+    onRecipeSaved: () -> Unit,
+    onAddIngredients: () -> Unit,
+    themeViewModel: ThemeViewModel = koinViewModel()
+) {
     var title by remember { mutableStateOf("") }
     var preparationTimeText by remember { mutableStateOf("") }
     var description by remember { mutableStateOf<String?>(null) }
@@ -38,17 +68,15 @@ fun CreateRecipeScreen(
     var selectedImage by remember { mutableStateOf<Uri?>(null) }
     var existingImagePath by remember { mutableStateOf<String?>(null) }
 
-    // State for selecting existing item groups
     val allGroups by recipeViewModel.getAllItemGroups().collectAsState(initial = emptyList())
-    // search state replaces the previous dropdown/expanded UI
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedGroupId by remember { mutableStateOf<Int?>(null) }
-    var quantityText by remember { mutableStateOf("") }
-    var selectedGroups by remember { mutableStateOf(listOf<SelectedItemGroup>()) }
+    val selectedGroups by recipeViewModel.tempGroups.collectAsState()
 
-    // If editing, load existing recipe values
+    var loaded by remember { mutableStateOf(false) }
+
+    // load when editing
     LaunchedEffect(existingRecipeId) {
-        if (existingRecipeId == null) return@LaunchedEffect
+        if (existingRecipeId == null || loaded) return@LaunchedEffect
+        loaded = true
 
         val recipe = recipeViewModel.getRecipeById(existingRecipeId).first()
         recipe?.let {
@@ -59,14 +87,14 @@ fun CreateRecipeScreen(
             existingImagePath = it.imagePath
         }
 
-        selectedGroups = recipeViewModel.getSelectedGroupsForRecipe(existingRecipeId)
+        recipeViewModel.setTempGroups(
+            recipeViewModel.getSelectedGroupsForRecipe(existingRecipeId)
+        )
     }
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        selectedImage = uri
-    }
+    ) { uri -> selectedImage = uri }
 
     LazyColumn(
         modifier = Modifier
@@ -79,8 +107,7 @@ fun CreateRecipeScreen(
         item {
             Text(
                 text = if (existingRecipeId != null) "Edit Recipe" else "Create Recipe",
-                style = MaterialTheme.typography.headlineSmall,
-                color = themeViewModel.textPrimary
+                style = MaterialTheme.typography.headlineSmall
             )
         }
 
@@ -96,12 +123,10 @@ fun CreateRecipeScreen(
         item {
             OutlinedTextField(
                 value = preparationTimeText,
-                onValueChange = { input ->
-                    preparationTimeText = input.filter { it.isDigit() }
-                },
+                onValueChange = { preparationTimeText = it.filter(Char::isDigit) },
                 label = { Text("Preparation time (minutes)") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
             )
         }
 
@@ -128,17 +153,10 @@ fun CreateRecipeScreen(
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
 
-                Button(
-                    onClick = { imagePicker.launch("image/*") },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = themeViewModel.primaryColor,
-                        contentColor = themeViewModel.onPrimaryColor
-                    )
-                ) {
+                Button(onClick = { imagePicker.launch("image/*") }) {
                     Text("Choose image")
                 }
 
-                // Show remove image when editing and an existing image is present and no new image selected
                 if (existingImagePath != null && selectedImage == null) {
                     Button(
                         onClick = {
@@ -147,233 +165,46 @@ fun CreateRecipeScreen(
                                 existingImagePath = null
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = themeViewModel.errorColor,
-                            contentColor = themeViewModel.onPrimaryColor
-                        )
-                    ) {
-                        Text("Remove image")
-                    }
+                        colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.errorColor)
+                    ) { Text("Remove image") }
                 }
             }
         }
 
         item {
-            // Show the selected image (or existing image if present)
             when {
-                selectedImage != null -> {
-                    AsyncImage(
-                        model = selectedImage,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                    )
-                }
+                selectedImage != null ->
+                    AsyncImage(model = selectedImage, contentDescription = null)
 
-                existingImagePath != null -> {
-                    AsyncImage(
-                        model = existingImagePath,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                    )
-                }
+                existingImagePath != null ->
+                    AsyncImage(model = existingImagePath, contentDescription = null)
             }
         }
 
-        // UI for selecting existing item groups
-        item {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
-                shape = MaterialTheme.shapes.large,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-
-                    Text(
-                        "Ingredients",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = themeViewModel.textPrimary
-                    )
-
-                    Spacer(Modifier.height(12.dp))
-
-                    val matches =
-                        if (searchQuery.isNotBlank()) allGroups.filter {
-                            it.name.contains(searchQuery, ignoreCase = true)
-                        } else emptyList()
-
-                    val displayedUnitType = when {
-                        selectedGroupId != null -> allGroups.firstOrNull { it.id == selectedGroupId }?.unitType
-                        matches.isNotEmpty() -> matches.first().unitType
-                        else -> null
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-
-                        OutlinedTextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            label = { Text("Search") },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        OutlinedTextField(
-                            value = quantityText,
-                            onValueChange = { input ->
-                                quantityText = input.filter { it.isDigit() || it == '.' }
-                            },
-                            label = { Text("Qty") },
-                            modifier = Modifier.width(90.dp),
-                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-                        )
-
-                        Text(
-                            text = displayedUnitType ?: "",
-                            color = themeViewModel.textSecondary,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-
-                    // Suggestions shown when user typed something
-                    if (searchQuery.isNotBlank()) {
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = themeViewModel.secondaryColor),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column {
-                                if (matches.isEmpty()) {
-                                    Text(
-                                        "No matches",
-                                        modifier = Modifier.padding(12.dp),
-                                        color = themeViewModel.textSecondary
-                                    )
-                                } else {
-                                    matches.take(6).forEach { g ->
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable {
-                                                    selectedGroupId = g.id
-                                                    searchQuery = g.name
-                                                }
-                                                .padding(12.dp)
-                                        ) {
-                                            Text(g.name, color = themeViewModel.textPrimary)
-                                        }
-                                        HorizontalDivider()
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        val currentLabel =
-                            allGroups.firstOrNull { it.id == selectedGroupId }?.name ?: "No group selected"
-
-                        Text(
-                            "Selected: $currentLabel",
-                            color = themeViewModel.textSecondary,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
-                    }
-
-                    Spacer(Modifier.height(12.dp))
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-
-                        Button(
-                            onClick = {
-                                val qty = quantityText.toIntOrNull() ?: 0
-                                val gid = selectedGroupId
-                                if (gid != null) {
-                                    selectedGroups =
-                                        (selectedGroups.filter { it.itemGroupId != gid } +
-                                                SelectedItemGroup(gid, qty))
-                                    selectedGroupId = null
-                                    quantityText = ""
-                                    searchQuery = ""
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = themeViewModel.primaryColor,
-                                contentColor = themeViewModel.onPrimaryColor
-                            )
-                        ) {
-                            Text("Add")
-                        }
-
-                        OutlinedButton(
-                            onClick = {
-                                selectedGroupId = null
-                                quantityText = ""
-                                searchQuery = ""
-                            }
-                        ) {
-                            Text("Clear")
-                        }
-                    }
-                }
-            }
-        }
-
-        // Show the list of selected groups
         item {
             if (selectedGroups.isNotEmpty()) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
-                    shape = MaterialTheme.shapes.large,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
 
-                        Text(
-                            "Added ingredients",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = themeViewModel.textPrimary
-                        )
+                        Text("Added ingredients")
 
-                        Spacer(Modifier.height(8.dp))
-
-                        selectedGroups.forEachIndexed { idx, sg ->
-
+                        selectedGroups.forEach { sg ->
                             val name =
                                 allGroups.firstOrNull { it.id == sg.itemGroupId }?.name ?: "(unknown)"
 
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 6.dp),
+                                Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(name, color = themeViewModel.textPrimary)
-                                    Text(
-                                        "${sg.quantity}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = themeViewModel.textSecondary
-                                    )
-                                }
-
+                                Text("$name — ${sg.quantity}", Modifier.weight(1f))
                                 Text(
                                     "Remove",
                                     color = themeViewModel.errorColor,
                                     modifier = Modifier.clickable {
-                                        selectedGroups =
-                                            selectedGroups.filterIndexed { i, _ -> i != idx }
+                                        recipeViewModel.removeTempGroup(sg.itemGroupId)
                                     }
                                 )
                             }
-
-                            if (idx != selectedGroups.lastIndex) HorizontalDivider()
                         }
                     }
                 }
@@ -382,23 +213,29 @@ fun CreateRecipeScreen(
 
         item {
             Button(
+                onClick = onAddIngredients,
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Add ingredients") }
+        }
+
+        item {
+            Button(
                 onClick = {
-                    val prepMinutes = preparationTimeText.toIntOrNull() ?: 0
+                    val prep = preparationTimeText.toIntOrNull() ?: 0
                     if (existingRecipeId != null) {
                         recipeViewModel.updateRecipe(
                             recipeId = existingRecipeId,
                             title = title,
-                            preparationTimeMinutes = prepMinutes,
+                            preparationTimeMinutes = prep,
                             description = description,
                             instructions = instructions,
                             imageUri = selectedImage,
                             selectedGroups = selectedGroups
                         )
                     } else {
-                        // Pass selected existing groups to viewmodel
                         recipeViewModel.createRecipe(
                             title = title,
-                            preparationTimeMinutes = prepMinutes,
+                            preparationTimeMinutes = prep,
                             description = description,
                             instructions = instructions,
                             imageUri = selectedImage,
@@ -408,15 +245,112 @@ fun CreateRecipeScreen(
                     onRecipeSaved()
                 },
                 enabled = title.isNotBlank(),
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = themeViewModel.addButtonColor,
-                    contentColor = themeViewModel.onPrimaryColor,
-                    disabledContainerColor = themeViewModel.secondaryColor,
-                    disabledContentColor = themeViewModel.textSecondary
-                )
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(if (existingRecipeId != null) "Save changes" else "Save recipe")
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddIngredientsOverlay(
+    recipeViewModel: RecipeViewModel,
+    onDone: () -> Unit,
+    onCancel: () -> Unit,
+    themeViewModel: ThemeViewModel = koinViewModel()
+) {
+    val allGroups by recipeViewModel.getAllItemGroups().collectAsState(initial = emptyList())
+    val tempSelected by recipeViewModel.tempGroups.collectAsState()
+
+    var selectedGroupId by remember { mutableStateOf<Int?>(null) }
+    var quantityText by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(themeViewModel.backgroundColor)
+            .padding(16.dp)
+    ) {
+
+        Text("Add ingredients", style = MaterialTheme.typography.headlineSmall)
+
+        SearchSelectField(
+            label = "Search ingredient",
+            items = allGroups,
+            itemText = { it.name },
+            itemUnit = { it.unitType },
+            onItemSelected = { selectedGroupId = it.id }
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+
+            OutlinedTextField(
+                value = quantityText,
+                onValueChange = { quantityText = it.filter(Char::isDigit) },
+                label = { Text("Qty") },
+                modifier = Modifier.width(100.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+
+            Text(
+                allGroups.firstOrNull { it.id == selectedGroupId }?.unitType ?: ""
+            )
+
+            Spacer(Modifier.weight(1f))
+
+            Button(
+                enabled = selectedGroupId != null && quantityText.isNotBlank(),
+                onClick = {
+                    recipeViewModel.addTempGroup(
+                        selectedGroupId!!,
+                        quantityText.toInt()
+                    )
+                    selectedGroupId = null
+                    quantityText = ""
+                }
+            ) { Text("Add") }
+        }
+
+        LazyColumn(Modifier.weight(1f)) {
+            items(tempSelected, key = { it.itemGroupId }) { sg ->
+                val name =
+                    allGroups.firstOrNull { it.id == sg.itemGroupId }?.name ?: "(unknown)"
+
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("$name — ${sg.quantity}", Modifier.weight(1f))
+                    Text(
+                        "Remove",
+                        color = themeViewModel.errorColor,
+                        modifier = Modifier.clickable {
+                            recipeViewModel.removeTempGroup(sg.itemGroupId)
+                        }
+                    )
+                }
+            }
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+
+            OutlinedButton(
+                onClick = onCancel,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Cancel")
+            }
+
+            Button(
+                onClick = onDone,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Done")
             }
         }
     }

@@ -25,14 +25,15 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.a62550_foodapp.db.projection.ItemWithPriceAndCategory
 import com.example.a62550_foodapp.model.ShoppingListEntryUi
+import com.example.a62550_foodapp.viewmodel.ItemViewModel
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.collections.component1
 import kotlin.collections.component2
+import com.example.a62550_foodapp.ui.components.SearchSelectField
 
 // top layer so we can reuse ShoppingListContent and ShoppingItemRow
 @Composable
@@ -137,6 +138,8 @@ private fun AddItemToShoppingListPage(
             parameters = { parametersOf(shoppingListId) }
         )
 ) {
+    val itemViewModel: ItemViewModel = koinViewModel()
+    val dbItems by itemViewModel.items.collectAsState()
     val items by viewModel.tempItemsList.collectAsState()
     val grouped = items.groupBy { it.category }
 
@@ -150,8 +153,15 @@ private fun AddItemToShoppingListPage(
             modifier = Modifier.padding(16.dp)
         )
 
-        ItemSearchField(
-            onAddItemsToTempList = { entry: ItemWithPriceAndCategory -> viewModel.addTempItem(entry)}
+        // new generic search call
+        SearchSelectField(
+            label = "Search items",
+            items = dbItems,
+            itemText = { it.item.name },
+            itemUnit = { it.item.unitType },
+            onItemSelected = { entry ->
+                viewModel.addTempItem(entry)
+            }
         )
 
         // body
