@@ -137,22 +137,29 @@ class ShoppingListDetailsViewModel(
 
     fun addTempItem(item: ItemWithPriceAndCategory) {
 
-            val itemToShoppingListEntryUi = ShoppingListEntryUi(
-                itemId = item.item.id,
-                name = item.item.name,
-                quantity = 1,
-                unitType = item.item.unitType,
-                isChecked = false,
-                category = item.itemGroup.category,   // <-- problem
-                size = item.item.size,
-                price = item.weeklyPrices.maxWithOrNull(compareBy({ it.year }, { it.week }))?.price ?: 0f   // <-- problem
-            )
+        val latestPrice =
+            item.weeklyPrices
+                .maxWithOrNull(compareBy({ it.year }, { it.week }))
+                ?.price
+                ?: 0f
 
-            // added guard condition so dublicate items cannot be added
-            if (_tempItemsList.value.none { it.itemId == item.item.id }) {
-                _tempItemsList.value += itemToShoppingListEntryUi
-            }
+        val entry = ShoppingListEntryUi(
+            itemId = item.item.id,
+            name = item.item.name,
+            quantity = 1,
+            unitType = item.item.unitType,
+            isChecked = false,
+            category = item.itemGroup.category,
+            size = item.item.size,
+            price = latestPrice
+        )
 
+        val alreadyAdded =
+            _tempItemsList.value.any { it.itemId == item.item.id }
+
+        if (!alreadyAdded) {
+            _tempItemsList.value = _tempItemsList.value + entry
+        }
     }
 
     fun removeTempItem(itemId: Int) {
