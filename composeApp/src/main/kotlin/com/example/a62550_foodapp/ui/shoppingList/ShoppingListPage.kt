@@ -236,7 +236,11 @@ private fun NewShoppingListFormOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.5f)),
+            .background(Color.Black.copy(alpha = 0.5f))
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { },
         contentAlignment = Alignment.Center
     ) {
 
@@ -307,7 +311,11 @@ private fun EditShoppingListFormOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.5f)),
+            .background(Color.Black.copy(alpha = 0.5f))
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { },
         contentAlignment = Alignment.Center
     ) {
 
@@ -379,7 +387,11 @@ private fun DeleteShoppingListFormOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.5f)),
+            .background(Color.Black.copy(alpha = 0.5f))
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { },
         contentAlignment = Alignment.Center
     ) {
 
