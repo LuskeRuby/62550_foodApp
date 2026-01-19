@@ -16,6 +16,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.Storefront
+import com.example.a62550_foodapp.ui.superMarket.SuperMarketPage
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -90,6 +92,34 @@ fun MainView(
                         indicatorColor = Color.Transparent
                     )
                 )
+                NavigationBarItem(
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2 },
+                    icon = {
+                        Icon(
+                            Icons.Filled.Storefront,
+                            contentDescription = "SuperMarked",
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
+                    label = {
+                        Text(
+                            "Supermarkeder",
+                            fontSize = 11.sp,
+                            fontWeight = if (selectedTab == 2)
+                                FontWeight.SemiBold
+                            else
+                                FontWeight.Normal
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color.Black,
+                        selectedTextColor = Color.Black,
+                        unselectedIconColor = Color.Gray,
+                        unselectedTextColor = Color.Gray,
+                        indicatorColor = Color.Transparent
+                    )
+                )
             }
         }
     ) { innerPadding ->
@@ -101,6 +131,7 @@ fun MainView(
             when (selectedTab) {
                 0 -> recipeContent()
                 1 -> ShoppingListPage()
+                2 -> SuperMarketPage()
             }
         }
     }

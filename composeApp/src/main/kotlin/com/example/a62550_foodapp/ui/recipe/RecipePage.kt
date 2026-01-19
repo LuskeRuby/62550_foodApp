@@ -6,17 +6,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,62 +28,37 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.animateContentSize
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
-import androidx.compose.material.icons.filled.Public
-
 
 @Composable
 fun RecipePage(
     onAddRecipeClick: () -> Unit,
-    onDiscoverRecipesClick: () -> Unit,
+    onDiscoverRecipesClick: () -> Unit, // kept for nav, not used here
     onRecipeClick: (Int) -> Unit,
     recipeViewModel: RecipeViewModel = koinViewModel(),
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
+
     // --- DATA ---
     val allRecipes by recipeViewModel
         .getRecipesWithPricesFlow()
         .collectAsState(initial = emptyList())
 
-    val allSupermarkets by recipeViewModel.allSupermarkets
-        .collectAsState(initial = emptyList())
-
-    val selectedSupermarkets by recipeViewModel.selectedSupermarkets
-        .collectAsState()
+    val selectedSupermarkets by recipeViewModel.selectedSupermarkets.collectAsState()
 
     // --- UI STATE ---
-    var showFilterDialog by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
 
-    val visibleRecipes = remember(allRecipes, searchText) {
-        if (searchText.isBlank()) {
-            allRecipes
-        } else {
-            allRecipes.filter { (recipe, _) ->
-                recipe.title.contains(searchText, ignoreCase = true)
-            }
+    val visibleRecipes = remember(allRecipes, searchText, selectedSupermarkets) {
+        allRecipes.filter { (recipe, _) ->
+            recipe.title.contains(searchText, ignoreCase = true)
         }
     }
 
     val gridState = rememberLazyGridState()
 
-    val showSearchBar by remember {
-        derivedStateOf {
-            gridState.firstVisibleItemIndex == 0 &&
-                    gridState.firstVisibleItemScrollOffset == 0
-        }
-    }
-
-    val searchBarHeight by animateDpAsState(
-        targetValue = if (showSearchBar) 56.dp else 0.dp,
-        label = "searchBarHeight"
-    )
-
-    // --- UI ---
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -97,89 +67,19 @@ fun RecipePage(
 
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // ===== FILTER ROW =====
-            Row(
+            // ===== FIXED SEARCH BAR =====
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = { searchText = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = { showFilterDialog = true },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = themeViewModel.primaryColor
-                    ),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FilterList,
-                        contentDescription = "Filter",
-                        modifier = Modifier
-                            .size(18.dp)
-                            .padding(end = 8.dp)
-                    )
-                    Text(
-                        text = if (selectedSupermarkets.isEmpty()) "Alle Butikker"
-                        else if (selectedSupermarkets.size == 1) "${selectedSupermarkets.size} Butik"
-                        else "${selectedSupermarkets.size} Butikker",
-                        style = MaterialTheme.typography.labelMedium
-                    )
+                    .padding(16.dp),
+                placeholder = { Text("Søg opskrift") },
+                singleLine = true,
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = null)
                 }
-
-                if (selectedSupermarkets.isNotEmpty()) {
-                    TextButton(
-                        onClick = { recipeViewModel.clearSupermarketFilter() }
-                    ) {
-                        Text("Clear")
-                    }
-                }
-            }
-
-            // ===== SEARCH BAR =====
-            // ===== SEARCH + DISCOVER ROW =====
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .animateContentSize()
-            ) {
-                if (showSearchBar) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        // 🔍 Search field
-                        OutlinedTextField(
-                            value = searchText,
-                            onValueChange = { searchText = it },
-                            modifier = Modifier.weight(1f),
-                            placeholder = { Text("Søg opskrift") },
-                            singleLine = true,
-                            leadingIcon = {
-                                Icon(Icons.Default.Search, contentDescription = null)
-                            }
-                        )
-
-                        // 🌍 Discover button
-                        FloatingActionButton(
-                            onClick = onDiscoverRecipesClick,
-                            containerColor = themeViewModel.secondaryColor,
-                            contentColor = themeViewModel.onSecondaryColor,
-                            modifier = Modifier.size(48.dp), // smaller than normal FAB
-                            elevation = FloatingActionButtonDefaults.elevation(0.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Public,
-                                contentDescription = "Find opskrifter på engelsk"
-                            )
-                        }
-                    }
-                }
-            }
+            )
 
             // ===== GRID =====
             if (visibleRecipes.isEmpty()) {
@@ -202,8 +102,7 @@ fun RecipePage(
                     contentPadding = PaddingValues(
                         start = 16.dp,
                         end = 16.dp,
-                        top = 16.dp,
-                        bottom = 86.dp
+                        bottom = 96.dp
                     ),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -223,82 +122,34 @@ fun RecipePage(
             }
         }
 
-        // ===== CREATE RECIPE BOTTOM =====
+        // ===== ADD RECIPE FAB =====
         FloatingActionButton(
             onClick = onAddRecipeClick,
             containerColor = themeViewModel.addButtonColor,
             contentColor = themeViewModel.onPrimaryColor,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 20.dp) // above bottom nav, to the right
+                .padding(end = 20.dp, bottom = 20.dp)
         ) {
             Icon(Icons.Default.Add, contentDescription = "Add Recipe")
         }
 
-
-        // ===== DISCOVER (GLOBUS) BUTTON =====
+        // ===== DISCOVER FAB (LEFT) =====
         FloatingActionButton(
             onClick = onDiscoverRecipesClick,
-            containerColor = themeViewModel.secondaryColor,
-            contentColor = themeViewModel.onSecondaryColor,
+            containerColor = themeViewModel.softFabColor,
+            contentColor = Color.White,         // white icon
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(start = 20.dp, bottom = 20.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Public, // 🌍 globus icon
+                imageVector = Icons.Default.Public,
                 contentDescription = "Find opskrifter på engelsk"
-            )
-        }
-
-
-        // ===== FILTER DIALOG =====
-        if (showFilterDialog) {
-            AlertDialog(
-                onDismissRequest = { showFilterDialog = false },
-                title = { Text("Filter butikker") },
-                text = {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        allSupermarkets.forEach { supermarket ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        recipeViewModel.toggleSupermarket(supermarket.id)
-                                    }
-                                    .padding(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Checkbox(
-                                    checked = supermarket.id in selectedSupermarkets,
-                                    onCheckedChange = {
-                                        recipeViewModel.toggleSupermarket(supermarket.id)
-                                    }
-                                )
-                                Text(
-                                    text = supermarket.name,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { showFilterDialog = false }) {
-                        Text("Done")
-                    }
-                }
             )
         }
     }
 }
-
 
 @Composable
 fun RecipeCard(
@@ -317,7 +168,7 @@ fun RecipeCard(
     ) {
         Column {
 
-            // ===== IMAGE =====
+            // IMAGE
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -330,7 +181,6 @@ fun RecipeCard(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // PRICE — bottom right on image
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -350,11 +200,11 @@ fun RecipeCard(
                 }
             }
 
-            // ===== TITLE AREA =====
+            // TITLE
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp) // fixed title area
+                    .height(52.dp)
                     .background(Color.White)
                     .padding(horizontal = 12.dp, vertical = 10.dp),
                 contentAlignment = Alignment.CenterStart
@@ -370,5 +220,3 @@ fun RecipeCard(
         }
     }
 }
-
-
