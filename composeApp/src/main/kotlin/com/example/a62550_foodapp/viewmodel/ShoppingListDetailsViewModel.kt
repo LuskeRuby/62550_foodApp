@@ -22,8 +22,10 @@ class ShoppingListDetailsViewModel(
     private val shoppingListItemGroupDao: ShoppingListItemGroupDao
 ) : ViewModel() {
 
-// Shopping List Item Groups (raw logical ingredients)
-// --------------------------------------------------------------------------------
+
+    // --------------------------------------------------------------------------------
+    // Shopping List Item Groups (raw logical ingredients)
+    // --------------------------------------------------------------------------------
     private val itemGroupList: StateFlow<List<ShoppingListItemGroup>> =
         shoppingListItemGroupDao.getItemGroupsMatchingListId(shoppingListId)
             .stateIn(
@@ -32,45 +34,54 @@ class ShoppingListDetailsViewModel(
                 initialValue = emptyList()
             )
 
+    // --------------------------------------------------------------------------------
+    // Shopping List Item Groups (resolved to concrete items)
+    // --------------------------------------------------------------------------------
+
+
+    // --------------------------------------------------------------------------------
+    // ADD ITEM GROUP
+    // --------------------------------------------------------------------------------
     // TODO handle duplicate items
     fun addItemGroup(addedItem: ItemGroup, portionQuantity: Int?, portionSize: Float) {
         viewModelScope.launch {
 
-            val entry =
-                ShoppingListItemGroup(
-                    shoppingListId = shoppingListId,
-                    itemGroupId = addedItem.id,
-                    recipeId = null,
-                    portionQuantity = portionQuantity ?: 1,
-                    portionSize = portionSize,
-                    isChecked = false
-                )
+        val entry =
+            ShoppingListItemGroup(
+                shoppingListId = shoppingListId,
+                itemGroupId = addedItem.id,
+                recipeId = null,
+                portionQuantity = portionQuantity ?: 1,
+                portionSize = portionSize,
+                isChecked = false
+            )
 
-            try {
-                if (itemGroupList.value.any { currentList ->
+        try {
+            if (itemGroupList.value.any { currentList ->
                     entry.shoppingListId == currentList.shoppingListId &&  // always true for current implementation
-                    entry.itemGroupId == currentList.itemGroupId    &&
-                    entry.recipeId == currentList.recipeId }
-                    ) {
-                    updateItemGroup(entry)
-                } else {
-                    shoppingListItemGroupDao.insert(entry)
-                }
-
-
-            } catch (e: Exception) {
-                // Handle exception (e.g., log it)
-                e.printStackTrace()
+                            entry.itemGroupId == currentList.itemGroupId    &&
+                            entry.recipeId == currentList.recipeId }
+            ) {
+                updateItemGroup(entry)
+            } else {
+                shoppingListItemGroupDao.insert(entry)
             }
+
+
+        } catch (e: Exception) {
+            // Handle exception (e.g., log it)
+            e.printStackTrace()
         }
     }
+}
 
 
-
+    // --------------------------------------------------------------------------------
+    // UPDATE ITEM GROUP (ENTITY-BASED, NOT PROJECTION)
+    // --------------------------------------------------------------------------------
     // TODO make proper update instead of replace
     fun updateItemGroup(itemToUpdate: ShoppingListEntry) {
         viewModelScope.launch {
-
             val previousQuantity = itemGroupList.value.first { it.itemId == itemToUpdate.itemId }.quantity
 
             val updateEntry =
@@ -88,6 +99,9 @@ class ShoppingListDetailsViewModel(
         }
     }
 
+    // --------------------------------------------------------------------------------
+    // DELETE
+    // --------------------------------------------------------------------------------
     fun deleteItemGroup(item: ShoppingListItemGroup) {
         viewModelScope.launch {
             shoppingListItemGroupDao.deleteItem(
@@ -98,6 +112,9 @@ class ShoppingListDetailsViewModel(
         }
     }
 
+    // --------------------------------------------------------------------------------
+    // CHECKMARK
+    // --------------------------------------------------------------------------------
     fun setCheckedItemGroup(
         itemGroupId: Int,
         recipeId: Int?,
@@ -112,6 +129,37 @@ class ShoppingListDetailsViewModel(
             )
         }
     }
+
+    // --------------------------------------------------------------------------------
+    // STORE FILTER (same pattern as RecipePage)
+    // --------------------------------------------------------------------------------
+    private val selectedStores = MutableStateFlow<Set<Int>>(emptySet())
+
+    fun setSelectedStores(stores: Set<Int>) {
+        selectedStores.value = stores
+    }
+
+    // --------------------------------------------------------------------------------
+    // CHEAPEST SHOPPING LIST ENTRIES (PROJECTION FOR UI)
+    // --------------------------------------------------------------------------------
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val shoppingListEntries: StateFlow<List<ShoppingListEntry>> =
+        selectedStores
+            .flatMapLatest { stores ->
+                shoppingListItemGroupDao.getCheapestShoppingListEntriesFlow(
+                    shoppingListId = shoppingListId,
+                    storeIds = stores.toList(),
+                    storeCount = stores.size
+                )
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
+
+
+}
 
 // UI entries for Shopping List(resolved to cheapest store items)
 // --------------------------------------------------------------------------------
