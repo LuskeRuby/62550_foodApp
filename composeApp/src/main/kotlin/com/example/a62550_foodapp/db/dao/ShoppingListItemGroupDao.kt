@@ -121,6 +121,7 @@ WHERE slig.shopping_list_id = :shoppingListId
     @Query(
         """
 SELECT
+    slig.id            AS shoppingListGroupId,
     ig.id              AS itemGroupId,
     i.id               AS itemId,
     i.name             AS itemName,
