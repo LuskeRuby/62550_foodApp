@@ -18,7 +18,7 @@ import kotlin.Int
 import kotlin.collections.map
 
 class ShoppingListDetailsViewModel(
-    private val shoppingListId: Int,
+    private val shoppingListId: Long,
     private val shoppingListItemGroupDao: ShoppingListItemGroupDao
 ) : ViewModel() {
 
@@ -157,7 +157,7 @@ class ShoppingListDetailsViewModel(
 
     // Shopping list entries resolved to concrete items for selected store
     @OptIn(ExperimentalCoroutinesApi::class)
-    val items: StateFlow<List<ShoppingListEntryUi>> =
+    val items: StateFlow<List<ShoppingListEntry>> =
         selectedSupermarketId
             .flatMapLatest { supermarketId ->
                 shoppingListItemGroupDao.getShoppingListEntriesByStoreFlow(
@@ -167,7 +167,7 @@ class ShoppingListDetailsViewModel(
             }
             .map { entries ->
                 entries.map {
-                    ShoppingListEntryUi(
+                    ShoppingListEntry(
                         itemId = it.itemId,
                         itemGroupId = it.itemGroupId,
                         recipeId = it.recipeId,
