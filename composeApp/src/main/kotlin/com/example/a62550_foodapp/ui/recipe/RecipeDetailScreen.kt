@@ -73,7 +73,7 @@ fun RecipeDetailScreen(
                 price = scaledPrice,
                 onAdd = {
                     recipeViewModel.addRecipeToShoppingList(
-                        shoppingListId = 1, // midlertidigt: én aktiv liste
+                        shoppingListId = 1, // todo én aktiv liste
                         recipeId = recipeId,
                         portions = portions
                     )

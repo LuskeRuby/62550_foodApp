@@ -21,7 +21,7 @@ import kotlin.math.ceil
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-
+import kotlin.times
 
 data class SelectedItemGroup(
     val itemGroupId: Int,
@@ -34,7 +34,8 @@ class RecipeViewModel(
     private val itemWeeklyPriceDao: ItemWeeklyPriceDao,
     private val appContext: Context,
     private val itemGroupDao: ItemGroupDao,
-    private val supermarketDao: SupermarketDao
+    private val supermarketDao: SupermarketDao,
+    private val shoppingListItemGroupDao: ShoppingListItemGroupDao
 ) : ViewModel() {
 
     private val _selectedSupermarkets = MutableStateFlow<Set<Int>>(emptySet())
@@ -317,34 +318,32 @@ class RecipeViewModel(
     ) {
         viewModelScope.launch {
 
-            val ingredients = recipeItemDao.getItemsForRecipe(recipeId)
-
-            for (ri in ingredients) {
-
-                val finalQty = ri.sizeOfOnePortion * portions
-
-                val existing = shoppingListItemGroupDao.getOneForRecipe(
+            // Avoid adding same recipe twice
+            val alreadyExists =
+                shoppingListItemGroupDao.recipeExistsInList(
                     shoppingListId = shoppingListId,
-                    itemGroupId = ri.itemGroupId,
                     recipeId = recipeId
-                )
+                ) > 0
 
-                if (existing == null) {
-                    shoppingListItemGroupDao.insert(
-                        ShoppingListItemGroup(
-                            shoppingListId = shoppingListId,
-                            itemGroupId = ri.itemGroupId,
-                            recipeId = recipeId,
-                            quantity = finalQty,
-                            isChecked = false
-                        )
-                    )
-                } else {
-                    shoppingListItemGroupDao.update(
-                        existing.copy(quantity = existing.quantity + finalQty)
-                    )
-                }
+            if (alreadyExists) {
+                // TODO: show "already added" message
+                return@launch
             }
+
+            val recipeItems = recipeItemDao.getItemsForRecipe(recipeId)
+
+            val groups = recipeItems.map { recipeItem ->
+                ShoppingListItemGroup(
+                    id = 0,
+                    shoppingListId = shoppingListId,
+                    itemGroupId = recipeItem.itemGroupId,
+                    recipeId = recipeId,
+                    portionQuantity = recipeItem.sizeOfOnePortion * portions,
+                    portionSize = recipeItem.sizeOfOnePortion.toFloat(),
+                    isChecked = false
+                )
+            }
+            shoppingListItemGroupDao.insert(groups)
         }
     }
 

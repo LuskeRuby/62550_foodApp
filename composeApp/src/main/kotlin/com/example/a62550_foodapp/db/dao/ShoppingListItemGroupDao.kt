@@ -78,8 +78,7 @@ interface ShoppingListItemGroupDao {
      *
      * Returns NULL if no prices are available.
      */
-    @Query(
-        """
+    @Query("""
 SELECT SUM(
     CASE
         WHEN p.price IS NOT NULL
@@ -94,8 +93,7 @@ LEFT JOIN item_weekly_prices p
     ON p.item_id = i.id
    AND p.supermarket_id = :supermarketId
 WHERE slig.shopping_list_id = :shoppingListId
-"""
-    )
+""")
     fun getTotalPriceByStoreFlow(
         shoppingListId: Int,
         supermarketId: Int
@@ -118,20 +116,19 @@ WHERE slig.shopping_list_id = :shoppingListId
      *
      * All values are delivered as a reactive Flow for real-time UI updates.
      */
-    @Query(
-        """
+    @Query("""
 SELECT
-    slig.id            AS shoppingListGroupId,
-    ig.id              AS itemGroupId,
-    i.id               AS itemId,
-    i.name             AS itemName,
-    i.size             AS size,
-    i.unitType         AS unitType,
-    slig.portion_quantity      AS quantity,
-    p.price            AS price,
-    slig.is_checked    AS isChecked,
-    ig.category        AS category,
-    slig.recipe_id     AS recipeId
+    slig.id                 AS shoppingListGroupId,
+    ig.id                   AS itemGroupId,
+    i.id                    AS itemId,
+    i.name                  AS itemName,
+    i.size                  AS size,
+    i.unitType              AS unitType,
+    slig.portion_quantity   AS quantity,
+    p.price                 AS price,
+    slig.is_checked         AS isChecked,
+    ig.category             AS category,
+    slig.recipe_id          AS recipeId
 FROM shopping_list_item_groups slig
 
 JOIN item_groups ig
@@ -152,11 +149,22 @@ WHERE slig.shopping_list_id = :shoppingListId
       WHERE i2.item_group_id = ig.id
         AND p2.supermarket_id = :supermarketId
   )
-"""
-    )
+""")
     fun getShoppingListEntriesByStoreFlow(
         shoppingListId: Int,
         supermarketId: Int
     ): Flow<List<ShoppingListEntry>>
+
+
+    @Query("""
+    SELECT COUNT(*)
+    FROM shopping_list_item_groups
+    WHERE shopping_list_id = :shoppingListId
+      AND recipe_id = :recipeId
+""")
+    suspend fun recipeExistsInList(
+        shoppingListId: Int,
+        recipeId: Int
+    ): Int
 
 }
