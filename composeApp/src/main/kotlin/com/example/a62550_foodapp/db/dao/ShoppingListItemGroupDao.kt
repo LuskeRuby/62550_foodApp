@@ -1,6 +1,7 @@
 package com.example.a62550_foodapp.db.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -9,7 +10,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ShoppingListItemGroupDao {
-
 
     @Insert
     suspend fun insert(item: ShoppingListItemGroup): Long
@@ -23,6 +23,9 @@ interface ShoppingListItemGroupDao {
     //TODO avoid race condition when updating items
     @Update
     suspend fun update(items: List<ShoppingListItemGroup>)
+
+    @Delete
+    suspend fun delete(item: ShoppingListItemGroup)
 
 
     @Query("""
@@ -55,7 +58,7 @@ interface ShoppingListItemGroupDao {
         AND item_group_id = :itemGroupId
         AND (recipe_id = :recipeId OR (recipe_id IS NULL AND :recipeId IS NULL))
     """)
-    suspend fun deleteItem(
+    suspend fun delete(
         shoppingListId: Int,
         itemGroupId: Int,
         recipeId: Int?
