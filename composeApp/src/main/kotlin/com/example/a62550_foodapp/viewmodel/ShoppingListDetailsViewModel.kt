@@ -13,6 +13,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.Int
+import kotlin.collections.map
+import kotlin.text.insert
 
 class ShoppingListDetailsViewModel(
     private val shoppingListId: Int,
@@ -29,15 +32,56 @@ class ShoppingListDetailsViewModel(
                 initialValue = emptyList()
             )
 
-    fun addItemGroup(item: ShoppingListItemGroup) {
+    // TODO handle duplicate items
+    fun addItemGroup(addedItem: ShoppingListEntryUi) {
         viewModelScope.launch {
-            shoppingListItemGroupDao.insert(item)
+
+            val mappedItem = addedItem.map { entry: ShoppingListEntryUi ->
+                ShoppingListItemGroup(
+                    id = 0,
+                    shoppingListId = shoppingListId,
+                    itemGroupId = entry.itemGroupId,
+                    recipeId = entry.recipeId,
+                    quantity = entry.quantity,
+                    isChecked = false
+                )
+            }
+
+
+            val (updateEntryTemp, newEntry) = mappedItem.partition { mappedItem ->
+                itemGroupList.value.any { db -> mappedItem.itemId == db.itemId }
+            }
+
+            try {
+                shoppingListItemGroupDao.insert(newEntry)
+                updateItemGroup(updateEntry)
+            } catch (e: Exception) {
+                // Handle exception (e.g., log it)
+                e.printStackTrace()
+            }
+
         }
     }
 
-    fun updateItemGroup(item: ShoppingListItemGroup) {
+
+
+    // TODO make proper update instead of replace
+    fun updateItemGroup(itemToUpdate: ShoppingListEntryUi) {
         viewModelScope.launch {
-            shoppingListItemGroupDao.update(item)
+
+            val previousQuantity = itemGroupList.value.first { it.itemId == itemToUpdate.itemId }.quantity
+
+            val updateEntry =
+                ShoppingListItemGroup(
+                    id = ,
+                    shoppingListId = itemToUpdate.shoppingListId,
+                    itemGroupId = itemToUpdate.itemId,
+                    recipeId = itemToUpdate.recipeId,
+                    quantity = itemToUpdate.quantity + previousQuantity,
+                    isChecked = itemToUpdate.isChecked
+                )
+
+            shoppingListItemGroupDao.update(updateEntry)
         }
     }
 
@@ -66,7 +110,38 @@ class ShoppingListDetailsViewModel(
         }
     }
 
-    // UI entries for Shopping List (resolved to cheapest store items)
+    // UI entries for Shopping List(resolved to cheapest store items)
+    // --------------------------------------------------------------------------------
+
+    //TODO
+    //val uiItems: List<> = Dao.get...().map { ... }
+
+
+    // liste af billigste items per group
+
+
+    // vi har en liste af item groups
+    // vi vil vise en liste af billigste items der findes i DB
+
+    // kald funktion for hver itemGroup der giver billigste item
+    // for selected supermarket
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Replace everything below this line
     // --------------------------------------------------------------------------------
 
     // select a supermarket (used as filter for price queries)

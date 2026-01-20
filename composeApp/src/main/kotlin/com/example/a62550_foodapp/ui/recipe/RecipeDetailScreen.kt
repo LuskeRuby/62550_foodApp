@@ -40,7 +40,7 @@ fun RecipeDetailScreen(
         ingredients = recipeItems.map {
             recipeViewModel.resolveIngredient(
                 itemGroupId = it.itemGroupId,
-                quantity = it.quantity * portions
+                quantity = it.sizeOfOnePortion * portions
             )
         }
     }

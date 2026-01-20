@@ -35,10 +35,8 @@ class RecipeViewModel(
     private val itemWeeklyPriceDao: ItemWeeklyPriceDao,
     private val appContext: Context,
     private val itemGroupDao: ItemGroupDao,
-    private val supermarketDao: SupermarketDao,
-    private val shoppingListItemGroupDao: ShoppingListItemGroupDao
+    private val supermarketDao: SupermarketDao
 ) : ViewModel() {
-
 
     private val _selectedSupermarkets = MutableStateFlow<Set<Int>>(emptySet())
     val selectedSupermarkets: StateFlow<Set<Int>> = _selectedSupermarkets.asStateFlow()
@@ -193,7 +191,7 @@ class RecipeViewModel(
             var best = Float.MAX_VALUE
             for (p in prices) {
                 if (p.size <= 0f) continue
-                val needed = ceil((ri.quantity * portions) / p.size).toInt()
+                val needed = ceil((ri.sizeOfOnePortion * portions) / p.size).toInt()
                 best = minOf(best, needed * p.price)
             }
 
@@ -320,6 +318,13 @@ class RecipeViewModel(
     ) {
         viewModelScope.launch {
 
+            val ingredients = recipeItemDao.getItemsForRecipe(recipeId)
+
+            for (ri in ingredients) {
+
+                val finalQty = ri.sizeOfOnePortion * portions
+
+                val existing = shoppingListItemGroupDao.getOneForRecipe(
             val alreadyExists =
                 shoppingListItemGroupDao.recipeExistsInList(
                     shoppingListId = shoppingListId,
