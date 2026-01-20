@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.a62550_foodapp.db.dao.ShoppingListItemDao
 import com.example.a62550_foodapp.db.dao.ShoppingListItemGroupDao
 import com.example.a62550_foodapp.db.entity.ShoppingListItem
+import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
 import com.example.a62550_foodapp.db.projection.ItemWithPriceAndCategory
 import com.example.a62550_foodapp.model.ShoppingListEntryUi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,6 +23,76 @@ class ShoppingListDetailsViewModel(
     private val shoppingListItemDao: ShoppingListItemDao,
     private val shoppingListItemGroupDao: ShoppingListItemGroupDao
 ) : ViewModel() {
+
+    // Shopping List Item Groups
+    // --------------------------------------------------------------------------------
+    private val itemGroupList: StateFlow<List<ShoppingListItemGroup>> =
+        shoppingListItemGroupDao.getItemGroupsMatchingListId(shoppingListId)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
+
+    fun addItemGroup(item: ShoppingListItemGroup) {
+        viewModelScope.launch {
+            shoppingListItemGroupDao.insert(item)
+        }
+    }
+
+    fun updateItemGroup(item: ShoppingListItemGroup) {
+        viewModelScope.launch {
+            shoppingListItemGroupDao.update(item)
+        }
+    }
+
+    fun deleteItemGroup(item: ShoppingListItemGroup) {
+        viewModelScope.launch {
+            shoppingListItemGroupDao.delete(item)
+        }
+    }
+
+    fun setCheckedItemGroup(
+        itemGroupId: Int,
+        recipeId: Int?,
+        checked: Boolean
+    ) {
+        viewModelScope.launch {
+            shoppingListItemGroupDao.updateCheckmark(
+                shoppingListId = shoppingListId,
+                itemGroupId = itemGroupId,
+                recipeId = recipeId,
+                checked = checked
+            )
+        }
+    }
+
+    // UI entries for Shopping List
+    // --------------------------------------------------------------------------------
+
+    //TODO
+    //val uiItems: List<> = Dao.get...().map { ... }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+    // Replace everything below this line
+    // --------------------------------------------------------------------------------
+
 
    //select a supermarket
     private val _selectedSupermarketId = MutableStateFlow(1)
