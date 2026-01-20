@@ -17,6 +17,7 @@ import com.example.a62550_foodapp.api.MealDbApi
 import com.example.a62550_foodapp.viewmodel.ApiRecipeDetailViewModel
 import com.example.a62550_foodapp.viewmodel.DiscoverRecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ItemViewModel
+import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.koin.android.ext.koin.androidLogger
@@ -97,7 +98,8 @@ val appModule = module {
     viewModel { (shoppingListId: Int) ->
         ShoppingListDetailsViewModel(
             shoppingListId = shoppingListId,
-            shoppingListItemGroupDao = get()
+            shoppingListItemGroupDao = get(),
+            storeFilterViewModel = get()
         )
     }
 
@@ -116,5 +118,9 @@ val appModule = module {
     viewModel { ThemeViewModel() }
 
     viewModel { ItemViewModel( itemDao = get() ) }
+
+    viewModel { StoreFilterViewModel() }
+
+
 
 }
