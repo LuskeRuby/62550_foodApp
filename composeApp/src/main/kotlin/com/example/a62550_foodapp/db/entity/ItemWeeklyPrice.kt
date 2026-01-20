@@ -25,10 +25,11 @@ import androidx.room.Index
         Index("supermarket_id")
     ]
 )
+//TODO Rename variables
 data class ItemWeeklyPrice(
     val item_id: Int,
+    val supermarket_id: Int,
     val year: Int,
     val week: Int,
-    val price: Float,
-    val supermarket_id: Int
+    val price: Float
 )

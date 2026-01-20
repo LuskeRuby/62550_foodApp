@@ -3,6 +3,7 @@ package com.example.a62550_foodapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a62550_foodapp.db.dao.ShoppingListItemDao
+import com.example.a62550_foodapp.db.dao.ShoppingListItemGroupDao
 import com.example.a62550_foodapp.db.entity.ShoppingListItem
 import com.example.a62550_foodapp.db.projection.ItemWithPriceAndCategory
 import com.example.a62550_foodapp.model.ShoppingListEntryUi
@@ -18,7 +19,8 @@ import kotlin.Int
 
 class ShoppingListDetailsViewModel(
     private val shoppingListId: Int,
-    private val shoppingListItemDao: ShoppingListItemDao
+    private val shoppingListItemDao: ShoppingListItemDao,
+    private val shoppingListItemGroupDao: ShoppingListItemGroupDao
 ) : ViewModel() {
 
    //select a supermarket

@@ -58,6 +58,7 @@ val appModule = module {
 
     single { get<AppDatabase>().shoppingListDao() }
     single { get<AppDatabase>().shoppingListItemDao() }
+    single { get<AppDatabase>().shoppingListItemGroupDao() }
 
     single { get<AppDatabase>().supermarketDao() }
 
