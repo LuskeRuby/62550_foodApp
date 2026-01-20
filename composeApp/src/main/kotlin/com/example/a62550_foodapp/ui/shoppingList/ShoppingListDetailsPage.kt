@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.example.a62550_foodapp.model.ShoppingListEntryUi
 import com.example.a62550_foodapp.viewmodel.ItemViewModel
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
+import org.koin.androidx.compose.koinViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -186,7 +187,7 @@ private fun AddItemToShoppingListPage(
                     disableItemOverlay()
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF269900),
+                    containerColor = koinViewModel<ThemeViewModel>().totalPriceColor,
                     contentColor = Color.White
                 ),
                 modifier = Modifier
@@ -463,7 +464,7 @@ private fun TotalFooter(totalUi: ShoppingListDetailsViewModel.TotalUi) {
     Surface(
         shape = RoundedCornerShape(50),
         shadowElevation = 8.dp,
-        color = Color(0xFF269900)
+        color = koinViewModel<ThemeViewModel>().totalPriceColor
     ) {
         Column(
             modifier = Modifier

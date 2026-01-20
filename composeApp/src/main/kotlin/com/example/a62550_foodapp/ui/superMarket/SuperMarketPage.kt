@@ -1,5 +1,6 @@
 package com.example.a62550_foodapp.ui.superMarket
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,9 +9,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun SuperMarketPage(
@@ -66,24 +71,36 @@ fun SuperMarketPage(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
                             .clickable {
                                 recipeViewModel.toggleSupermarket(supermarket.id)
                             }
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(vertical = 8.dp, horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        if (supermarket.logo != null) {
+                            AsyncImage(
+                                model = supermarket.logo,
+                                contentDescription = supermarket.name,
+                                modifier = Modifier
+                                    .width(150.dp)
+                                    .height(70.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        } else {
+                            Text(
+                                text = supermarket.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.width(150.dp)
+                            )
+                        }
+
                         Checkbox(
                             checked = supermarket.id in selectedSupermarkets,
                             onCheckedChange = {
                                 recipeViewModel.toggleSupermarket(supermarket.id)
                             }
-                        )
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Text(
-                            text = supermarket.name,
-                            style = MaterialTheme.typography.bodyLarge
                         )
                     }
                 }

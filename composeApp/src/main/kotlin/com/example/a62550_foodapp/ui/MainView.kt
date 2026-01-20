@@ -18,15 +18,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.Storefront
 import com.example.a62550_foodapp.ui.superMarket.SuperMarketPage
+import com.example.a62550_foodapp.viewmodel.ThemeViewModel
+import org.koin.androidx.compose.koinViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainView(
-    recipeContent: @Composable () -> Unit
+    recipeContent: @Composable () -> Unit,
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     var selectedTab by remember { mutableStateOf(0) }
-    val creamyOrange = Color(0xFFFFD59A)
 
     Scaffold(
         bottomBar = {
@@ -126,7 +128,7 @@ fun MainView(
         Surface(modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize(),
-            color = Color(0xFFF5F5F5) // light grey app background
+            color = themeViewModel.backgroundColor
         ) {
             when (selectedTab) {
                 0 -> recipeContent()
