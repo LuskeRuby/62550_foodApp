@@ -26,6 +26,12 @@ interface ShoppingListItemGroupDao {
     @Insert
     suspend fun insert(item: ShoppingListItemGroup): Long
 
+    @Insert
+    suspend fun insert(items: List<ShoppingListItemGroup>)
+
+    @Insert
+    suspend fun insertAll(items: List<ShoppingListItemGroup>)
+
     //TODO avoid race condition when updating items
     @Update
     suspend fun update(item: ShoppingListItemGroup)

@@ -10,15 +10,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
+import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SuperMarketPage(
-    recipeViewModel: RecipeViewModel = koinViewModel()
+    recipeViewModel: RecipeViewModel = koinViewModel(),
+    storeFilterViewModel: StoreFilterViewModel = koinViewModel()
 ) {
 
     val allSupermarkets by recipeViewModel.allSupermarkets.collectAsState(initial = emptyList())
-    val selectedSupermarkets by recipeViewModel.selectedSupermarkets.collectAsState()
+    val selectedSupermarkets by storeFilterViewModel.selectedStores.collectAsState()
 
     Column(
         modifier = Modifier
@@ -41,7 +43,7 @@ fun SuperMarketPage(
 
             if (selectedSupermarkets.isNotEmpty()) {
                 TextButton(
-                    onClick = { recipeViewModel.clearSupermarketFilter() }
+                    onClick = { storeFilterViewModel.clear() }
                 ) {
                     Text("Clear")
                 }
@@ -67,7 +69,7 @@ fun SuperMarketPage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                recipeViewModel.toggleSupermarket(supermarket.id)
+                                storeFilterViewModel.toggleStore(supermarket.id)
                             }
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -75,7 +77,7 @@ fun SuperMarketPage(
                         Checkbox(
                             checked = supermarket.id in selectedSupermarkets,
                             onCheckedChange = {
-                                recipeViewModel.toggleSupermarket(supermarket.id)
+                                storeFilterViewModel.toggleStore(supermarket.id)
                             }
                         )
 

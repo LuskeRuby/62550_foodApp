@@ -34,31 +34,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.RemoveCircle
+import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 
 @Composable
 fun RecipePage(
     onAddRecipeClick: () -> Unit,
     onDiscoverRecipesClick: () -> Unit, // kept for nav, not used here
-    onRecipeClick: (Int) -> Unit,
+    onRecipeClick: (Long) -> Unit,
     recipeViewModel: RecipeViewModel = koinViewModel(),
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
 
     // --- DATA ---
-    val allRecipes by recipeViewModel
-        .getRecipesWithPricesFlow()
-        .collectAsState(initial = emptyList())
+    val filterViewModel: StoreFilterViewModel = koinViewModel()
+    val selectedStores by filterViewModel.selectedStores.collectAsState()
 
-    val selectedSupermarkets by recipeViewModel.selectedSupermarkets.collectAsState()
+    val allRecipes by recipeViewModel
+        .getRecipesWithPricesFlow(selectedStores)
+        .collectAsState(initial = emptyList())
 
     // --- UI STATE ---
     var searchText by remember { mutableStateOf("") }
 
-    val visibleRecipes = remember(allRecipes, searchText, selectedSupermarkets) {
+    val visibleRecipes = remember(allRecipes, searchText) {
         allRecipes.filter { (recipe, _) ->
             recipe.title.contains(searchText, ignoreCase = true)
         }
     }
+
 
     val gridState = rememberLazyGridState()
 
@@ -119,6 +122,7 @@ fun RecipePage(
                             basePrice = price,
                             recipeViewModel = recipeViewModel,
                             themeViewModel = themeViewModel,
+                            selectedStores = selectedStores,
                             onClick = { onRecipeClick(recipe.id) }
                         )
                     }
@@ -161,13 +165,14 @@ fun RecipeCard(
     basePrice: Float, // not used anymore, but kept so list doesn't break
     recipeViewModel: RecipeViewModel,
     themeViewModel: ThemeViewModel,
+    selectedStores: Set<Long>,
     onClick: () -> Unit
 ) {
     var portions by remember { mutableStateOf(4) }  // staart at 4 always
     var price by remember { mutableStateOf(0f) }
 
-    LaunchedEffect(portions) {
-        price = recipeViewModel.getRecipePriceByPortions(recipe.id, portions)
+    LaunchedEffect(portions, selectedStores) {
+        price = recipeViewModel.getRecipePriceByPortions(recipe.id, portions, selectedStores)
     }
 
     Card(

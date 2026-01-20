@@ -11,23 +11,32 @@ import com.example.a62550_foodapp.db.entity.ItemGroup
 import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
 import com.example.a62550_foodapp.db.entity.Supermarket
 import com.example.a62550_foodapp.model.Recipe as RecipeModel
-import com.example.a62550_foodapp.model.Ingredient
 import com.example.a62550_foodapp.utils.saveRecipeImage
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.first
 import java.io.File
 import kotlin.math.ceil
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlin.times
 
+/**
+ * Lightweight DTO used while creating/editing recipes before saving.
+ */
 data class SelectedItemGroup(
-    val itemGroupId: Int,
+    val itemGroupId: Long,
     val quantity: Int
 )
 
+/**
+ * ViewModel responsible for:
+ * - CRUD operations on recipes
+ * - Managing recipe ingredients
+ * - Calculating recipe prices based on selected supermarkets
+ * - Adding recipe ingredients to shopping list
+ *
+ * IMPORTANT:
+ * This ViewModel does NOT store supermarket filter state.
+ * The selected stores are provided by UI via StoreFilterViewModel
+ * and passed into price-calculation functions as parameters.
+ */
 class RecipeViewModel(
     private val recipeDao: RecipeDao,
     private val recipeItemDao: RecipeItemDao,
@@ -38,11 +47,14 @@ class RecipeViewModel(
     private val shoppingListItemGroupDao: ShoppingListItemGroupDao
 ) : ViewModel() {
 
-    private val _selectedSupermarkets = MutableStateFlow<Set<Int>>(emptySet())
-    val selectedSupermarkets: StateFlow<Set<Int>> = _selectedSupermarkets.asStateFlow()
+    /* -------------------------------------------------------------------------
+     * BASIC DATA FLOWS
+     * ------------------------------------------------------------------------- */
 
+    /** Flow of all supermarkets (used in filter UI). */
     val allSupermarkets: Flow<List<Supermarket>> = supermarketDao.getAll()
 
+    /** Flow of all recipes mapped to UI model. */
     val recipes: StateFlow<List<RecipeModel>> =
         recipeDao.getAllRecipes()
             .map { list ->
@@ -60,7 +72,8 @@ class RecipeViewModel(
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    fun getRecipeById(recipeId: Int): Flow<RecipeModel?> =
+    /** Returns a single recipe as Flow for detail screen. */
+    fun getRecipeById(recipeId: Long): Flow<RecipeModel?> =
         recipeDao.getRecipeById(recipeId).map {
             it?.let { r ->
                 RecipeModel(
@@ -75,27 +88,28 @@ class RecipeViewModel(
             }
         }
 
+    /** Returns all ingredient groups for selection when creating/editing recipes. */
     fun getAllItemGroups(): Flow<List<ItemGroup>> =
         itemGroupDao.getAllItemGroups()
 
-    fun getItemsForRecipeFlow(recipeId: Int): Flow<List<RecipeItem>> =
+    /** Reactive ingredient list for recipe detail/edit screens. */
+    fun getItemsForRecipeFlow(recipeId: Long): Flow<List<RecipeItem>> =
         recipeItemDao.getItemsForRecipeFlow(recipeId)
 
-    suspend fun getSelectedGroupsForRecipe(recipeId: Int): List<SelectedItemGroup> =
+    /** Non-reactive ingredient list used for calculations. */
+    suspend fun getSelectedGroupsForRecipe(recipeId: Long): List<SelectedItemGroup> =
         recipeItemDao.getItemsForRecipe(recipeId).map {
             SelectedItemGroup(it.itemGroupId, it.sizeOfOnePortion)
         }
 
-    fun toggleSupermarket(id: Int) {
-        val current = _selectedSupermarkets.value
-        _selectedSupermarkets.value =
-            if (current.contains(id)) current - id else current + id
-    }
+    /* -------------------------------------------------------------------------
+     * CREATE / UPDATE RECIPES
+     * ------------------------------------------------------------------------- */
 
-    fun clearSupermarketFilter() {
-        _selectedSupermarkets.value = emptySet()
-    }
-
+    /**
+     * Creates a new recipe and its ingredient mappings.
+     * Optionally saves an image to internal storage.
+     */
     fun createRecipe(
         title: String,
         preparationTimeMinutes: Int,
@@ -105,6 +119,7 @@ class RecipeViewModel(
         selectedGroups: List<SelectedItemGroup>
     ) {
         viewModelScope.launch {
+
             val recipeId = recipeDao.insert(
                 RecipeEntity(
                     title = title,
@@ -114,7 +129,7 @@ class RecipeViewModel(
                     imagePath = null,
                     deletable = true
                 )
-            ).toInt()
+            )
 
             recipeItemDao.insertAll(
                 selectedGroups.map {
@@ -129,8 +144,11 @@ class RecipeViewModel(
         }
     }
 
+    /**
+     * Updates an existing recipe and replaces all its ingredients.
+     */
     fun updateRecipe(
-        recipeId: Int,
+        recipeId: Long,
         title: String,
         preparationTimeMinutes: Int,
         description: String?,
@@ -139,6 +157,7 @@ class RecipeViewModel(
         selectedGroups: List<SelectedItemGroup>
     ) {
         viewModelScope.launch {
+
             recipeDao.updateRecipe(
                 recipeId,
                 title,
@@ -164,7 +183,8 @@ class RecipeViewModel(
         }
     }
 
-    fun removeImage(recipeId: Int) {
+    /** Removes recipe image file and clears DB reference. */
+    fun removeImage(recipeId: Long) {
         viewModelScope.launch {
             recipeDao.getRecipeById(recipeId).first()?.imagePath?.let {
                 try { File(it).delete() } catch (_: Exception) {}
@@ -173,22 +193,35 @@ class RecipeViewModel(
         }
     }
 
-    suspend fun getRecipePriceByPortions(recipeId: Int, portions: Int): Float {
+    /* -------------------------------------------------------------------------
+     * PRICE CALCULATION (USES STORE FILTER FROM UI)
+     * ------------------------------------------------------------------------- */
+
+    /**
+     * Calculates the total recipe price for a given number of portions.
+     */
+    suspend fun getRecipePriceByPortions(
+        recipeId: Long,
+        portions: Int,
+        selectedStores: Set<Long>
+    ): Float {
+
         val items = recipeItemDao.getItemsForRecipe(recipeId)
-        val supermarketId = selectedSupermarkets.value.firstOrNull()
         var total = 0f
 
         for (ri in items) {
+
             val prices =
-                if (supermarketId == null)
+                if (selectedStores.isEmpty())
                     itemWeeklyPriceDao.getItemSizesAndMinPrices(ri.itemGroupId)
                 else
-                    itemWeeklyPriceDao.getItemSizesAndMinPricesByStore(
+                    itemWeeklyPriceDao.getItemSizesAndMinPricesByStores(
                         ri.itemGroupId,
-                        supermarketId
+                        selectedStores.toList()
                     )
 
             var best = Float.MAX_VALUE
+
             for (p in prices) {
                 if (p.size <= 0f) continue
                 val needed = ceil((ri.sizeOfOnePortion * portions) / p.size).toInt()
@@ -201,88 +234,30 @@ class RecipeViewModel(
         return total
     }
 
-    fun getRecipePriceFlow(recipeId: Int): Flow<Float> =
-        selectedSupermarkets.flatMapLatest {
-            flow { emit(getRecipePriceByPortions(recipeId, 1)) }
-        }
-
-    fun getRecipesWithPricesFlow(): Flow<List<Pair<RecipeModel, Float>>> =
+    /**
+     * Returns reactive list of recipes with calculated prices.
+     */
+    fun getRecipesWithPricesFlow(
+        selectedStores: Set<Long>
+    ): Flow<List<Pair<RecipeModel, Float>>> =
         recipes.flatMapLatest { list ->
-            if (list.isEmpty()) flowOf(emptyList())
-            else combine(
-                list.map { recipe ->
-                    getRecipePriceFlow(recipe.id).map { recipe to it }
-                }
-            ) { it.toList().sortedBy { p -> p.second } }
-        }
+            flow {
+                val result = list.map { recipe ->
+                    val price = getRecipePriceByPortions(
+                        recipe.id,
+                        1,
+                        selectedStores
+                    )
+                    recipe to price
+                }.sortedBy { it.second }
 
-    suspend fun resolveIngredient(
-        itemGroupId: Int,
-        quantity: Int
-    ): Ingredient {
-
-        val group = itemGroupDao.getById(itemGroupId)
-            ?: return Ingredient(
-                itemGroupId,
-                "(unknown)",
-                "",
-                null,
-                null,
-                null,
-                null,
-                quantity
-            )
-
-        val supermarketId = selectedSupermarkets.value.firstOrNull()
-
-        val prices =
-            if (supermarketId == null)
-                itemWeeklyPriceDao.getItemSizesAndMinPrices(itemGroupId)
-            else
-                itemWeeklyPriceDao.getItemSizesAndMinPricesByStore(
-                    itemGroupId,
-                    supermarketId
-                )
-
-        if (prices.isEmpty()) {
-            return Ingredient(
-                group.id,
-                group.name,
-                group.unitType,
-                null,
-                null,
-                null,
-                null,
-                quantity
-            )
-        }
-
-        var bestPrice: Float? = null
-        var bestItemId: Int? = null
-        var bestItemSize: Float? = null
-
-        for (p in prices) {
-            if (p.size <= 0f) continue
-            val needed = ceil(quantity / p.size).toInt()
-            val cost = needed * p.price
-            if (bestPrice == null || cost < bestPrice!!) {
-                bestPrice = cost
-                bestItemId = p.id
-                bestItemSize = p.size
+                emit(result)
             }
         }
 
-        return Ingredient(
-            group.id,
-            group.name,
-            group.unitType,
-            bestItemId,
-            null,
-            bestItemSize,
-            bestPrice,
-            quantity
-        )
-    }
+    /* -------------------------------------------------------------------------
+     * TEMP INGREDIENT SELECTION (CREATE / EDIT SCREEN)
+     * ------------------------------------------------------------------------- */
 
     private val _tempGroups = MutableStateFlow<List<SelectedItemGroup>>(emptyList())
     val tempGroups = _tempGroups.asStateFlow()
@@ -291,14 +266,14 @@ class RecipeViewModel(
         _tempGroups.value = groups
     }
 
-    fun addTempGroup(groupId: Int, qty: Int) {
+    fun addTempGroup(groupId: Long, qty: Int) {
         _tempGroups.update { list ->
             list.filter { it.itemGroupId != groupId } +
                     SelectedItemGroup(groupId, qty)
         }
     }
 
-    fun removeTempGroup(groupId: Int) {
+    fun removeTempGroup(groupId: Long) {
         _tempGroups.update { list ->
             list.filter { it.itemGroupId != groupId }
         }
@@ -308,27 +283,27 @@ class RecipeViewModel(
         _tempGroups.value = emptyList()
     }
 
+    /* -------------------------------------------------------------------------
+     * SHOPPING LIST INTEGRATION
+     * ------------------------------------------------------------------------- */
+
     /**
      * Adds all ingredients of a recipe to the shopping list.
      */
     fun addRecipeToShoppingList(
-        shoppingListId: Int,
-        recipeId: Int,
+        shoppingListId: Long,
+        recipeId: Long,
         portions: Int
     ) {
         viewModelScope.launch {
 
-            // Avoid adding same recipe twice
             val alreadyExists =
                 shoppingListItemGroupDao.recipeExistsInList(
                     shoppingListId = shoppingListId,
                     recipeId = recipeId
                 ) > 0
 
-            if (alreadyExists) {
-                // TODO: show "already added" message
-                return@launch
-            }
+            if (alreadyExists) return@launch
 
             val recipeItems = recipeItemDao.getItemsForRecipe(recipeId)
 
@@ -343,9 +318,28 @@ class RecipeViewModel(
                     isChecked = false
                 )
             }
-            shoppingListItemGroupDao.insert(groups)
+
+            shoppingListItemGroupDao.insertAll(groups)
+
         }
     }
 
+    suspend fun resolveIngredients(
+        items: List<RecipeItem>,
+        portions: Int
+    ): List<Triple<String, Int, String>> {
+
+        val groups = itemGroupDao.getAllItemGroups().first()
+
+        return items.mapNotNull { ri ->
+            val group = groups.firstOrNull { it.id == ri.itemGroupId } ?: return@mapNotNull null
+
+            Triple(
+                group.name,
+                ri.sizeOfOnePortion * portions,
+                group.unitType
+            )
+        }
+    }
 
 }

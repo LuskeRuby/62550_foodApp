@@ -25,13 +25,14 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import com.example.a62550_foodapp.ui.components.SearchSelectField
 import androidx.compose.foundation.lazy.items
 import androidx.activity.compose.BackHandler
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.RemoveCircle
 
 @Composable
 fun CreateRecipeScreen(
     recipeViewModel: RecipeViewModel,
-    existingRecipeId: Int? = null,
+    existingRecipeId: Long? = null,
     onRecipeSaved: () -> Unit,
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
@@ -57,7 +58,7 @@ fun CreateRecipeScreen(
 @Composable
 private fun CreateRecipeForm(
     recipeViewModel: RecipeViewModel,
-    existingRecipeId: Int?,
+    existingRecipeId: Long?,
     onRecipeSaved: () -> Unit,
     onAddIngredients: () -> Unit,
     themeViewModel: ThemeViewModel = koinViewModel()
@@ -264,7 +265,7 @@ private fun AddIngredientsOverlay(
     val allGroups by recipeViewModel.getAllItemGroups().collectAsState(initial = emptyList())
     val tempSelected by recipeViewModel.tempGroups.collectAsState()
 
-    var selectedGroupId by remember { mutableStateOf<Int?>(null) }
+    var selectedGroupId by remember { mutableStateOf<Long?>(null) }
     var quantity by remember { mutableStateOf(4) }
 
     Column(

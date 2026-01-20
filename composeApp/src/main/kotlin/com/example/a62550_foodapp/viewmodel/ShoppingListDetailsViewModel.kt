@@ -42,33 +42,33 @@ class ShoppingListDetailsViewModel(
     fun addItemGroup(addedItem: ItemGroup, portionQuantity: Int?, portionSize: Float) {
         viewModelScope.launch {
 
-        val newEntry = ShoppingListItemGroup(
-            shoppingListId = shoppingListId,
-            itemGroupId = addedItem.id,
-            recipeId = null,
-            portionQuantity = portionQuantity ?: 1,
-            portionSize = portionSize,
-            isChecked = false
-        )
+            val newEntry = ShoppingListItemGroup(
+                shoppingListId = shoppingListId,
+                itemGroupId = addedItem.id,
+                recipeId = null,
+                portionQuantity = portionQuantity ?: 1,
+                portionSize = portionSize,
+                isChecked = false
+            )
 
             val existInList = itemGroupList.value.any {
                 it.itemGroupId == newEntry.itemGroupId &&
                         it.recipeId == newEntry.recipeId
             }
 
-        try {
-            if (existInList) {
-                updateItemGroup(newEntry)
-            } else {
-                shoppingListItemGroupDao.insert(newEntry)
-            }
+            try {
+                if (existInList) {
+                    updateItemGroup(newEntry)
+                } else {
+                    shoppingListItemGroupDao.insert(newEntry)
+                }
 
-        } catch (e: Exception) {
-            // Handle exception (e.g., log it)
-            e.printStackTrace()
+            } catch (e: Exception) {
+                // Handle exception (e.g., log it)
+                e.printStackTrace()
+            }
         }
     }
-}
 
 
     // --------------------------------------------------------------------------------
@@ -126,7 +126,8 @@ class ShoppingListDetailsViewModel(
             )
         }
     }
-
+}
+/*
     // --------------------------------------------------------------------------------
     // STORE FILTER (same pattern as RecipePage)
     // --------------------------------------------------------------------------------
@@ -322,3 +323,6 @@ class ShoppingListDetailsViewModel(
         }
     }
 }
+
+
+ */

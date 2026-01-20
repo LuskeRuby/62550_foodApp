@@ -95,7 +95,7 @@ val appModule = module {
 
     viewModel{ ShoppingListViewModel(get()) }
 
-    viewModel { (shoppingListId: Int) ->
+    viewModel { (shoppingListId: Long) ->
         ShoppingListDetailsViewModel(
             shoppingListId = shoppingListId,
             shoppingListItemGroupDao = get(),
