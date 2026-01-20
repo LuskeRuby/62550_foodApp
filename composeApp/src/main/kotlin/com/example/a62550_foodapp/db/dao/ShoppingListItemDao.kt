@@ -34,31 +34,6 @@ interface ShoppingListItemDao {
         shoppingListId: Int
     ): Flow<List<ShoppingListItem>>
 
-    //shoppinglist data
-    @Query("""
-    SELECT
-    i.id              AS itemId,
-    i.name            AS itemName,
-    i.size            AS size,
-    i.unitType        AS unitType,
-    sli.calc_quantity AS quantity,
-    p.price           AS price,
-    sli.is_checked    AS isChecked,
-    ig.category       AS category
-FROM shopping_list_items sli
-JOIN items i ON i.id = sli.item_id
-JOIN item_groups ig ON ig.id = i.item_group_id
-LEFT JOIN item_weekly_prices p
-    ON p.item_id = i.id
-   AND p.supermarket_id = :supermarketId
-WHERE sli.shopping_list_id = :shoppingListId
-
-""")
-    fun getEntriesForList(
-        shoppingListId: Int,
-        supermarketId: Int
-    ): Flow<List<ShoppingListEntry>>
-
     //get price
     @Query("""
     SELECT SUM(

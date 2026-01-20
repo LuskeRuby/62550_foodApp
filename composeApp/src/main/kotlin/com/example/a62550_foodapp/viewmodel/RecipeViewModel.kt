@@ -8,6 +8,7 @@ import com.example.a62550_foodapp.db.dao.*
 import com.example.a62550_foodapp.db.entity.RecipeItem
 import com.example.a62550_foodapp.db.entity.Recipe as RecipeEntity
 import com.example.a62550_foodapp.db.entity.ItemGroup
+import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
 import com.example.a62550_foodapp.db.entity.Supermarket
 import com.example.a62550_foodapp.model.Recipe as RecipeModel
 import com.example.a62550_foodapp.model.Ingredient
@@ -20,7 +21,7 @@ import kotlin.math.ceil
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-
+import kotlin.times
 
 
 data class SelectedItemGroup(
@@ -306,5 +307,47 @@ class RecipeViewModel(
     fun clearTempGroups() {
         _tempGroups.value = emptyList()
     }
+
+    /**
+     * Adds all ingredients of a recipe to the shopping list.
+     */
+    fun addRecipeToShoppingList(
+        shoppingListId: Int,
+        recipeId: Int,
+        portions: Int
+    ) {
+        viewModelScope.launch {
+
+            val ingredients = recipeItemDao.getItemsForRecipe(recipeId)
+
+            for (ri in ingredients) {
+
+                val finalQty = ri.quantity * portions
+
+                val existing = shoppingListItemGroupDao.getOneForRecipe(
+                    shoppingListId = shoppingListId,
+                    itemGroupId = ri.itemGroupId,
+                    recipeId = recipeId
+                )
+
+                if (existing == null) {
+                    shoppingListItemGroupDao.insert(
+                        ShoppingListItemGroup(
+                            shoppingListId = shoppingListId,
+                            itemGroupId = ri.itemGroupId,
+                            recipeId = recipeId,
+                            quantity = finalQty,
+                            isChecked = false
+                        )
+                    )
+                } else {
+                    shoppingListItemGroupDao.update(
+                        existing.copy(quantity = existing.quantity + finalQty)
+                    )
+                }
+            }
+        }
+    }
+
 
 }

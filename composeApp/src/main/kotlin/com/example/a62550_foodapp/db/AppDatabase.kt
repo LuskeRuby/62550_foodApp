@@ -14,6 +14,7 @@ import com.example.a62550_foodapp.db.dao.*
         RecipeItem::class,
         ShoppingList::class,
         ShoppingListItem::class,
+        ShoppingListItemGroup::class,
         Supermarket::class
     ],
     version = 22,
@@ -30,6 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun shoppingListDao(): ShoppingListDao
     abstract fun shoppingListItemDao(): ShoppingListItemDao
+    abstract fun shoppingListItemGroupDao(): ShoppingListItemGroupDao
 
     abstract fun supermarketDao(): SupermarketDao
 }

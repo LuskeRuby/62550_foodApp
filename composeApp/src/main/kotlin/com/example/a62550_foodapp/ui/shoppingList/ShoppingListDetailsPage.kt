@@ -140,7 +140,7 @@ private fun AddItemToShoppingListPage(
 ) {
     val itemViewModel: ItemViewModel = koinViewModel()
     val dbItems by itemViewModel.items.collectAsState()
-    val items by viewModel.tempItemsList.collectAsState()
+    val items by viewModel.items.collectAsState()
     val grouped = items.groupBy { it.category }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -160,7 +160,10 @@ private fun AddItemToShoppingListPage(
             itemText = { it.item.name },
             itemUnit = { it.item.unitType },
             onItemSelected = { entry ->
-                viewModel.addTempItem(entry)
+                viewModel.addManualItem(
+                    itemGroupId = entry.itemGroup.id,
+                    quantity = 1
+                )
             }
         )
 
@@ -180,11 +183,7 @@ private fun AddItemToShoppingListPage(
             verticalAlignment = Alignment.Bottom
         ) {
             Button(
-                onClick = {
-                    viewModel.addItem(items)
-                    viewModel.clearTempItems()
-                    disableItemOverlay()
-                },
+                onClick = disableItemOverlay,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF269900),
                     contentColor = Color.White
@@ -194,16 +193,13 @@ private fun AddItemToShoppingListPage(
                     .height(48.dp),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text(text = "Tilføj")
+                Text(text = "Færdig")
             }
 
             Spacer(modifier = Modifier.width(8.dp))
 
             Button(
-                onClick = {
-                    viewModel.clearTempItems()
-                    disableItemOverlay()
-                },
+                onClick = disableItemOverlay,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Gray,
                     contentColor = Color.White
@@ -213,7 +209,7 @@ private fun AddItemToShoppingListPage(
                     .height(48.dp),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text(text = "Fortryd")
+                Text(text = "Tilbage")
             }
         }
     }
@@ -233,17 +229,19 @@ private fun ShoppingListContent(
                     item = item,
                     onCheckedChange =
                         if (!addItemsOverlay) {
-                            { checked: Boolean -> viewModel.setChecked(item.itemId, checked) }
+                            { checked -> viewModel.setChecked(item, checked) }
                         } else {
-                            // disable when checkbox not visible
-                            { _: Boolean -> }
-                        },
+                            // Disable when not available
+                            { }
+                        }
+                    ,
                     checkboxVisible = !addItemsOverlay,
                     onDelete =
                         if (!addItemsOverlay) {
-                            { viewModel.deleteItem(item.itemId) }
+                            { viewModel.delete(item) }
                         } else {
-                            { viewModel.removeTempItem(item.itemId)}
+                            // Disable when not available
+                            { }
                         },
                     modifier = Modifier.animateItem()
                 )

@@ -71,7 +71,13 @@ fun RecipeDetailScreen(
                 onIncrease = { portions++ },
                 preparationMinutes = r.preparationTimeMinutes,
                 price = scaledPrice,
-                onAdd = { /* add to shopping list later */ },
+                onAdd = {
+                    recipeViewModel.addRecipeToShoppingList(
+                        shoppingListId = 1, // midlertidigt: én aktiv liste
+                        recipeId = recipeId,
+                        portions = portions
+                    )
+                },
                 themeViewModel = themeViewModel
             )
 

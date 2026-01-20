@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
+import com.example.a62550_foodapp.db.projection.ShoppingListEntry
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -130,6 +131,7 @@ SELECT
     i.unitType         AS unitType,
     slig.quantity      AS quantity,
     p.price            AS price,
+    slig.is_checked    AS isChecked,
     ig.category        AS category,
     slig.recipe_id     AS recipeId
 FROM shopping_list_item_groups slig
@@ -157,7 +159,5 @@ WHERE slig.shopping_list_id = :shoppingListId
         shoppingListId: Int,
         supermarketId: Int
     ): Flow<List<ShoppingListEntry>>
-
-
 
 }
