@@ -40,7 +40,7 @@ interface ShoppingListItemGroupDao {
         WHERE shopping_list_id = :shoppingListId
     """)
     fun getItemGroupsMatchingListId(
-        shoppingListId: Int
+        shoppingListId: Long
     ): Flow<List<ShoppingListItemGroup>>
 
     //update checkmark
@@ -52,9 +52,9 @@ interface ShoppingListItemGroupDao {
           AND (recipe_id = :recipeId OR (recipe_id IS NULL AND :recipeId IS NULL))
     """)
     suspend fun updateCheckmark(
-        shoppingListId: Int,
-        itemGroupId: Int,
-        recipeId: Int?,
+        shoppingListId: Long,
+        itemGroupId: Long,
+        recipeId: Long?,
         checked: Boolean
     )
 
@@ -65,9 +65,9 @@ interface ShoppingListItemGroupDao {
         AND (recipe_id = :recipeId OR (recipe_id IS NULL AND :recipeId IS NULL))
     """)
     suspend fun delete(
-        shoppingListId: Int,
-        itemGroupId: Int,
-        recipeId: Int?
+        shoppingListId: Long,
+        itemGroupId: Long,
+        recipeId: Long?
     )
 
     /**
@@ -95,8 +95,8 @@ LEFT JOIN item_weekly_prices p
 WHERE slig.shopping_list_id = :shoppingListId
 """)
     fun getTotalPriceByStoreFlow(
-        shoppingListId: Int,
-        supermarketId: Int
+        shoppingListId: Long,
+        supermarketId: Long
     ): Flow<Float?>
 
 
@@ -164,8 +164,8 @@ WHERE slig.shopping_list_id = :shoppingListId
   )
 """)
     fun getCheapestShoppingListEntriesFlow(
-        shoppingListId: Int,
-        storeIds: List<Int>,
+        shoppingListId: Long,
+        storeIds: List<Long>,
         storeCount: Int
     ): Flow<List<ShoppingListEntry>>
 
@@ -177,8 +177,8 @@ WHERE slig.shopping_list_id = :shoppingListId
       AND recipe_id = :recipeId
 """)
     suspend fun recipeExistsInList(
-        shoppingListId: Int,
-        recipeId: Int
+        shoppingListId: Long,
+        recipeId: Long
     ): Int
 
 }
