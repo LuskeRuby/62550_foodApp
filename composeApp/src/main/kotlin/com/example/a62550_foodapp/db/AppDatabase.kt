@@ -16,7 +16,7 @@ import com.example.a62550_foodapp.db.dao.*
         ShoppingListItemGroup::class,
         Supermarket::class
     ],
-    version = 24,
+    version = 25,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

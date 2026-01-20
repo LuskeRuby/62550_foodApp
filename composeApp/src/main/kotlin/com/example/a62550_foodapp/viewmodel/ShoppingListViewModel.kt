@@ -45,7 +45,7 @@ class ShoppingListViewModel(
     }
 
     fun editShoppingList(
-        id: Int,
+        id: Long,
         name: String
     ) {
         viewModelScope.launch {
@@ -59,7 +59,7 @@ class ShoppingListViewModel(
     }
 
     fun deleteShoppingList(
-        id: Int,
+        id: Long,
         name: String
     ) {
         viewModelScope.launch {

@@ -29,9 +29,6 @@ interface ShoppingListItemGroupDao {
     @Insert
     suspend fun insert(items: List<ShoppingListItemGroup>)
 
-    @Insert
-    suspend fun insertAll(items: List<ShoppingListItemGroup>)
-
     //TODO avoid race condition when updating items
     @Update
     suspend fun update(item: ShoppingListItemGroup)
@@ -129,17 +126,18 @@ WHERE slig.shopping_list_id = :shoppingListId
      */
     @Query("""
 SELECT
-    slig.id                 AS shoppingListGroupId,
+    slig.id                 AS id,
     ig.id                   AS itemGroupId,
     i.id                    AS itemId,
     i.name                  AS itemName,
     i.size                  AS size,
     i.unitType              AS unitType,
     slig.portion_quantity   AS quantity,
-    p.price                 AS price,
+    iwp.price               AS price,
     slig.is_checked         AS isChecked,
     ig.category             AS category,
-    slig.recipe_id          AS recipeId
+    slig.recipe_id          AS recipeId,
+    sm.name                 AS superMarketName
 FROM shopping_list_item_groups slig
 
 JOIN item_groups ig
@@ -148,17 +146,20 @@ JOIN item_groups ig
 JOIN items i
     ON i.item_group_id = ig.id
 
-JOIN item_weekly_prices p
-    ON p.item_id = i.id
+JOIN item_weekly_prices iwp
+    ON iwp.item_id = i.id
+    
+JOIN supermarkets sm
+    ON sm.id = iwp.supermarket_id
 
 WHERE slig.shopping_list_id = :shoppingListId
 
   AND (
         :storeCount = 0
-        OR p.supermarket_id IN (:storeIds)
+        OR iwp.supermarket_id IN (:storeIds)
       )
 
-  AND p.price = (
+  AND iwp.price = (
       SELECT MIN(p2.price)
       FROM item_weekly_prices p2
       JOIN items i2 ON i2.id = p2.item_id

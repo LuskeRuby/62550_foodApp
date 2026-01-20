@@ -62,4 +62,14 @@ data class ShoppingListItemGroup(
 
     @ColumnInfo(name = "is_checked")
     val isChecked: Boolean
-)
+) {
+    /**
+      * Compares shoppingListId, itemGroupId and recipeId
+     */
+    @Override
+    fun equals(other: ShoppingListItemGroup): Boolean {
+        return this.shoppingListId == other.shoppingListId &&
+               this.itemGroupId == other.itemGroupId &&
+               this.recipeId == other.recipeId
+    }
+}

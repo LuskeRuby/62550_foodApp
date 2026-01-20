@@ -12,6 +12,7 @@ import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
 import com.example.a62550_foodapp.db.entity.Supermarket
 import com.example.a62550_foodapp.model.Recipe as RecipeModel
 import com.example.a62550_foodapp.utils.saveRecipeImage
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.File
@@ -237,6 +238,7 @@ class RecipeViewModel(
     /**
      * Returns reactive list of recipes with calculated prices.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun getRecipesWithPricesFlow(
         selectedStores: Set<Long>
     ): Flow<List<Pair<RecipeModel, Float>>> =
@@ -319,7 +321,7 @@ class RecipeViewModel(
                 )
             }
 
-            shoppingListItemGroupDao.insertAll(groups)
+            shoppingListItemGroupDao.insert(groups)
 
         }
     }
