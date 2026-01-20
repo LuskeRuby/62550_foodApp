@@ -19,7 +19,8 @@ import kotlin.collections.map
 
 class ShoppingListDetailsViewModel(
     private val shoppingListId: Long,
-    private val shoppingListItemGroupDao: ShoppingListItemGroupDao
+    private val shoppingListItemGroupDao: ShoppingListItemGroupDao,
+    private val storeFilterViewModel: StoreFilterViewModel
 ) : ViewModel() {
 
 
@@ -35,39 +36,32 @@ class ShoppingListDetailsViewModel(
             )
 
     // --------------------------------------------------------------------------------
-    // Shopping List Item Groups (resolved to concrete items)
-    // --------------------------------------------------------------------------------
-
-
-    // --------------------------------------------------------------------------------
     // ADD ITEM GROUP
     // --------------------------------------------------------------------------------
     // TODO handle duplicate items
     fun addItemGroup(addedItem: ItemGroup, portionQuantity: Int?, portionSize: Float) {
         viewModelScope.launch {
 
-        val entry =
-            ShoppingListItemGroup(
-                shoppingListId = shoppingListId,
-                itemGroupId = addedItem.id,
-                recipeId = null,
-                portionQuantity = portionQuantity ?: 1,
-                portionSize = portionSize,
-                isChecked = false
-            )
+        val newEntry = ShoppingListItemGroup(
+            shoppingListId = shoppingListId,
+            itemGroupId = addedItem.id,
+            recipeId = null,
+            portionQuantity = portionQuantity ?: 1,
+            portionSize = portionSize,
+            isChecked = false
+        )
 
-        try {
-            // if item already exists in the list
-            if (itemGroupList.value.any { currentList ->
-                    entry.shoppingListId == currentList.shoppingListId &&  // always true for current implementation
-                    entry.itemGroupId == currentList.itemGroupId    &&
-                    entry.recipeId == currentList.recipeId }
-            ) {
-                updateItemGroup(entry)
-            } else {
-                shoppingListItemGroupDao.insert(entry)
+            val existInList = itemGroupList.value.any {
+                it.itemGroupId == newEntry.itemGroupId &&
+                        it.recipeId == newEntry.recipeId
             }
 
+        try {
+            if (existInList) {
+                updateItemGroup(newEntry)
+            } else {
+                shoppingListItemGroupDao.insert(newEntry)
+            }
 
         } catch (e: Exception) {
             // Handle exception (e.g., log it)
@@ -136,11 +130,21 @@ class ShoppingListDetailsViewModel(
     // --------------------------------------------------------------------------------
     // STORE FILTER (same pattern as RecipePage)
     // --------------------------------------------------------------------------------
-    private val selectedStores = MutableStateFlow<Set<Long>>(emptySet())
-
-    fun setSelectedStores(stores: Set<Long>) {
-        selectedStores.value = stores
-    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val shoppingListEntries: StateFlow<List<ShoppingListEntry>> =
+        storeFilterViewModel.selectedStores
+            .flatMapLatest { stores ->
+                shoppingListItemGroupDao.getCheapestShoppingListEntriesFlow(
+                    shoppingListId = shoppingListId,
+                    storeIds = stores.toList(),
+                    storeCount = stores.size
+                )
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
 
     // --------------------------------------------------------------------------------
     // CHEAPEST SHOPPING LIST ENTRIES (PROJECTION FOR UI)
