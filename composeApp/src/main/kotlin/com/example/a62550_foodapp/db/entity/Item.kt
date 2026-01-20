@@ -20,10 +20,10 @@ import androidx.room.Index
 )
 data class Item(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    val id: Long = 0,
 
     @ColumnInfo(name = "item_group_id")
-    val itemGroupId: Int,
+    val itemGroupId: Long,
 
     val name: String,
     val size: Float,

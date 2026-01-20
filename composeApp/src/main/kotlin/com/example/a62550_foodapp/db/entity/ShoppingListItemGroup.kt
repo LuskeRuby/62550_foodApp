@@ -46,13 +46,13 @@ data class ShoppingListItemGroup(
     val id: Long = 0,
 
     @ColumnInfo(name = "shopping_list_id")
-    val shoppingListId: Int,
+    val shoppingListId: Long,
 
     @ColumnInfo(name = "item_group_id")
-    val itemGroupId: Int,
+    val itemGroupId: Long,
 
     @ColumnInfo(name = "recipe_id")
-    val recipeId: Int?,
+    val recipeId: Long?,
 
     @ColumnInfo(name = "portion_quantity")
     val portionQuantity: Int,
