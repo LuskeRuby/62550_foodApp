@@ -31,5 +31,6 @@ data class RecipeItem(
     @ColumnInfo(name = "item_group_id")
     val itemGroupId: Int,
 
-    val quantity: Int
+    @ColumnInfo(name = "size_of_one_portion")
+    val sizeOfOnePortion: Int
 )
