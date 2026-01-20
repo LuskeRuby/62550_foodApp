@@ -141,12 +141,12 @@ object DatabaseMockData {
 
         /* ---------- PRICES ---------- */
         itemIds.forEachIndexed { index, itemId ->
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 10f + index % 7, nettoId))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 11f + index % 7, kvicklyId))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 9.5f + index % 7, foetexId))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 12.5f + index % 7, menyId))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 9f + index % 7, bilkaId))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, year, week, 10.5f + index % 7, rema1000Id))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, nettoId, year, week, 10f + index % 7))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, kvicklyId, year, week, 11f + index % 7, ))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, foetexId, year, week, 9.5f + index % 7))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, menyId, year, week, 12.5f + index % 7))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, bilkaId, year, week, 9f + index % 7))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, rema1000Id, year, week, 10.5f + index % 7))
         }
 
         /* ---------- RECIPES ---------- */

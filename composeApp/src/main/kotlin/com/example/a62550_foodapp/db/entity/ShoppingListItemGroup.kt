@@ -55,5 +55,7 @@ data class ShoppingListItemGroup(
     val recipeId: Int?,
 
     val quantity: Int,
+
+    @ColumnInfo(name = "is_checked")
     val isChecked: Boolean
 )
