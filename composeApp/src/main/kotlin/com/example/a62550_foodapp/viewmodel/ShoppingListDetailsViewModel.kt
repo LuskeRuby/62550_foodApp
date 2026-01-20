@@ -3,8 +3,9 @@ package com.example.a62550_foodapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a62550_foodapp.db.dao.ShoppingListItemGroupDao
+import com.example.a62550_foodapp.db.entity.ItemGroup
 import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
-import com.example.a62550_foodapp.model.ShoppingListEntryUi
+import com.example.a62550_foodapp.db.projection.ShoppingListEntry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,15 +16,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.Int
 import kotlin.collections.map
-import kotlin.text.insert
 
 class ShoppingListDetailsViewModel(
     private val shoppingListId: Int,
     private val shoppingListItemGroupDao: ShoppingListItemGroupDao
 ) : ViewModel() {
 
-    // Shopping List Item Groups (raw logical ingredients)
-    // --------------------------------------------------------------------------------
+// Shopping List Item Groups (raw logical ingredients)
+// --------------------------------------------------------------------------------
     private val itemGroupList: StateFlow<List<ShoppingListItemGroup>> =
         shoppingListItemGroupDao.getItemGroupsMatchingListId(shoppingListId)
             .stateIn(
@@ -33,51 +33,54 @@ class ShoppingListDetailsViewModel(
             )
 
     // TODO handle duplicate items
-    fun addItemGroup(addedItem: ShoppingListEntryUi) {
+    fun addItemGroup(addedItem: ItemGroup, portionQuantity: Int?, portionSize: Float) {
         viewModelScope.launch {
 
-            val mappedItem = addedItem.map { entry: ShoppingListEntryUi ->
+            val entry =
                 ShoppingListItemGroup(
-                    id = 0,
                     shoppingListId = shoppingListId,
-                    itemGroupId = entry.itemGroupId,
-                    recipeId = entry.recipeId,
-                    quantity = entry.quantity,
+                    itemGroupId = addedItem.id,
+                    recipeId = null,
+                    portionQuantity = portionQuantity ?: 1,
+                    portionSize = portionSize,
                     isChecked = false
                 )
-            }
-
-
-            val (updateEntryTemp, newEntry) = mappedItem.partition { mappedItem ->
-                itemGroupList.value.any { db -> mappedItem.itemId == db.itemId }
-            }
 
             try {
-                shoppingListItemGroupDao.insert(newEntry)
-                updateItemGroup(updateEntry)
+                if (itemGroupList.value.any { currentList ->
+                    entry.shoppingListId == currentList.shoppingListId &&  // always true for current implementation
+                    entry.itemGroupId == currentList.itemGroupId    &&
+                    entry.recipeId == currentList.recipeId }
+                    ) {
+                    updateItemGroup(entry)
+                } else {
+                    shoppingListItemGroupDao.insert(entry)
+                }
+
+
             } catch (e: Exception) {
                 // Handle exception (e.g., log it)
                 e.printStackTrace()
             }
-
         }
     }
 
 
 
     // TODO make proper update instead of replace
-    fun updateItemGroup(itemToUpdate: ShoppingListEntryUi) {
+    fun updateItemGroup(itemToUpdate: ShoppingListEntry) {
         viewModelScope.launch {
 
             val previousQuantity = itemGroupList.value.first { it.itemId == itemToUpdate.itemId }.quantity
 
             val updateEntry =
                 ShoppingListItemGroup(
-                    id = ,
+                    id = itemToUpdate.shoppingListGroupId,
                     shoppingListId = itemToUpdate.shoppingListId,
                     itemGroupId = itemToUpdate.itemId,
                     recipeId = itemToUpdate.recipeId,
-                    quantity = itemToUpdate.quantity + previousQuantity,
+                    portionQuantity = itemToUpdate.quantity + previousQuantity,
+                    portionSize = itemToUpdate.size,
                     isChecked = itemToUpdate.isChecked
                 )
 
@@ -110,8 +113,8 @@ class ShoppingListDetailsViewModel(
         }
     }
 
-    // UI entries for Shopping List(resolved to cheapest store items)
-    // --------------------------------------------------------------------------------
+// UI entries for Shopping List(resolved to cheapest store items)
+// --------------------------------------------------------------------------------
 
     //TODO
     //val uiItems: List<> = Dao.get...().map { ... }
@@ -141,8 +144,8 @@ class ShoppingListDetailsViewModel(
 
 
 
-    // Replace everything below this line
-    // --------------------------------------------------------------------------------
+// Replace everything below this line
+// --------------------------------------------------------------------------------
 
     // select a supermarket (used as filter for price queries)
     private val _selectedSupermarketId = MutableStateFlow(1)
@@ -228,7 +231,7 @@ class ShoppingListDetailsViewModel(
                         shoppingListId = shoppingListId,
                         itemGroupId = itemGroupId,
                         recipeId = null,
-                        quantity = quantity,
+                        portionQuantity = quantity,
                         isChecked = false
                     )
                 )
