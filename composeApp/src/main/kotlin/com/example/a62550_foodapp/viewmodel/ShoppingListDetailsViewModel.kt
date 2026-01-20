@@ -57,10 +57,11 @@ class ShoppingListDetailsViewModel(
             )
 
         try {
+            // if item already exists in the list
             if (itemGroupList.value.any { currentList ->
                     entry.shoppingListId == currentList.shoppingListId &&  // always true for current implementation
-                            entry.itemGroupId == currentList.itemGroupId    &&
-                            entry.recipeId == currentList.recipeId }
+                    entry.itemGroupId == currentList.itemGroupId    &&
+                    entry.recipeId == currentList.recipeId }
             ) {
                 updateItemGroup(entry)
             } else {
@@ -79,19 +80,21 @@ class ShoppingListDetailsViewModel(
     // --------------------------------------------------------------------------------
     // UPDATE ITEM GROUP (ENTITY-BASED, NOT PROJECTION)
     // --------------------------------------------------------------------------------
-    // TODO make proper update instead of replace
-    fun updateItemGroup(itemToUpdate: ShoppingListEntry) {
+    fun updateItemGroup(itemToUpdate: ShoppingListItemGroup) {
         viewModelScope.launch {
-            val previousQuantity = itemGroupList.value.first { it.itemId == itemToUpdate.itemId }.quantity
+
+            val previousPortionQuantity: Int = itemGroupList.value.first {
+                it.id == itemToUpdate.id
+            }.portionQuantity
 
             val updateEntry =
                 ShoppingListItemGroup(
-                    id = itemToUpdate.shoppingListGroupId,
+                    id = itemToUpdate.id,
                     shoppingListId = itemToUpdate.shoppingListId,
-                    itemGroupId = itemToUpdate.itemId,
+                    itemGroupId = itemToUpdate.itemGroupId,
                     recipeId = itemToUpdate.recipeId,
-                    portionQuantity = itemToUpdate.quantity + previousQuantity,
-                    portionSize = itemToUpdate.size,
+                    portionQuantity = itemToUpdate.portionQuantity + previousPortionQuantity,
+                    portionSize = itemToUpdate.portionSize,
                     isChecked = itemToUpdate.isChecked
                 )
 
@@ -104,7 +107,7 @@ class ShoppingListDetailsViewModel(
     // --------------------------------------------------------------------------------
     fun deleteItemGroup(item: ShoppingListItemGroup) {
         viewModelScope.launch {
-            shoppingListItemGroupDao.deleteItem(
+            shoppingListItemGroupDao.delete(
                 shoppingListId = item.shoppingListId,
                 itemGroupId = item.itemGroupId,
                 recipeId = item.recipeId
@@ -116,8 +119,8 @@ class ShoppingListDetailsViewModel(
     // CHECKMARK
     // --------------------------------------------------------------------------------
     fun setCheckedItemGroup(
-        itemGroupId: Int,
-        recipeId: Int?,
+        itemGroupId: Long,
+        recipeId: Long?,
         checked: Boolean
     ) {
         viewModelScope.launch {
@@ -133,9 +136,9 @@ class ShoppingListDetailsViewModel(
     // --------------------------------------------------------------------------------
     // STORE FILTER (same pattern as RecipePage)
     // --------------------------------------------------------------------------------
-    private val selectedStores = MutableStateFlow<Set<Int>>(emptySet())
+    private val selectedStores = MutableStateFlow<Set<Long>>(emptySet())
 
-    fun setSelectedStores(stores: Set<Int>) {
+    fun setSelectedStores(stores: Set<Long>) {
         selectedStores.value = stores
     }
 
