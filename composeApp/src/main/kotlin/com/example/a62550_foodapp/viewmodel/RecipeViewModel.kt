@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.times
 
-
 data class SelectedItemGroup(
     val itemGroupId: Int,
     val quantity: Int
@@ -35,7 +34,8 @@ class RecipeViewModel(
     private val itemWeeklyPriceDao: ItemWeeklyPriceDao,
     private val appContext: Context,
     private val itemGroupDao: ItemGroupDao,
-    private val supermarketDao: SupermarketDao
+    private val supermarketDao: SupermarketDao,
+    private val shoppingListItemGroupDao: ShoppingListItemGroupDao
 ) : ViewModel() {
 
     private val _selectedSupermarkets = MutableStateFlow<Set<Int>>(emptySet())
@@ -83,7 +83,7 @@ class RecipeViewModel(
 
     suspend fun getSelectedGroupsForRecipe(recipeId: Int): List<SelectedItemGroup> =
         recipeItemDao.getItemsForRecipe(recipeId).map {
-            SelectedItemGroup(it.itemGroupId, it.quantity)
+            SelectedItemGroup(it.itemGroupId, it.sizeOfOnePortion)
         }
 
     fun toggleSupermarket(id: Int) {
@@ -318,13 +318,7 @@ class RecipeViewModel(
     ) {
         viewModelScope.launch {
 
-            val ingredients = recipeItemDao.getItemsForRecipe(recipeId)
-
-            for (ri in ingredients) {
-
-                val finalQty = ri.sizeOfOnePortion * portions
-
-                val existing = shoppingListItemGroupDao.getOneForRecipe(
+            // Avoid adding same recipe twice
             val alreadyExists =
                 shoppingListItemGroupDao.recipeExistsInList(
                     shoppingListId = shoppingListId,
@@ -332,7 +326,7 @@ class RecipeViewModel(
                 ) > 0
 
             if (alreadyExists) {
-                // todo vis "Allerede tilføjet"
+                // TODO: show "already added" message
                 return@launch
             }
 
@@ -343,12 +337,12 @@ class RecipeViewModel(
                     id = 0,
                     shoppingListId = shoppingListId,
                     itemGroupId = recipeItem.itemGroupId,
-                    quantity = recipeItem.quantity * portions,
                     recipeId = recipeId,
+                    portionQuantity = recipeItem.sizeOfOnePortion * portions,
+                    portionSize = recipeItem.sizeOfOnePortion.toFloat(),
                     isChecked = false
                 )
             }
-
             shoppingListItemGroupDao.insert(groups)
         }
     }

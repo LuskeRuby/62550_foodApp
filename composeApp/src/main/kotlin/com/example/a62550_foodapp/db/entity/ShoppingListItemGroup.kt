@@ -54,7 +54,11 @@ data class ShoppingListItemGroup(
     @ColumnInfo(name = "recipe_id")
     val recipeId: Int?,
 
-    val quantity: Int,
+    @ColumnInfo(name = "portion_quantity")
+    val portionQuantity: Int,
+
+    @ColumnInfo(name = "portion_size")
+    val portionSize: Float,
 
     @ColumnInfo(name = "is_checked")
     val isChecked: Boolean

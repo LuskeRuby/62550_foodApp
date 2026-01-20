@@ -88,7 +88,7 @@ interface ShoppingListItemGroupDao {
 SELECT SUM(
     CASE
         WHEN p.price IS NOT NULL
-        THEN p.price * slig.quantity
+        THEN p.price * slig.portion_quantity
         ELSE 0
     END
 )
@@ -124,16 +124,16 @@ WHERE slig.shopping_list_id = :shoppingListId
      */
     @Query("""
 SELECT
-    ig.id              AS itemGroupId,
-    i.id               AS itemId,
-    i.name             AS itemName,
-    i.size             AS size,
-    i.unitType         AS unitType,
-    slig.quantity      AS quantity,
-    p.price            AS price,
-    slig.is_checked    AS isChecked,
-    ig.category        AS category,
-    slig.recipe_id     AS recipeId
+    ig.id                   AS itemGroupId,
+    i.id                    AS itemId,
+    i.name                  AS itemName,
+    i.size                  AS size,
+    i.unitType              AS unitType,
+    slig.portion_quantity   AS quantity,
+    p.price                 AS price,
+    slig.is_checked         AS isChecked,
+    ig.category             AS category,
+    slig.recipe_id          AS recipeId
 FROM shopping_list_item_groups slig
 
 JOIN item_groups ig
