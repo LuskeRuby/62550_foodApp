@@ -24,7 +24,7 @@ object DatabaseMockData {
         val recipeDao = database.recipeDao()
         val recipeItemDao = database.recipeItemDao()
         val shoppingListDao = database.shoppingListDao()
-        val shoppingListItemDao = database.shoppingListItemDao()
+        val shoppingListItemGroupDao = database.shoppingListItemGroupDao()
 
         val year = 2025
         val week = 1
@@ -80,16 +80,12 @@ object DatabaseMockData {
         val appleSyrup = g("Æbleskivemasse", "Kolonial", "g")
         val flour = g("Mel", "Kolonial", "g")
         val pork_flank = g("Stegt flæsk", "Kød", "g")
-        val fallbackGroup = g(
-            name = "Mystisk ingrediens",
-            cat = "Ukendt",
-            unit = "g"
-        )
+        val fallbackGroup = g("Mystisk ingrediens", "Ukendt", "g")
 
         /* ---------- ITEMS ---------- */
 
         fun item(g: Int, name: String, size: Float, unit: String) =
-            Item(id = 0, itemGroupId = g, name = name, size = size, unitType = unit, imagePath = null)
+            Item(itemGroupId = g.toLong(), name = name, size = size, unitType = unit, imagePath = null)
 
         val items = listOf(
             item(pasta, "Spaghetti 500g", 500f, "g"),
@@ -140,32 +136,29 @@ object DatabaseMockData {
         val itemIds = items.map { itemDao.insert(it).toInt() }
 
         /* ---------- PRICES ---------- */
+
         itemIds.forEachIndexed { index, itemId ->
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, nettoId, year, week, 10f + index % 7))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, kvicklyId, year, week, 11f + index % 7, ))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, foetexId, year, week, 9.5f + index % 7))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, menyId, year, week, 12.5f + index % 7))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, bilkaId, year, week, 9f + index % 7))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId, rema1000Id, year, week, 10.5f + index % 7))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId.toLong(), nettoId.toLong(), year, week, 10f + index % 7))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId.toLong(), kvicklyId.toLong(), year, week, 11f + index % 7))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId.toLong(), foetexId.toLong(), year, week, 9.5f + index % 7))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId.toLong(), menyId.toLong(), year, week, 12.5f + index % 7))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId.toLong(), bilkaId.toLong(), year, week, 9f + index % 7))
+            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId.toLong(), rema1000Id.toLong(), year, week, 10.5f + index % 7))
         }
 
         /* ---------- RECIPES ---------- */
 
-        suspend fun recipe(
-            title: String,
-            time: Int,
-            desc: String,
-            img: Int?
-        ): Int = recipeDao.insert(
-            Recipe(
-                title = title,
-                preparationTimeMinutes = time,
-                description = desc,
-                instructions = "Tilbered efter smag.",
-                imagePath = img?.let { copyDrawableToInternalStorage(context, it, "$title.webp") },
-                deletable = false
-            )
-        ).toInt()
+        suspend fun recipe(title: String, time: Int, desc: String, img: Int?): Int =
+            recipeDao.insert(
+                Recipe(
+                    title = title,
+                    preparationTimeMinutes = time,
+                    description = desc,
+                    instructions = "Tilbered efter smag.",
+                    imagePath = img?.let { copyDrawableToInternalStorage(context, it, "$title.webp") },
+                    deletable = false
+                )
+            ).toInt()
 
         val r1 = recipe("Spaghetti Bolognese", 45, "Italiensk klassiker", R.drawable.recipe_1)
         val r2 = recipe("Chicken Wok", 30, "Asiatisk wok", R.drawable.recipe_2)
@@ -187,81 +180,39 @@ object DatabaseMockData {
         val r18 = recipe("Karbonader", 40, "Stegt kød med sauce", R.drawable.recipe_18)
         val r19 = recipe("Pølser med kartofler", 30, "Dansk husmannskost", R.drawable.recipe_19)
         val r20 = recipe("Kylling i flødesauce", 45, "Cremet og lækker", R.drawable.recipe_20)
-        val fallbackRecipe = recipe(
-            "Fallback Opskrift",
-            10,
-            "Tester opskrift fallback uden konkrete items",
-            null
-        )
+        val fallbackRecipe = recipe("Fallback Opskrift", 10, "Tester opskrift fallback uden konkrete items", null)
+
         /* ---------- RECIPE ITEMS ---------- */
 
         recipeItemDao.insertAll(
             listOf(
-                RecipeItem(r1, pasta, 200), RecipeItem(r1, beef, 300), RecipeItem(r1, tomato, 200),
-                RecipeItem(r2, chicken, 300), RecipeItem(r2, pepper, 150), RecipeItem(r2, soy, 30),
-                RecipeItem(r3, beef, 300), RecipeItem(r3, beans, 200), RecipeItem(r3, chili, 5),
-                RecipeItem(r4, pasta, 200), RecipeItem(r4, cream, 150), RecipeItem(r4, cheese, 80),
-                RecipeItem(r5, chicken, 300), RecipeItem(r5, curry, 10), RecipeItem(r5, rice, 200),
-                RecipeItem(r6, wraps, 4), RecipeItem(r6, chicken, 200), RecipeItem(r6, corn, 100),
-                RecipeItem(r7, broccoli, 200), RecipeItem(r7, carrot, 150), RecipeItem(r7, soy, 20),
-                RecipeItem(r8, rice, 200), RecipeItem(r8, beef, 250), RecipeItem(r8, onion, 100),
-                RecipeItem(r9, tomato, 300), RecipeItem(r9, cream, 100), RecipeItem(r9, garlic, 10),
-                RecipeItem(r10, fish, 300), RecipeItem(r10, broccoli, 200), RecipeItem(r10, carrot, 100),
-                RecipeItem(r11, groundMeat, 200), RecipeItem(r11, bacon, 38), RecipeItem(r11, mushrooms, 38),
-                RecipeItem(r11, potatoes, 300), RecipeItem(r11, carrot, 75), RecipeItem(r11, peas, 63),
-                RecipeItem(r11, butter, 15), RecipeItem(r11, onion, 1), RecipeItem(r11, pork, 1),
-                RecipeItem(r12, groundMeat, 300), RecipeItem(r12, eggs, 1), RecipeItem(r12, flour, 50),
-                RecipeItem(r12, onion, 50), RecipeItem(r12, butter, 25), RecipeItem(r12, redCabbage, 200),
-                RecipeItem(r13, flour, 200), RecipeItem(r13, eggs, 3), RecipeItem(r13, milk, 250),
-                RecipeItem(r13, appleSyrup, 100), RecipeItem(r13, butter, 30),
-                RecipeItem(r14, pork_flank, 300), RecipeItem(r14, onion, 200), RecipeItem(r14, potatoes, 600),
-                RecipeItem(r14, butter, 20),
-                RecipeItem(r15, bread, 2), RecipeItem(r15, ham, 100), RecipeItem(r15, butter, 10),
-                RecipeItem(r15, tomato, 50),
-                RecipeItem(r16, redCabbage, 500), RecipeItem(r16, beetroot, 200), RecipeItem(r16, onion, 100),
-                RecipeItem(r16, carrot, 150), RecipeItem(r16, butter, 25),
-                RecipeItem(r17, pork, 300), RecipeItem(r17, potatoes, 500), RecipeItem(r17, onion, 100),
-                RecipeItem(r17, butter, 20), RecipeItem(r17, carrot, 100),
-                RecipeItem(r18, groundMeat, 350), RecipeItem(r18, eggs, 1), RecipeItem(r18, flour, 30),
-                RecipeItem(r18, onion, 50), RecipeItem(r18, butter, 30), RecipeItem(r18, cream, 100),
-                RecipeItem(r19, pork, 250), RecipeItem(r19, potatoes, 600), RecipeItem(r19, onion, 100),
-                RecipeItem(r19, butter, 15),
-                RecipeItem(r20, chicken, 400), RecipeItem(r20, cream, 200), RecipeItem(r20, mushrooms, 150),
-                RecipeItem(r20, onion, 75), RecipeItem(r20, butter, 25), RecipeItem(r20, garlic, 5)
+                RecipeItem(r1.toLong(), pasta.toLong(), 200),
+                RecipeItem(r1.toLong(), beef.toLong(), 300),
+                RecipeItem(r1.toLong(), tomato.toLong(), 200),
+                RecipeItem(r2.toLong(), chicken.toLong(), 300),
+                RecipeItem(r2.toLong(), pepper.toLong(), 150),
+                RecipeItem(r2.toLong(), soy.toLong(), 30),
+                RecipeItem(r3.toLong(), beef.toLong(), 300),
+                RecipeItem(r3.toLong(), beans.toLong(), 200),
+                RecipeItem(r3.toLong(), chili.toLong(), 5),
+                RecipeItem(fallbackRecipe.toLong(), fallbackGroup.toLong(), 150),
+                RecipeItem(fallbackRecipe.toLong(), fallbackGroup.toLong(), 75)
             )
         )
-        recipeItemDao.insertAll(
-            listOf(
-                RecipeItem(fallbackRecipe, fallbackGroup, 150),
-                RecipeItem(fallbackRecipe, fallbackGroup, 75)
-            )
-        )
+
         /* ---------- SHOPPING LIST ---------- */
 
         val shoppingListId = shoppingListDao.insert(ShoppingList(name = "Weekly groceries")).toInt()
-        val fallbackItem = itemDao.insert(
-            Item(
-                id = 0,
-                itemGroupId = fallbackGroup,
-                name = "Ukendt vare",
-                size = 100f,
-                unitType = "g",
-                imagePath = null
-            )
-        ).toInt()
 
-        shoppingListItemDao.insert(
-            ShoppingListItem(
-                shoppingListId = shoppingListId,
-                itemId = fallbackItem,
-                calcQuantity = 2,
+        shoppingListItemGroupDao.insert(
+            ShoppingListItemGroup(
+                shoppingListId = shoppingListId.toLong(),
+                itemGroupId = fallbackGroup.toLong(),
+                recipeId = null,
+                portionQuantity = 2,
+                portionSize = 100f,
                 isChecked = false
             )
         )
-
-
-        shoppingListItemDao.insert(ShoppingListItem(shoppingListId, itemIds[0], 1, false))
-        shoppingListItemDao.insert(ShoppingListItem(shoppingListId, itemIds[4], 1, false))
-        shoppingListItemDao.insert(ShoppingListItem(shoppingListId, itemIds[14], 1, true))
     }
 }

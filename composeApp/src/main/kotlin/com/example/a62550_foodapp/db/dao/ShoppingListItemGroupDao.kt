@@ -102,19 +102,24 @@ WHERE slig.shopping_list_id = :shoppingListId
 
 
     /**
-     * Returns shopping list entries resolved to concrete store products
-     * using the cheapest available item per ingredient group in the selected stores.
+     * Returns shopping list entries resolved to the CHEAPEST available product
+     * per ingredient group, based on the selected supermarkets.
      *
-     * For each ingredient group, the cheapest item (by weekly price) in the
-     * specified supermarket is selected via a subquery.
+     * Behavior:
+     * - If storeIds is EMPTY → selects cheapest price across ALL supermarkets
+     * - If storeIds contains values → selects cheapest price among those stores only
      *
-     * This allows the UI to display:
-     * - product name
-     * - size and unit
-     * - quantity needed
-     * - correct store-specific price
+     * This mirrors the same pricing logic used for recipe price calculation.
      *
-     * All values are delivered as a reactive Flow for real-time UI updates.
+     * For each ingredient group:
+     * - joins all matching products (items)
+     * - filters by selected supermarkets (if any)
+     * - selects the MIN weekly price
+     *
+     * Returned values are reactive and update automatically when:
+     * - shopping list changes
+     * - prices change
+     * - selected store filter changes
      */
     @Query("""
 SELECT
@@ -139,20 +144,29 @@ JOIN items i
 
 JOIN item_weekly_prices p
     ON p.item_id = i.id
-   AND p.supermarket_id = :supermarketId
 
 WHERE slig.shopping_list_id = :shoppingListId
+
+  AND (
+        :storeCount = 0
+        OR p.supermarket_id IN (:storeIds)
+      )
+
   AND p.price = (
       SELECT MIN(p2.price)
       FROM item_weekly_prices p2
       JOIN items i2 ON i2.id = p2.item_id
       WHERE i2.item_group_id = ig.id
-        AND p2.supermarket_id = :supermarketId
+        AND (
+              :storeCount = 0
+              OR p2.supermarket_id IN (:storeIds)
+            )
   )
 """)
-    fun getShoppingListEntriesByStoreFlow(
+    fun getCheapestShoppingListEntriesFlow(
         shoppingListId: Int,
-        supermarketId: Int
+        storeIds: List<Int>,
+        storeCount: Int
     ): Flow<List<ShoppingListEntry>>
 
 
