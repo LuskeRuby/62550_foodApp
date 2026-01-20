@@ -25,7 +25,8 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import com.example.a62550_foodapp.ui.components.SearchSelectField
 import androidx.compose.foundation.lazy.items
 import androidx.activity.compose.BackHandler
-
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.RemoveCircle
 
 @Composable
 fun CreateRecipeScreen(
@@ -264,7 +265,7 @@ private fun AddIngredientsOverlay(
     val tempSelected by recipeViewModel.tempGroups.collectAsState()
 
     var selectedGroupId by remember { mutableStateOf<Int?>(null) }
-    var quantityText by remember { mutableStateOf("") }
+    var quantity by remember { mutableStateOf(4) }
 
     Column(
         modifier = Modifier
@@ -289,13 +290,24 @@ private fun AddIngredientsOverlay(
             modifier = Modifier.fillMaxWidth()
         ) {
 
-            OutlinedTextField(
-                value = quantityText,
-                onValueChange = { quantityText = it.filter(Char::isDigit) },
-                label = { Text("Qty") },
-                modifier = Modifier.width(100.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            IconButton(
+                onClick = { if (quantity > 1) quantity-- },
+                enabled = selectedGroupId != null
+            ) {
+                Icon(Icons.Default.RemoveCircle, contentDescription = null)
+            }
+
+            Text(
+                text = quantity.toString(),
+                style = MaterialTheme.typography.titleMedium
             )
+
+            IconButton(
+                onClick = { quantity++ },
+                enabled = selectedGroupId != null
+            ) {
+                Icon(Icons.Default.AddCircle, contentDescription = null)
+            }
 
             Text(
                 allGroups.firstOrNull { it.id == selectedGroupId }?.unitType ?: ""
@@ -304,14 +316,14 @@ private fun AddIngredientsOverlay(
             Spacer(Modifier.weight(1f))
 
             Button(
-                enabled = selectedGroupId != null && quantityText.isNotBlank(),
+                enabled = selectedGroupId != null,
                 onClick = {
                     recipeViewModel.addTempGroup(
                         selectedGroupId!!,
-                        quantityText.toInt()
+                        quantity
                     )
                     selectedGroupId = null
-                    quantityText = ""
+                    quantity = 4   // ⭐ reset default
                 }
             ) { Text("Add") }
         }

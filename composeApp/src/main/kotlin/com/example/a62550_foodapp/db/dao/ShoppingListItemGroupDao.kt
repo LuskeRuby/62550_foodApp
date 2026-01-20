@@ -160,4 +160,16 @@ WHERE slig.shopping_list_id = :shoppingListId
         supermarketId: Int
     ): Flow<List<ShoppingListEntry>>
 
+
+    @Query("""
+    SELECT COUNT(*)
+    FROM shopping_list_item_groups
+    WHERE shopping_list_id = :shoppingListId
+      AND recipe_id = :recipeId
+""")
+    suspend fun recipeExistsInList(
+        shoppingListId: Int,
+        recipeId: Int
+    ): Int
+
 }

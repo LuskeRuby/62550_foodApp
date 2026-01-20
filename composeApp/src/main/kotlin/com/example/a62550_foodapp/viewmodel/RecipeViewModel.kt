@@ -35,8 +35,10 @@ class RecipeViewModel(
     private val itemWeeklyPriceDao: ItemWeeklyPriceDao,
     private val appContext: Context,
     private val itemGroupDao: ItemGroupDao,
-    private val supermarketDao: SupermarketDao
+    private val supermarketDao: SupermarketDao,
+    private val shoppingListItemGroupDao: ShoppingListItemGroupDao
 ) : ViewModel() {
+
 
     private val _selectedSupermarkets = MutableStateFlow<Set<Int>>(emptySet())
     val selectedSupermarkets: StateFlow<Set<Int>> = _selectedSupermarkets.asStateFlow()
@@ -318,34 +320,31 @@ class RecipeViewModel(
     ) {
         viewModelScope.launch {
 
-            val ingredients = recipeItemDao.getItemsForRecipe(recipeId)
-
-            for (ri in ingredients) {
-
-                val finalQty = ri.quantity * portions
-
-                val existing = shoppingListItemGroupDao.getOneForRecipe(
+            val alreadyExists =
+                shoppingListItemGroupDao.recipeExistsInList(
                     shoppingListId = shoppingListId,
-                    itemGroupId = ri.itemGroupId,
                     recipeId = recipeId
-                )
+                ) > 0
 
-                if (existing == null) {
-                    shoppingListItemGroupDao.insert(
-                        ShoppingListItemGroup(
-                            shoppingListId = shoppingListId,
-                            itemGroupId = ri.itemGroupId,
-                            recipeId = recipeId,
-                            quantity = finalQty,
-                            isChecked = false
-                        )
-                    )
-                } else {
-                    shoppingListItemGroupDao.update(
-                        existing.copy(quantity = existing.quantity + finalQty)
-                    )
-                }
+            if (alreadyExists) {
+                // todo vis "Allerede tilføjet"
+                return@launch
             }
+
+            val recipeItems = recipeItemDao.getItemsForRecipe(recipeId)
+
+            val groups = recipeItems.map { recipeItem ->
+                ShoppingListItemGroup(
+                    id = 0,
+                    shoppingListId = shoppingListId,
+                    itemGroupId = recipeItem.itemGroupId,
+                    quantity = recipeItem.quantity * portions,
+                    recipeId = recipeId,
+                    isChecked = false
+                )
+            }
+
+            shoppingListItemGroupDao.insert(groups)
         }
     }
 
