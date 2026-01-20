@@ -21,7 +21,6 @@ import kotlin.math.ceil
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.times
 
 
 data class SelectedItemGroup(
@@ -83,7 +82,7 @@ class RecipeViewModel(
 
     suspend fun getSelectedGroupsForRecipe(recipeId: Int): List<SelectedItemGroup> =
         recipeItemDao.getItemsForRecipe(recipeId).map {
-            SelectedItemGroup(it.itemGroupId, it.quantity)
+            SelectedItemGroup(it.itemGroupId, it.sizeOfOnePortion)
         }
 
     fun toggleSupermarket(id: Int) {
@@ -191,7 +190,7 @@ class RecipeViewModel(
             var best = Float.MAX_VALUE
             for (p in prices) {
                 if (p.size <= 0f) continue
-                val needed = ceil((ri.quantity * portions) / p.size).toInt()
+                val needed = ceil((ri.sizeOfOnePortion * portions) / p.size).toInt()
                 best = minOf(best, needed * p.price)
             }
 
@@ -322,7 +321,7 @@ class RecipeViewModel(
 
             for (ri in ingredients) {
 
-                val finalQty = ri.quantity * portions
+                val finalQty = ri.sizeOfOnePortion * portions
 
                 val existing = shoppingListItemGroupDao.getOneForRecipe(
                     shoppingListId = shoppingListId,

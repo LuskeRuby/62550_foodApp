@@ -26,15 +26,9 @@ interface ShoppingListItemGroupDao {
     @Insert
     suspend fun insert(item: ShoppingListItemGroup): Long
 
-    @Insert
-    suspend fun insert(items: List<ShoppingListItemGroup>): List<Long>
-
-    @Update
-    suspend fun update(item: ShoppingListItemGroup)
-
     //TODO avoid race condition when updating items
     @Update
-    suspend fun update(items: List<ShoppingListItemGroup>)
+    suspend fun update(item: ShoppingListItemGroup)
 
     @Delete
     suspend fun delete(item: ShoppingListItemGroup)
@@ -84,11 +78,12 @@ interface ShoppingListItemGroupDao {
      *
      * Returns NULL if no prices are available.
      */
-    @Query("""
+    @Query(
+        """
 SELECT SUM(
     CASE
         WHEN p.price IS NOT NULL
-        THEN p.price * slig.quantity
+        THEN p.price * slig.portion_quantity
         ELSE 0
     END
 )
@@ -99,7 +94,8 @@ LEFT JOIN item_weekly_prices p
     ON p.item_id = i.id
    AND p.supermarket_id = :supermarketId
 WHERE slig.shopping_list_id = :shoppingListId
-""")
+"""
+    )
     fun getTotalPriceByStoreFlow(
         shoppingListId: Int,
         supermarketId: Int
@@ -122,14 +118,15 @@ WHERE slig.shopping_list_id = :shoppingListId
      *
      * All values are delivered as a reactive Flow for real-time UI updates.
      */
-    @Query("""
+    @Query(
+        """
 SELECT
     ig.id              AS itemGroupId,
     i.id               AS itemId,
     i.name             AS itemName,
     i.size             AS size,
     i.unitType         AS unitType,
-    slig.quantity      AS quantity,
+    slig.portion_quantity      AS quantity,
     p.price            AS price,
     slig.is_checked    AS isChecked,
     ig.category        AS category,
@@ -154,7 +151,8 @@ WHERE slig.shopping_list_id = :shoppingListId
       WHERE i2.item_group_id = ig.id
         AND p2.supermarket_id = :supermarketId
   )
-""")
+"""
+    )
     fun getShoppingListEntriesByStoreFlow(
         shoppingListId: Int,
         supermarketId: Int
