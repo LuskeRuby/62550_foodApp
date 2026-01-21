@@ -29,33 +29,39 @@ import org.koin.androidx.compose.koinViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.filled.Public
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.RemoveCircle
+import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 
 @Composable
 fun RecipePage(
     onAddRecipeClick: () -> Unit,
     onDiscoverRecipesClick: () -> Unit, // kept for nav, not used here
-    onRecipeClick: (Int) -> Unit,
+    onRecipeClick: (Long) -> Unit,
     recipeViewModel: RecipeViewModel = koinViewModel(),
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
 
     // --- DATA ---
-    val allRecipes by recipeViewModel
-        .getRecipesWithPricesFlow()
-        .collectAsState(initial = emptyList())
+    val filterViewModel: StoreFilterViewModel = koinViewModel()
+    val selectedStores by filterViewModel.selectedStores.collectAsState()
 
-    val selectedSupermarkets by recipeViewModel.selectedSupermarkets.collectAsState()
+    val allRecipes by recipeViewModel
+        .getRecipesWithPricesFlow(selectedStores)
+        .collectAsState(initial = emptyList())
 
     // --- UI STATE ---
     var searchText by remember { mutableStateOf("") }
 
-    val visibleRecipes = remember(allRecipes, searchText, selectedSupermarkets) {
+    val visibleRecipes = remember(allRecipes, searchText) {
         allRecipes.filter { (recipe, _) ->
             recipe.title.contains(searchText, ignoreCase = true)
         }
     }
+
 
     val gridState = rememberLazyGridState()
 
@@ -113,8 +119,10 @@ fun RecipePage(
                     items(visibleRecipes) { (recipe, price) ->
                         RecipeCard(
                             recipe = recipe,
-                            price = price,
+                            basePrice = price,
+                            recipeViewModel = recipeViewModel,
                             themeViewModel = themeViewModel,
+                            selectedStores = selectedStores,
                             onClick = { onRecipeClick(recipe.id) }
                         )
                     }
@@ -154,10 +162,19 @@ fun RecipePage(
 @Composable
 fun RecipeCard(
     recipe: Recipe,
-    price: Float = 0f,
+    basePrice: Float, // not used anymore, but kept so list doesn't break
+    recipeViewModel: RecipeViewModel,
     themeViewModel: ThemeViewModel,
+    selectedStores: Set<Long>,
     onClick: () -> Unit
 ) {
+    var portions by remember { mutableStateOf(4) }  // staart at 4 always
+    var price by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(portions, selectedStores) {
+        price = recipeViewModel.getRecipePriceByPortions(recipe.id, portions, selectedStores)
+    }
+
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -181,6 +198,7 @@ fun RecipeCard(
                     modifier = Modifier.fillMaxSize()
                 )
 
+                // PRICE TAG
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -200,15 +218,14 @@ fun RecipeCard(
                 }
             }
 
-            // TITLE
-            Box(
+            // TITLE + +/- BAR
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
                     .background(Color.White)
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                contentAlignment = Alignment.CenterStart
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
+
                 Text(
                     text = recipe.title,
                     style = MaterialTheme.typography.titleMedium,
@@ -216,6 +233,41 @@ fun RecipeCard(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
+
+                Spacer(Modifier.height(6.dp))
+
+                // Portions selector (same as detail screen)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { if (portions > 1) portions-- },
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(Icons.Default.RemoveCircle, null, tint = themeViewModel.priceTagColor)
+                    }
+
+                    Text(
+                        text = portions.toString(),
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 6.dp)
+                    )
+
+                    IconButton(
+                        onClick = { portions++ },
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(Icons.Default.AddCircle, null, tint = themeViewModel.priceTagColor)
+                    }
+
+                    Spacer(Modifier.width(8.dp))
+
+                    Text(
+                        text = "pers",
+                        color = themeViewModel.textSecondary,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
             }
         }
     }

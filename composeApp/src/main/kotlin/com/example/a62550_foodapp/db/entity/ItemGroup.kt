@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "item_groups")
 data class ItemGroup(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    val id: Long = 0,
 
     val name: String,
     val category: String,

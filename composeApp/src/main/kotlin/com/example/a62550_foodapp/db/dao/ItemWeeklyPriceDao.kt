@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 // Simple data class for holding item size and price information
 data class ItemSizePrice(
-    val id: Int,
+    val id: Long,
     val size: Float,
     val price: Float
 )
@@ -34,7 +34,7 @@ interface ItemWeeklyPriceDao {
         WHERE i.item_group_id = :itemGroupId
     """)
     suspend fun getPricesForItemGroup(
-        itemGroupId: Int
+        itemGroupId: Long
     ): List<ItemWithPrice>
 
     @Query("""
@@ -45,7 +45,7 @@ interface ItemWeeklyPriceDao {
         GROUP BY i.id, i.size
     """)
     suspend fun getItemSizesAndMinPrices(
-        itemGroupId: Int
+        itemGroupId: Long
     ): List<ItemSizePrice>
 
     @Query("""
@@ -56,7 +56,7 @@ interface ItemWeeklyPriceDao {
     GROUP BY i.id, i.size
 """)
     fun getItemSizesAndMinPricesFlow(
-        itemGroupId: Int
+        itemGroupId: Long
     ): Flow<List<ItemSizePrice>>
 
     @Query("""
@@ -68,8 +68,8 @@ interface ItemWeeklyPriceDao {
         GROUP BY i.id, i.size
     """)
     suspend fun getItemSizesAndMinPricesByStore(
-        itemGroupId: Int,
-        supermarketId: Int
+        itemGroupId: Long,
+        supermarketId: Long
     ): List<ItemSizePrice>
 
     @Query("""
@@ -81,8 +81,8 @@ interface ItemWeeklyPriceDao {
         GROUP BY i.id, i.size
     """)
     fun getItemSizesAndMinPricesByStoreFlow(
-        itemGroupId: Int,
-        supermarketId: Int
+        itemGroupId: Long,
+        supermarketId: Long
     ): Flow<List<ItemSizePrice>>
 
     @Query("""
@@ -94,8 +94,22 @@ interface ItemWeeklyPriceDao {
         GROUP BY i.id, i.size
     """)
     fun getItemSizesAndMinPricesByStoresFlow(
-        itemGroupId: Int,
-        supermarketIds: List<Int>
+        itemGroupId: Long,
+        supermarketIds: List<Long>
     ): Flow<List<ItemSizePrice>>
+
+
+    @Query("""
+    SELECT i.id, i.size, MIN(p.price) as price
+    FROM items i
+    JOIN item_weekly_prices p ON p.item_id = i.id
+    WHERE i.item_group_id = :itemGroupId
+      AND p.supermarket_id IN (:supermarketIds)
+    GROUP BY i.id, i.size
+""")
+    suspend fun getItemSizesAndMinPricesByStores(
+        itemGroupId: Long,
+        supermarketIds: List<Long>
+    ): List<ItemSizePrice>
 
 }

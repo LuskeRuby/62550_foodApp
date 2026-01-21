@@ -6,10 +6,6 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "shopping_lists")
 data class ShoppingList(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    val name: String,
-    /**
-     * Timestamp for when prices were last generated/checked
-     */
-    val lastPriceCheckTimestamp: Long? = null
+    val id: Long = 0,
+    val name: String
 )

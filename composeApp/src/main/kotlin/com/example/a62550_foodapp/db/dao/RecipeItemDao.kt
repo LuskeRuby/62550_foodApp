@@ -17,25 +17,21 @@ interface RecipeItemDao {
     suspend fun insertAll(items: List<RecipeItem>)
 
     @Query("DELETE FROM recipe_items WHERE recipe_id = :recipeId")
-    suspend fun deleteForRecipe(recipeId: Int)
+    suspend fun deleteForRecipe(recipeId: Long)
 
+    // one-shot load (used when adding to shopping list)
     @Query("""
         SELECT *
         FROM recipe_items
         WHERE recipe_id = :recipeId
     """)
-    suspend fun getItemsForRecipe(
-        recipeId: Int
-    ): List<RecipeItem>
+    suspend fun getItemsForRecipe(recipeId: Long): List<RecipeItem>
 
-    // for reactive updating
+    // reactive load (used in UI)
     @Query("""
-    SELECT *
-    FROM recipe_items
-    WHERE recipe_id = :recipeId
-""")
-    fun getItemsForRecipeFlow(
-        recipeId: Int
-    ): Flow<List<RecipeItem>>
-
+        SELECT *
+        FROM recipe_items
+        WHERE recipe_id = :recipeId
+    """)
+    fun getItemsForRecipeFlow(recipeId: Long): Flow<List<RecipeItem>>
 }

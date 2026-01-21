@@ -16,7 +16,8 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import com.example.a62550_foodapp.api.MealDbApi
 import com.example.a62550_foodapp.viewmodel.ApiRecipeDetailViewModel
 import com.example.a62550_foodapp.viewmodel.DiscoverRecipeViewModel
-import com.example.a62550_foodapp.viewmodel.ItemViewModel
+import com.example.a62550_foodapp.viewmodel.ItemGroupViewModel
+import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.koin.android.ext.koin.androidLogger
@@ -57,7 +58,7 @@ val appModule = module {
     single { get<AppDatabase>().recipeItemDao() }
 
     single { get<AppDatabase>().shoppingListDao() }
-    single { get<AppDatabase>().shoppingListItemDao() }
+    single { get<AppDatabase>().shoppingListItemGroupDao() }
 
     single { get<AppDatabase>().supermarketDao() }
 
@@ -87,16 +88,18 @@ val appModule = module {
             itemWeeklyPriceDao = get(),
             appContext = androidContext(),
             itemGroupDao = get(),
-            supermarketDao = get()
+            supermarketDao = get(),
+            shoppingListItemGroupDao = get()
         )
     }
 
     viewModel{ ShoppingListViewModel(get()) }
 
-    viewModel { (shoppingListId: Int) ->
+    viewModel { (shoppingListId: Long) ->
         ShoppingListDetailsViewModel(
             shoppingListId = shoppingListId,
-            shoppingListItemDao = get()
+            shoppingListItemGroupDao = get(),
+            storeFilterViewModel = get()
         )
     }
 
@@ -114,6 +117,10 @@ val appModule = module {
 
     viewModel { ThemeViewModel() }
 
-    viewModel { ItemViewModel( itemDao = get() ) }
+    viewModel { ItemGroupViewModel(itemGroupDao = get()) }
+
+    viewModel { StoreFilterViewModel() }
+
+
 
 }

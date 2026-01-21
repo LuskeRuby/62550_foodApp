@@ -26,10 +26,11 @@ import androidx.room.Index
 )
 data class RecipeItem(
     @ColumnInfo(name = "recipe_id")
-    val recipeId: Int,
+    val recipeId: Long,
 
     @ColumnInfo(name = "item_group_id")
-    val itemGroupId: Int,
+    val itemGroupId: Long,
 
-    val quantity: Int
+    @ColumnInfo(name = "size_of_one_portion")
+    val sizeOfOnePortion: Int
 )
