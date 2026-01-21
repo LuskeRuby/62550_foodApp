@@ -208,9 +208,6 @@ fun CategoryHeader(category: String) {
     }
 }
 
-/* ───────────────────────────────────────────────────────────── */
-/* Row                                                          */
-/* ───────────────────────────────────────────────────────────── */
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -311,9 +308,6 @@ private fun ShoppingItemRow(
     }
 }
 
-/* ───────────────────────────────────────────────────────────── */
-/* Text helpers + total box                                      */
-/* ───────────────────────────────────────────────────────────── */
 
 @Composable
 private fun CheckboxText(
