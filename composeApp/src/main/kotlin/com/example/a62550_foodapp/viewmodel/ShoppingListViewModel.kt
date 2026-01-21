@@ -69,17 +69,9 @@ class ShoppingListViewModel(
         }
     }
 
-    fun deleteShoppingList(
-        id: Long,
-        name: String
-    ) {
+    fun deleteShoppingList(id: Long) {
         viewModelScope.launch {
-            shoppingListDao.delete(
-                ShoppingListEntity(
-                    id = id,
-                    name = name
-                )
-            )
+            shoppingListDao.delete(id = id)
         }
     }
 
