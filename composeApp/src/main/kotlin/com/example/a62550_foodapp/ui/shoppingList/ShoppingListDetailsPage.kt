@@ -16,47 +16,51 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.a62550_foodapp.db.projection.ShoppingListEntry
-import com.example.a62550_foodapp.ui.components.SearchSelectField
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-// ------------------------------------------------------------
-// ENTRY
-// ------------------------------------------------------------
+/* ───────────────────────────────────────────────────────────── */
+/* Page shell                                                    */
+/* ───────────────────────────────────────────────────────────── */
 
 @Composable
-fun ShoppingListDetailsPage(shoppingListId: Long) {
-    var addOverlay by remember { mutableStateOf(false) }
+fun ShoppingListDetailsPage(
+    shoppingListId: Long,
+) {
+    var addItemsOverlay by remember { mutableStateOf(false) }
 
-    if (!addOverlay) {
+    if (!addItemsOverlay) {
         ShoppingListPage(
             shoppingListId = shoppingListId,
-            onAdd = { addOverlay = true }
+            onAddItemsButtonClick = { addItemsOverlay = true },
+            editOverlay = false
         )
     } else {
-        BackHandler { addOverlay = false }
+        BackHandler { addItemsOverlay = false }
         AddItemGroupToShoppingListPage(
             shoppingListId = shoppingListId,
-            disableItemOverlay = { addOverlay = false }
+            disableItemOverlay = { addItemsOverlay = false }
         )
     }
 }
 
-// ------------------------------------------------------------
-// MAIN PAGE
-// ------------------------------------------------------------
+/* ───────────────────────────────────────────────────────────── */
+/* Main shopping list page                                       */
+/* ───────────────────────────────────────────────────────────── */
 
 @Composable
 private fun ShoppingListPage(
     shoppingListId: Long,
-    onAdd: () -> Unit,
-    theme: ThemeViewModel = koinViewModel(),
+    onAddItemsButtonClick: () -> Unit,
+    editOverlay: Boolean,
+    themeViewModel: ThemeViewModel = koinViewModel(),
     viewModel: ShoppingListDetailsViewModel =
         koinViewModel(
             key = "ShoppingListDetails-$shoppingListId",
@@ -64,55 +68,87 @@ private fun ShoppingListPage(
         )
 ) {
     val items by viewModel.items.collectAsState()
-    val total by viewModel.shoppingListTotalPrice.collectAsState()
+    val totalUi by viewModel.shoppingListTotalPrice.collectAsState()
 
-    val storeFilterVM: StoreFilterViewModel = koinViewModel()
-    val selectedStores by storeFilterVM.selectedStores.collectAsState()
+    val storeFilterViewModel: StoreFilterViewModel = koinViewModel()
+    val selectedStores by storeFilterViewModel.selectedStores.collectAsState()
 
     LaunchedEffect(selectedStores) {
         viewModel.setStoreFilter(selectedStores)
     }
 
-    // Store → Category → Items
-    val grouped: Map<String, Map<String, List<ShoppingListEntry>>> =
+    /**
+     * 🔑 IMPORTANT GROUPING LOGIC
+     *
+     * - Available items → grouped by store → category
+     * - Unavailable items → store = "" → category = "Utilgængelige varer"
+     * - UI remains unchanged
+     */
+    val grouped =
         items
-            .groupBy { it.superMarketName.orEmpty() }
-            .mapValues { (_, list) ->
-                list.groupBy { it.category.ifBlank { "Ukendt kategori" } }
+            .groupBy { it.superMarketName ?: "" }
+            .mapValues { (_, categoryItems) ->
+                categoryItems.groupBy { it.category }
             }
 
-    Box(Modifier.fillMaxSize().background(theme.backgroundColor)) {
-        Column {
-            Header(total)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(themeViewModel.backgroundColor)
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
 
+            /* Header */
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Indkøbsliste",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(16.dp)
+                )
+
+                TotalBox(totalUi)
+            }
+
+            /* List */
             ShoppingListContent(
-                grouped = grouped,
-                onCheck = { item, checked -> viewModel.setCheckmark(item, checked) },
-                onDelete = { viewModel.delete(it) }
+                viewModel = viewModel,
+                editOverlay = editOverlay,
+                grouped = grouped
             )
         }
 
         FloatingActionButton(
-            onClick = onAdd,
+            onClick = onAddItemsButtonClick,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(20.dp),
-            containerColor = theme.addButtonColor
+                .padding(end = 20.dp, bottom = 20.dp)
+                .height(48.dp)
+                .width(160.dp),
+            shape = RoundedCornerShape(24.dp),
+            containerColor = themeViewModel.addButtonColor,
+            contentColor = themeViewModel.onPrimaryColor
         ) {
             Text("Tilføj varer")
         }
     }
 }
 
-// ------------------------------------------------------------
-// LIST CONTENT
-// ------------------------------------------------------------
+/* ───────────────────────────────────────────────────────────── */
+/* List content                                                  */
+/* ───────────────────────────────────────────────────────────── */
 
 @Composable
 private fun ShoppingListContent(
-    grouped: Map<String, Map<String, List<ShoppingListEntry>>>,
-    onCheck: (ShoppingListEntry, Boolean) -> Unit,
-    onDelete: (ShoppingListEntry) -> Unit
+    viewModel: ShoppingListDetailsViewModel,
+    editOverlay: Boolean,
+    grouped: Map<String, Map<String, List<ShoppingListEntry>>>
 ) {
     LazyColumn {
         grouped.forEach { (store, categoryMap) ->
@@ -130,8 +166,14 @@ private fun ShoppingListContent(
                 ) { entry ->
                     ShoppingItemRow(
                         item = entry,
-                        onCheckedChange = { checked -> onCheck(entry, checked) },
-                        onDelete = { onDelete(entry) }
+                        onCheckedChange =
+                            if (!editOverlay) {
+                                { checked -> viewModel.setCheckmark(entry, checked) }
+                            } else {
+                                {}
+                            },
+                        editList = !editOverlay,
+                        onDelete = { viewModel.delete(entry) }
                     )
                 }
             }
@@ -139,43 +181,67 @@ private fun ShoppingListContent(
     }
 }
 
-// ------------------------------------------------------------
-// UI PIECES
-// ------------------------------------------------------------
+/* ───────────────────────────────────────────────────────────── */
+/* Headers                                                       */
+/* ───────────────────────────────────────────────────────────── */
 
 @Composable
-fun SuperMarketHeader(name: String) {
+private fun SuperMarketHeader(name: String) {
     Box(
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFF6200EE))
-            .padding(8.dp)
+            .padding(vertical = 6.dp, horizontal = 12.dp)
     ) {
-        Text(name, color = Color.White, fontWeight = FontWeight.Bold)
+        Text(
+            text = name,
+            color = Color.White,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
 @Composable
 fun CategoryHeader(category: String) {
+    val themeViewModel: ThemeViewModel = koinViewModel()
+    val color = when (category.lowercase()) {
+        "tørvarer" -> themeViewModel.dryGoods
+        "kød" -> themeViewModel.meat
+        "grøntsager" -> themeViewModel.vegetables
+        "mejeri" -> themeViewModel.dairy
+        "kolonial" -> themeViewModel.kolonial
+        else -> themeViewModel.other
+    }
+
     Box(
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
-            .background(Color.LightGray)
-            .padding(6.dp)
+            .background(color)
+            .padding(vertical = 6.dp, horizontal = 12.dp)
     ) {
-        Text(category, fontWeight = FontWeight.Bold)
+        Text(
+            text = category,
+            color = Color.White,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
+/* ───────────────────────────────────────────────────────────── */
+/* Row                                                          */
+/* ───────────────────────────────────────────────────────────── */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShoppingItemRow(
+private fun ShoppingItemRow(
+    themeViewModel: ThemeViewModel = koinViewModel(),
     item: ShoppingListEntry,
     onCheckedChange: (Boolean) -> Unit,
-    onDelete: () -> Unit,
-    theme: ThemeViewModel = koinViewModel()
+    editList: Boolean,
+    onDelete: () -> Unit
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
+        positionalThreshold = { it * 0.4f },
         confirmValueChange = {
             if (it == SwipeToDismissBoxValue.EndToStart) {
                 onDelete()
@@ -189,61 +255,133 @@ fun ShoppingItemRow(
         enableDismissFromStartToEnd = false,
         backgroundContent = {
             Box(
-                Modifier
+                modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Red)
                     .padding(end = 20.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
-                Icon(Icons.Default.Delete, null, tint = Color.White)
+                Icon(Icons.Default.Delete, contentDescription = null, tint = Color.White)
             }
         }
     ) {
         Row(
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    if (item.isChecked) theme.fadedBackground else theme.backgroundColor
+                    if (item.isChecked) themeViewModel.fadedBackground
+                    else themeViewModel.backgroundColor,
+                    RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
                 )
-                .padding(12.dp),
+                .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            Checkbox(
+            CheckboxText(
                 checked = item.isChecked,
-                onCheckedChange = onCheckedChange
+                text = "${item.quantity} x ${item.itemName}",
+                modifier = Modifier.weight(1f),
+                fontSize = 15.sp,
+                color = themeViewModel.textPrimary,
+                fontWeight = FontWeight.Medium
+            )
+            val sizeText =
+                item.size?.let { "${it.toInt()} ${item.unitType}" }
+                    ?: item.unitType
+
+            CheckboxText(
+                checked = item.isChecked,
+                text = "${item.quantity} × $sizeText",
+                modifier = Modifier.width(90.dp),
+                fontSize = 13.sp,
+                color = themeViewModel.textPrimary,
+                textAlign = TextAlign.End
             )
 
-            Text(
-                "${item.quantity} × ${item.itemName}",
-                Modifier.weight(1f),
-                textDecoration =
-                    if (item.isChecked) TextDecoration.LineThrough else null
-            )
 
-            Text(
-                item.price?.let { "${(it * item.quantity).toInt()} kr" } ?: "—",
-                fontWeight = FontWeight.Bold
-            )
+            Column(
+                modifier = Modifier.width(80.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+                item.price?.let { price ->
+                    CheckboxText(
+                        checked = item.isChecked,
+                        text = "${(price * item.quantity).toInt()} kr",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = themeViewModel.priceTagColor
+                    )
+                } ?: CheckboxText(
+                    checked = item.isChecked,
+                    text = "Utilgængelig",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = themeViewModel.priceTagColor
+                )
+            }
+
+            if (editList) {
+                Checkbox(
+                    checked = item.isChecked,
+                    onCheckedChange = onCheckedChange
+                )
+            }
         }
     }
 }
 
-// ------------------------------------------------------------
-// HEADER
-// ------------------------------------------------------------
+/* ───────────────────────────────────────────────────────────── */
+/* Text helpers + total box                                      */
+/* ───────────────────────────────────────────────────────────── */
 
 @Composable
-private fun Header(total: ShoppingListDetailsViewModel.TotalUi) {
+private fun CheckboxText(
+    checked: Boolean,
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color,
+    fontSize: TextUnit,
+    fontWeight: FontWeight? = null,
+    textAlign: TextAlign? = null,
+    themeViewModel: ThemeViewModel = koinViewModel()
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        color = if (checked) themeViewModel.greyedOutColor else color,
+        fontSize = fontSize,
+        fontWeight = fontWeight,
+        textAlign = textAlign,
+        textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None
+    )
+}
+
+@Composable
+private fun TotalBox(totalUi: ShoppingListDetailsViewModel.TotalUi) {
+    val themeViewModel: ThemeViewModel = koinViewModel()
+
     Surface(
         shape = RoundedCornerShape(50),
-        color = Color(0xFF2E7D32),
-        modifier = Modifier.padding(16.dp)
+        shadowElevation = 8.dp,
+        color = themeViewModel.totalPriceColor
     ) {
-        Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Total ${total.total.toInt()} kr", color = Color.White, fontWeight = FontWeight.Bold)
-            if (total.missingCount > 0) {
-                Text("* Ufuldstændig pris", color = Color.White)
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "Total ${totalUi.total.toInt()} kr",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+
+            if (totalUi.missingCount > 0) {
+                Text(
+                    "* Nogle varer mangler pris",
+                    fontSize = 16.sp,
+                    color = Color.White.copy(alpha = 0.85f)
+                )
             }
         }
     }
