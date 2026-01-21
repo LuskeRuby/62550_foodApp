@@ -16,7 +16,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import com.example.a62550_foodapp.api.MealDbApi
 import com.example.a62550_foodapp.viewmodel.ApiRecipeDetailViewModel
 import com.example.a62550_foodapp.viewmodel.DiscoverRecipeViewModel
-import com.example.a62550_foodapp.viewmodel.ItemGroupViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -98,7 +97,8 @@ val appModule = module {
     viewModel { (shoppingListId: Long) ->
         ShoppingListDetailsViewModel(
             shoppingListId = shoppingListId,
-            shoppingListItemGroupDao = get()
+            shoppingListItemGroupDao = get(),
+            itemGroupDao = get()
         )
     }
 
@@ -115,8 +115,6 @@ val appModule = module {
     }
 
     viewModel { ThemeViewModel() }
-
-    viewModel { ItemGroupViewModel(itemGroupDao = get()) }
 
     viewModel { StoreFilterViewModel() }
 
