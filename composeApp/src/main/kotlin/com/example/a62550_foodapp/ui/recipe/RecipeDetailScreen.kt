@@ -4,7 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,7 +17,7 @@ import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
-
+import com.example.a62550_foodapp.viewmodel.ShoppingListViewModel
 @Composable
 fun RecipeDetailScreen(
     recipeId: Long,
@@ -28,6 +32,8 @@ fun RecipeDetailScreen(
         .collectAsState(initial = emptyList())
     val storeFilterViewModel: StoreFilterViewModel = koinViewModel()
     val selectedStores by storeFilterViewModel.selectedStores.collectAsState()
+    val shoppingListViewModel: ShoppingListViewModel = koinViewModel()
+    val shoppingLists by shoppingListViewModel.shoppingLists.collectAsState()
     val shoppingListUi = shoppingLists.map {
         ShoppingListUi(
             id = it.id,
@@ -38,6 +44,8 @@ fun RecipeDetailScreen(
     var portions by remember { mutableStateOf(1) }
     var scaledPrice by remember { mutableStateOf(0f) }
     var showAddToListSheet by remember { mutableStateOf(false) }
+    var showCreateShoppingListDialog by remember { mutableStateOf(false) }
+    var newShoppingListName by remember { mutableStateOf("") }
 
     LaunchedEffect(portions) {
         scaledPrice = recipeViewModel.getRecipePriceByPortions(
@@ -138,11 +146,7 @@ fun RecipeDetailScreen(
 
     AddRecipeToShoppingListSheet(
         visible = showAddToListSheet,
-        shoppingLists = listOf(
-            ShoppingListUi(1, "Weekly groceries"),
-            ShoppingListUi(2, "Meal prep"),
-            ShoppingListUi(3, "Party")
-        ),
+        shoppingLists = shoppingListUi,
         onDismiss = { showAddToListSheet = false },
         onShoppingListSelected = {
             showAddToListSheet = false
@@ -150,9 +154,47 @@ fun RecipeDetailScreen(
         },
         onCreateNewShoppingList = {
             showAddToListSheet = false
-            // later: create + add
+            showCreateShoppingListDialog = true
         }
     )
+
+    if (showCreateShoppingListDialog) {
+        AlertDialog(
+            onDismissRequest = { showCreateShoppingListDialog = false },
+            title = { Text("Ny indkøbsliste") },
+            text = {
+                OutlinedTextField(
+                    value = newShoppingListName,
+                    onValueChange = { newShoppingListName = it },
+                    label = { Text("Navn") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (newShoppingListName.isNotBlank()) {
+                            shoppingListViewModel.createShoppingList(newShoppingListName)
+                        }
+                        newShoppingListName = ""
+                        showCreateShoppingListDialog = false
+                    }
+                ) {
+                    Text("Opret")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        newShoppingListName = ""
+                        showCreateShoppingListDialog = false
+                    }
+                ) {
+                    Text("Annuller")
+                }
+            }
+        )
+    }
 
 
 }
