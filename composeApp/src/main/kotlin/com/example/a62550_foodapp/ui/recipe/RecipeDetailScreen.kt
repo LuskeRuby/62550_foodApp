@@ -15,6 +15,7 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import androidx.compose.material3.Text
+import com.example.a62550_foodapp.viewmodel.ShoppingListViewModel
 
 @Composable
 fun RecipeDetailScreen(
@@ -30,12 +31,21 @@ fun RecipeDetailScreen(
         .collectAsState(initial = emptyList())
     val storeFilterViewModel: StoreFilterViewModel = koinViewModel()
     val selectedStores by storeFilterViewModel.selectedStores.collectAsState()
+    val shoppingListViewModel: ShoppingListViewModel = koinViewModel()
+    val shoppingLists by shoppingListViewModel.shoppingLists.collectAsState()
 
+    var showCreateShoppingListOverlay by remember { mutableStateOf(false) }
     var portions by remember { mutableStateOf(4) }
     var scaledPrice by remember { mutableStateOf(0f) }
     var showIngredients by remember { mutableStateOf(true) }
     var ingredients by remember { mutableStateOf<List<Triple<String, Int, String>>>(emptyList()) }
-
+    var showAddToListSheet by remember { mutableStateOf(false) }
+    val shoppingListUi = shoppingLists.map {
+        ShoppingListUi(
+            id = it.id,
+            name = it.name
+        )
+    }
     LaunchedEffect(portions, selectedStores) {
         scaledPrice = recipeViewModel.getRecipePriceByPortions(
             recipeId = recipeId,
@@ -77,11 +87,7 @@ fun RecipeDetailScreen(
                 preparationMinutes = r.preparationTimeMinutes,
                 price = scaledPrice,
                 onAdd = {
-                    recipeViewModel.addRecipeToShoppingList(
-                        shoppingListId = 1L,
-                        recipeId = recipeId,
-                        portions = portions
-                    )
+                    showAddToListSheet = true
                 },
                 themeViewModel = themeViewModel
             )
@@ -137,4 +143,24 @@ fun RecipeDetailScreen(
     ) {
         CircularProgressIndicator()
     }
+    AddRecipeToShoppingListSheet(
+        visible = showAddToListSheet,
+        shoppingLists = shoppingListUi,
+        onDismiss = { showAddToListSheet = false },
+        onShoppingListSelected = { list ->
+            showAddToListSheet = false
+            recipeViewModel.addRecipeToShoppingList(
+                shoppingListId = list.id,
+                recipeId = recipeId,
+                portions = portions
+            )
+        },
+        onCreateNewShoppingList = {
+            showAddToListSheet = false
+            showCreateShoppingListOverlay = true
+        }
+    )
+
+
+
 }

@@ -240,3 +240,35 @@ fun InstructionsCard(
         )
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddRecipeToShoppingListSheet(
+    visible: Boolean,
+    shoppingLists: List<ShoppingListUi>,
+    onDismiss: () -> Unit,
+    onShoppingListSelected: (ShoppingListUi) -> Unit,
+    onCreateNewShoppingList: () -> Unit
+) {
+    if (!visible) return
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss
+    ) {
+        Column {
+            shoppingLists.forEach { list ->
+                ListItem(
+                    headlineContent = { Text(list.name) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onShoppingListSelected(list) }
+                )
+            }
+
+            TextButton(onClick = onCreateNewShoppingList) {
+                Text("Ny indkøbsliste")
+            }
+        }
+    }
+}
+
