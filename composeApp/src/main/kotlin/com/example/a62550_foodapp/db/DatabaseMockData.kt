@@ -152,21 +152,190 @@ object DatabaseMockData {
             item(redCabbage, "Rødkål 1 kg", 1000f, "g"),
 
             item(appleFilling, "Æbleskivemasse 200 g", 200f, "g"),
-            item(flour, "Hvedemel 1 kg", 1000f, "g")
+            item(flour, "Hvedemel 1 kg", 1000f, "g"),
+
+            item(fallbackGroup, "Ukendt Vare", 100f,"g")
         )
 
         val itemIds = items.map { itemDao.insert(it).toInt() }
 
         /* ---------- PRICES ---------- */
 
-        itemIds.forEachIndexed { index, itemId ->
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId.toLong(), nettoId.toLong(), year, week, 10f + index % 7))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId.toLong(), kvicklyId.toLong(), year, week, 11f + index % 7))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId.toLong(), foetexId.toLong(), year, week, 9.5f + index % 7))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId.toLong(), menyId.toLong(), year, week, 12.5f + index % 7))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId.toLong(), bilkaId.toLong(), year, week, 9f + index % 7))
-            itemWeeklyPriceDao.insert(ItemWeeklyPrice(itemId.toLong(), rema1000Id.toLong(), year, week, 10.5f + index % 7))
+        fun price(itemGroupId: Int, marketId: Int, p: Float) {
+            itemWeeklyPriceDao.insert(
+                ItemWeeklyPrice(itemGroupId.toLong(), marketId.toLong(), year, week, p)
+            )
         }
+
+// ---- Pasta ----
+        price(pasta, nettoId, 9.95f)
+        price(pasta, kvicklyId, 11.95f)
+        price(pasta, foetexId, 10.50f)
+        price(pasta, menyId, 13.95f)
+        price(pasta, bilkaId, 9.50f)
+        price(pasta, rema1000Id, 10.00f)
+
+// ---- Ris ----
+        price(rice, nettoId, 12.95f)
+        price(rice, kvicklyId, 14.50f)
+        price(rice, foetexId, 13.00f)
+        price(rice, menyId, 16.00f)
+        price(rice, bilkaId, 12.50f)
+        price(rice, rema1000Id, 13.50f)
+
+// ---- Oksekød ----
+        price(beef, nettoId, 38.00f)
+        price(beef, kvicklyId, 42.00f)
+        price(beef, foetexId, 39.00f)
+        price(beef, menyId, 45.00f)
+        price(beef, bilkaId, 37.00f)
+        price(beef, rema1000Id, 40.00f)
+
+// ---- Kylling ----
+        price(chicken, nettoId, 29.00f)
+        price(chicken, kvicklyId, 32.00f)
+        price(chicken, foetexId, 30.00f)
+        price(chicken, menyId, 35.00f)
+        price(chicken, bilkaId, 28.00f)
+        price(chicken, rema1000Id, 30.00f)
+
+// ---- Svinekød ----
+        price(pork, nettoId, 27.00f)
+        price(pork, kvicklyId, 30.00f)
+        price(pork, foetexId, 28.50f)
+        price(pork, menyId, 33.00f)
+        price(pork, bilkaId, 26.50f)
+        price(pork, rema1000Id, 29.00f)
+
+// ---- Bacon ----
+        price(bacon, nettoId, 18.00f)
+        price(bacon, kvicklyId, 21.00f)
+        price(bacon, foetexId, 19.50f)
+        price(bacon, menyId, 23.00f)
+        price(bacon, bilkaId, 17.50f)
+        price(bacon, rema1000Id, 19.00f)
+
+// ---- Hakket kød ----
+        price(groundMeat, nettoId, 30.00f)
+        price(groundMeat, kvicklyId, 33.00f)
+        price(groundMeat, foetexId, 31.50f)
+        price(groundMeat, menyId, 36.00f)
+        price(groundMeat, bilkaId, 29.50f)
+        price(groundMeat, rema1000Id, 32.00f)
+
+// ---- Skinke ----
+        price(ham, nettoId, 15.00f)
+        price(ham, kvicklyId, 18.00f)
+        price(ham, foetexId, 16.50f)
+        price(ham, menyId, 20.00f)
+        price(ham, bilkaId, 14.50f)
+        price(ham, rema1000Id, 17.00f)
+
+// ---- Stegt flæsk ----
+        price(porkFlank, nettoId, 22.00f)
+        price(porkFlank, kvicklyId, 25.00f)
+        price(porkFlank, foetexId, 23.50f)
+        price(porkFlank, menyId, 28.00f)
+        price(porkFlank, bilkaId, 21.50f)
+        price(porkFlank, rema1000Id, 24.00f)
+
+// ---- Fisk ----
+        price(fish, nettoId, 35.00f)
+        price(fish, kvicklyId, 39.00f)
+        price(fish, foetexId, 37.00f)
+        price(fish, menyId, 45.00f)
+        price(fish, bilkaId, 34.00f)
+        price(fish, rema1000Id, 38.00f)
+
+// ---- Sild ----
+        price(herring, nettoId, 12.00f)
+        price(herring, kvicklyId, 14.00f)
+        price(herring, foetexId, 13.00f)
+        price(herring, menyId, 16.00f)
+        price(herring, bilkaId, 11.50f)
+        price(herring, rema1000Id, 13.50f)
+
+// ---- Grønt ----
+        listOf(onion, garlic, carrot, pepper, tomato, broccoli, mushrooms, potatoes, peas, chives, beetroot, redCabbage)
+            .forEach { gId ->
+                price(gId, nettoId, 6.00f)
+                price(gId, kvicklyId, 7.50f)
+                price(gId, foetexId, 6.50f)
+                price(gId, menyId, 9.00f)
+                price(gId, bilkaId, 5.50f)
+                price(gId, rema1000Id, 6.00f)
+            }
+
+// ---- Mejeri ----
+        price(cream, nettoId, 8.00f)
+        price(cream, kvicklyId, 9.50f)
+        price(cream, foetexId, 8.50f)
+        price(cream, menyId, 11.00f)
+        price(cream, bilkaId, 7.50f)
+        price(cream, rema1000Id, 8.50f)
+
+        price(milk, nettoId, 7.00f)
+        price(milk, kvicklyId, 8.50f)
+        price(milk, foetexId, 7.50f)
+        price(milk, menyId, 10.00f)
+        price(milk, bilkaId, 6.50f)
+        price(milk, rema1000Id, 7.50f)
+
+        price(cheese, nettoId, 18.00f)
+        price(cheese, kvicklyId, 22.00f)
+        price(cheese, foetexId, 20.00f)
+        price(cheese, menyId, 25.00f)
+        price(cheese, bilkaId, 17.50f)
+        price(cheese, rema1000Id, 19.00f)
+
+        price(butter, nettoId, 12.00f)
+        price(butter, kvicklyId, 14.00f)
+        price(butter, foetexId, 13.00f)
+        price(butter, menyId, 16.00f)
+        price(butter, bilkaId, 11.50f)
+        price(butter, rema1000Id, 13.00f)
+
+        price(eggs, nettoId, 15.00f)
+        price(eggs, kvicklyId, 18.00f)
+        price(eggs, foetexId, 16.50f)
+        price(eggs, menyId, 20.00f)
+        price(eggs, bilkaId, 14.50f)
+        price(eggs, rema1000Id, 16.00f)
+
+// ---- Kolonial & krydderi ----
+        listOf(curry, chili, soy, beans, corn, appleFilling, flour)
+            .forEach { gId ->
+                price(gId, nettoId, 7.00f)
+                price(gId, kvicklyId, 9.00f)
+                price(gId, foetexId, 8.00f)
+                price(gId, menyId, 11.00f)
+                price(gId, bilkaId, 6.50f)
+                price(gId, rema1000Id, 7.50f)
+            }
+
+// ---- Brød ----
+        price(wraps, nettoId, 14.00f)
+        price(wraps, kvicklyId, 17.00f)
+        price(wraps, foetexId, 15.50f)
+        price(wraps, menyId, 19.00f)
+        price(wraps, bilkaId, 13.50f)
+        price(wraps, rema1000Id, 15.00f)
+
+        price(bread, nettoId, 12.00f)
+        price(bread, kvicklyId, 14.50f)
+        price(bread, foetexId, 13.00f)
+        price(bread, menyId, 17.00f)
+        price(bread, bilkaId, 11.50f)
+        price(bread, rema1000Id, 13.00f)
+
+// ---- Fallback (test = gratis) ----
+        price(fallbackGroup, nettoId, 0f)
+        price(fallbackGroup, kvicklyId, 0f)
+        price(fallbackGroup, foetexId, 0f)
+        price(fallbackGroup, menyId, 0f)
+        price(fallbackGroup, bilkaId, 0f)
+        price(fallbackGroup, rema1000Id, 0f)
+
 
         /* ---------- RECIPES ---------- */
 
@@ -302,12 +471,6 @@ object DatabaseMockData {
             R.drawable.recipe_20
         )
 
-        val fallbackRecipe = recipe(
-            "Fallback Opskrift", 10, "Tester opskrift fallback uden konkrete items",
-            "Denne opskrift bruges kun til test. Ingen konkrete ingredienser eller trin er angivet.",
-            null
-        )
-
         /* ---------- RECIPE ITEMS ---------- */
 
         recipeItemDao.insertAll(
@@ -422,10 +585,6 @@ object DatabaseMockData {
                 RecipeItem(r20.toLong(), chicken.toLong(), 350),
                 RecipeItem(r20.toLong(), cream.toLong(), 200),
                 RecipeItem(r20.toLong(), rice.toLong(), 200),
-
-                // fallback
-                RecipeItem(fallbackRecipe.toLong(), fallbackGroup.toLong(), 150),
-                RecipeItem(fallbackRecipe.toLong(), fallbackGroup.toLong(), 75)
             )
         )
 
@@ -434,13 +593,108 @@ object DatabaseMockData {
         val shoppingListId = shoppingListDao.insert(ShoppingList(name = "Weekly groceries")).toInt()
 
         shoppingListItemGroupDao.insert(
-            ShoppingListItemGroup(
-                shoppingListId = shoppingListId.toLong(),
-                itemGroupId = fallbackGroup.toLong(),
-                recipeId = null,
-                portionQuantity = 2,
-                portionSize = 100f,
-                isChecked = false
+            listOf(
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = pasta.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 500f,
+                    isChecked = false
+                ),
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = rice.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 500f,
+                    isChecked = false
+                ),
+
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = beef.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 300f,
+                    isChecked = false
+                ),
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = chicken.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 300f,
+                    isChecked = false
+                ),
+
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = potatoes.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 500f,
+                    isChecked = false
+                ),
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = onion.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 300f,
+                    isChecked = false
+                ),
+
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = milk.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 1000f,
+                    isChecked = false
+                ),
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = eggs.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 10f,
+                    isChecked = false
+                ),
+
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = bread.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 1f,
+                    isChecked = false
+                ),
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = butter.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 200f,
+                    isChecked = false
+                ),
+
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = tomato.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 300f,
+                    isChecked = false
+                ),
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = cheese.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 200f,
+                    isChecked = false
+                )
             )
         )
     }
