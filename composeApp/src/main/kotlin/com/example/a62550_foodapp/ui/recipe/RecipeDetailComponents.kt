@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.Add
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import androidx.compose.ui.text.style.TextOverflow
+import org.koin.androidx.compose.koinViewModel
 //API og main screen
 @Composable
 fun RecipeHeaderCollapsing(
@@ -196,7 +197,7 @@ fun IngredientsCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        color = Color(0xFFF3E5F5),
+        color = koinViewModel<ThemeViewModel>().cardBackgroundColor,
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(Modifier.padding(16.dp)) {
@@ -232,7 +233,7 @@ fun InstructionsCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        color = Color(0xFFF3E5F5),
+        color = koinViewModel<ThemeViewModel>().cardBackgroundColor,
         shape = RoundedCornerShape(16.dp)
     ) {
         Text(

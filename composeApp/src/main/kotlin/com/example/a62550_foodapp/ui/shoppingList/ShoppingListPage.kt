@@ -28,6 +28,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.OutlinedTextField
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.CardDefaults
@@ -282,7 +283,7 @@ private fun NewShoppingListFormOverlay(
                         onClick = {
                             onCreate(newShoppingListName)
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                        colors = ButtonDefaults.buttonColors(containerColor = koinViewModel<ThemeViewModel>().primaryColor)
                     ) {
                         Text("Create")
                     }
@@ -357,7 +358,7 @@ private fun EditShoppingListFormOverlay(
                         onClick = {
                             selectedShoppingList?.let {onEdit(it.id, newName)}
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                        colors = ButtonDefaults.buttonColors(containerColor = koinViewModel<ThemeViewModel>().primaryColor)
                     ) {
                         Text("Edit")
                     }
@@ -424,7 +425,7 @@ private fun DeleteShoppingListFormOverlay(
                         onClick = {
                             selectedShoppingList?.let {onDelete(it.id, newName)}
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.confirmDelete)
+                        colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.confirmDeleteColor)
                     ) {
                         Text("Delete")
                     }

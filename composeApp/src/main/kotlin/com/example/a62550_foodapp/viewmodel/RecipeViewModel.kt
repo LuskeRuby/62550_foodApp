@@ -238,24 +238,26 @@ class RecipeViewModel(
     /**
      * Returns reactive list of recipes with calculated prices.
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
     fun getRecipesWithPricesFlow(
-        selectedStores: Set<Long>
+        selectedStores: Set<Long>,
+        portions: Int
     ): Flow<List<Pair<RecipeModel, Float>>> =
-        recipes.flatMapLatest { list ->
-            flow {
-                val result = list.map { recipe ->
-                    val price = getRecipePriceByPortions(
-                        recipe.id,
-                        1,
-                        selectedStores
-                    )
-                    recipe to price
-                }.sortedBy { it.second }
+        recipes
+            .flatMapLatest { list ->
+                flow {
+                    val result = list.map { recipe ->
+                        val price = getRecipePriceByPortions(
+                            recipeId = recipe.id,
+                            portions = portions,
+                            selectedStores = selectedStores
+                        )
+                        recipe to price
+                    }.sortedBy { it.second }
 
-                emit(result)
+                    emit(result)
+                }
             }
-        }
+            .flowOn(kotlinx.coroutines.Dispatchers.IO)
 
     /* -------------------------------------------------------------------------
      * TEMP INGREDIENT SELECTION (CREATE / EDIT SCREEN)

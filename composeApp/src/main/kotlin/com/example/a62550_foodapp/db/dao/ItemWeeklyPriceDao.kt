@@ -18,7 +18,7 @@ data class ItemSizePrice(
 interface ItemWeeklyPriceDao {
 
     @Insert
-    suspend fun insert(itemWeeklyPrice: ItemWeeklyPrice)
+    fun insert(itemWeeklyPrice: ItemWeeklyPrice)
 
     @Query("""
         SELECT
