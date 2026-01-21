@@ -1,5 +1,6 @@
 package com.example.a62550_foodapp.db.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -10,5 +11,6 @@ data class ItemGroup(
 
     val name: String,
     val category: String,
+    @ColumnInfo(name = "unit_type")
     val unitType: String
 )
