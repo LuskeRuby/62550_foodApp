@@ -18,6 +18,8 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import com.example.a62550_foodapp.viewmodel.ShoppingListViewModel
+import kotlinx.coroutines.launch
+
 @Composable
 fun RecipeDetailScreen(
     recipeId: Long,
@@ -26,6 +28,7 @@ fun RecipeDetailScreen(
     onEdit: (Long) -> Unit,
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
+    val scope = rememberCoroutineScope()
     val recipe by recipeViewModel.getRecipeById(recipeId).collectAsState(initial = null)
     val recipeItems by recipeViewModel
         .getItemsForRecipeFlow(recipeId)
@@ -148,9 +151,16 @@ fun RecipeDetailScreen(
         visible = showAddToListSheet,
         shoppingLists = shoppingListUi,
         onDismiss = { showAddToListSheet = false },
-        onShoppingListSelected = {
+        onShoppingListSelected = { list ->
             showAddToListSheet = false
-            // later: real DB call
+
+            scope.launch {
+                recipeViewModel.addRecipeToShoppingList(
+                    shoppingListId = list.id,
+                    recipeId = recipeId,
+                    portions = portions
+                )
+            }
         },
         onCreateNewShoppingList = {
             showAddToListSheet = false
@@ -174,8 +184,20 @@ fun RecipeDetailScreen(
                 TextButton(
                     onClick = {
                         if (newShoppingListName.isNotBlank()) {
-                            shoppingListViewModel.createShoppingList(newShoppingListName)
+                            scope.launch {
+                                val newListId =
+                                    shoppingListViewModel.createShoppingListAndReturnId(
+                                        newShoppingListName
+                                    )
+
+                                recipeViewModel.addRecipeToShoppingList(
+                                    shoppingListId = newListId,
+                                    recipeId = recipeId,
+                                    portions = portions
+                                )
+                            }
                         }
+
                         newShoppingListName = ""
                         showCreateShoppingListDialog = false
                     }

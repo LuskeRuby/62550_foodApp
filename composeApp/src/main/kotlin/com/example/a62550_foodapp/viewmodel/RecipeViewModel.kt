@@ -299,6 +299,7 @@ class RecipeViewModel(
     ) {
         viewModelScope.launch {
 
+            // Guard: prevent duplicate recipe inserts
             val alreadyExists =
                 shoppingListItemGroupDao.recipeExistsInList(
                     shoppingListId = shoppingListId,
@@ -309,22 +310,23 @@ class RecipeViewModel(
 
             val recipeItems = recipeItemDao.getItemsForRecipe(recipeId)
 
-            val groups = recipeItems.map { recipeItem ->
+            if (recipeItems.isEmpty()) return@launch
+
+            val rows = recipeItems.map { ri ->
                 ShoppingListItemGroup(
-                    id = 0,
                     shoppingListId = shoppingListId,
-                    itemGroupId = recipeItem.itemGroupId,
+                    itemGroupId = ri.itemGroupId,
                     recipeId = recipeId,
-                    portionQuantity = recipeItem.sizeOfOnePortion * portions,
-                    portionSize = recipeItem.sizeOfOnePortion.toFloat(),
+                    portionQuantity = ri.sizeOfOnePortion * portions,
+                    portionSize = ri.sizeOfOnePortion.toFloat(),
                     isChecked = false
                 )
             }
 
-            shoppingListItemGroupDao.insert(groups)
-
+            shoppingListItemGroupDao.insert(rows)
         }
     }
+
 
     suspend fun resolveIngredients(
         items: List<RecipeItem>,

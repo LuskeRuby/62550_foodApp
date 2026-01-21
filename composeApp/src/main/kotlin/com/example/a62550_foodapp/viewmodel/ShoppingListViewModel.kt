@@ -44,6 +44,17 @@ class ShoppingListViewModel(
         }
     }
 
+    suspend fun createShoppingListAndReturnId(
+        name: String
+    ): Long {
+        return shoppingListDao.insert(
+            ShoppingListEntity(
+                id = 0,
+                name = name
+            )
+        )
+    }
+
     fun editShoppingList(
         id: Long,
         name: String
