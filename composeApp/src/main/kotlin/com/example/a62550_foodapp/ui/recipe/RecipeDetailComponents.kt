@@ -3,14 +3,11 @@ package com.example.a62550_foodapp.ui.recipe
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.RemoveCircle
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,18 +17,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import java.util.Locale
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.filled.Add
-import com.example.a62550_foodapp.viewmodel.ThemeViewModel
-import androidx.compose.ui.text.style.TextOverflow
 import org.koin.androidx.compose.koinViewModel
-//API og main screen
+import com.example.a62550_foodapp.viewmodel.ThemeViewModel
+
+
+
+// ---------- HEADER ----------
+
 @Composable
 fun RecipeHeaderCollapsing(
     imageUrl: String?,
@@ -40,22 +38,21 @@ fun RecipeHeaderCollapsing(
     onBack: () -> Unit,
     onEdit: (() -> Unit)? = null
 ) {
-    val maxImageHeight = 260.dp
-    val minImageHeight = 96.dp
-    val collapseFraction = (scrollState.value / 300f).coerceIn(0f, 1f)
-    val imageHeight =
-        maxImageHeight - (maxImageHeight - minImageHeight) * collapseFraction
+    val maxHeight = 260.dp
+    val minHeight = 96.dp
+    val collapse = (scrollState.value / 300f).coerceIn(0f, 1f)
+    val height = maxHeight - (maxHeight - minHeight) * collapse
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(imageHeight)
+            .height(height)
     ) {
         AsyncImage(
             model = imageUrl,
             contentDescription = title,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
         )
 
         Box(
@@ -64,19 +61,14 @@ fun RecipeHeaderCollapsing(
                 .height(120.dp)
                 .background(
                     Brush.verticalGradient(
-                        listOf(
-                            Color.Black.copy(alpha = 0.6f),
-                            Color.Transparent
-                        )
+                        listOf(Color.Black.copy(0.6f), Color.Transparent)
                     )
                 )
         )
 
         IconButton(
             onClick = onBack,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(12.dp)
+            modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)
         ) {
             Icon(Icons.Default.Close, null, tint = Color.White)
         }
@@ -84,31 +76,12 @@ fun RecipeHeaderCollapsing(
         onEdit?.let {
             IconButton(
                 onClick = it,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(12.dp)
+                modifier = Modifier.align(Alignment.TopStart).padding(12.dp)
             ) {
                 Icon(Icons.Default.Edit, null, tint = Color.White)
             }
         }
 
-        val titleY =
-            (imageHeight - 48.dp) - (imageHeight - minImageHeight) * collapseFraction
-        //black textoutline (ensure visible on white recipe)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp)
-                .align(Alignment.BottomCenter)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            Color.Black.copy(alpha = 0.65f)
-                        )
-                    )
-                )
-        )
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
@@ -118,15 +91,14 @@ fun RecipeHeaderCollapsing(
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 48.dp)
-                .offset(y = titleY.coerceAtLeast(16.dp))
-                .align(Alignment.TopCenter)
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
         )
     }
 }
 
-//Main screen only
+// ---------- ACTION BAR ----------
+
 @Composable
 fun RecipeActionBar(
     portions: Int,
@@ -137,20 +109,17 @@ fun RecipeActionBar(
     onAdd: () -> Unit,
     themeViewModel: ThemeViewModel
 ) {
-    Surface(
-        tonalElevation = 4.dp,
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Surface(tonalElevation = 4.dp) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 14.dp),
+                .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row {
                     IconButton(onClick = onDecrease) {
                         Icon(Icons.Default.RemoveCircle, null, tint = themeViewModel.priceTagColor)
                     }
@@ -186,8 +155,8 @@ fun RecipeActionBar(
     }
 }
 
+// ---------- CARDS ----------
 
-//API og main screen
 @Composable
 fun IngredientsCard(
     ingredients: List<Pair<String, String>>,
@@ -209,9 +178,7 @@ fun IngredientsCard(
             } else {
                 ingredients.forEach { (name, value) ->
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(name)
@@ -223,12 +190,8 @@ fun IngredientsCard(
     }
 }
 
-
-//API og main screen
 @Composable
-fun InstructionsCard(
-    instructions: String?
-) {
+fun InstructionsCard(instructions: String?) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -244,10 +207,8 @@ fun InstructionsCard(
     }
 }
 
-data class ShoppingListUi(
-    val id: Long,
-    val name: String
-)
+// ---------- BOTTOM SHEET ----------
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddRecipeToShoppingListSheet(
@@ -263,111 +224,31 @@ fun AddRecipeToShoppingListSheet(
         onDismissRequest = onDismiss,
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-        ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
 
-            //Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Tilføj til indkøbsliste",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                IconButton(onClick = onDismiss) {
-                    Icon(Icons.Default.Close, contentDescription = null)
-                }
-            }
-
-            Divider()
-
-            //List
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f, fill = false),
-                contentPadding = PaddingValues(vertical = 8.dp)
-            ) {
+            LazyColumn {
                 items(shoppingLists, key = { it.id }) { list ->
                     ListItem(
                         headlineContent = { Text(list.name) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onShoppingListSelected(list) }
-                            .padding(horizontal = 8.dp)
                     )
                 }
             }
 
-            //Bottom action
             Divider()
 
-            Spacer(Modifier.height(12.dp))
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .height(52.dp)
-                    .clickable(onClick = onCreateNewShoppingList),
-                shape = RoundedCornerShape(26.dp),
-                tonalElevation = 2.dp
+            TextButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onCreateNewShoppingList
             ) {
-                Row(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "Ny indkøbsliste",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(12.dp))
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AddRecipeToShoppingListSheet(
-    visible: Boolean,
-    shoppingLists: List<ShoppingListUi>,
-    onDismiss: () -> Unit,
-    onShoppingListSelected: (ShoppingListUi) -> Unit,
-    onCreateNewShoppingList: () -> Unit
-) {
-    if (!visible) return
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss
-    ) {
-        Column {
-            shoppingLists.forEach { list ->
-                ListItem(
-                    headlineContent = { Text(list.name) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onShoppingListSelected(list) }
-                )
-            }
-
-            TextButton(onClick = onCreateNewShoppingList) {
+                Icon(Icons.Default.Add, null)
+                Spacer(Modifier.width(8.dp))
                 Text("Ny indkøbsliste")
             }
+
+            Spacer(Modifier.height(12.dp))
         }
     }
 }
-
