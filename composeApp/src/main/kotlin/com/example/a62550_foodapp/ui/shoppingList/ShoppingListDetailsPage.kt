@@ -31,8 +31,6 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.collections.component1
 import kotlin.collections.component2
-import com.example.a62550_foodapp.ui.components.SearchSelectField
-import com.example.a62550_foodapp.viewmodel.ItemGroupViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import androidx.compose.runtime.LaunchedEffect
 
@@ -52,9 +50,8 @@ fun ShoppingListDetailsPage(
         )
     } else {
         BackHandler() { addItemsOverlay = false }
-        AddItemToShoppingListPage(
+        AddItemGroupToShoppingListPage(
             shoppingListId  = shoppingListId,
-            addItemsOverlay = addItemsOverlay,
             disableItemOverlay = { addItemsOverlay = false }
         )
     }
@@ -115,7 +112,7 @@ private fun ShoppingListPage(
             // body
             ShoppingListContent(
                 viewModel = viewModel,
-                addItemsOverlay = addItemsOverlay,
+                editOverlay = addItemsOverlay,
                 grouped = grouped
             )
 
@@ -140,6 +137,7 @@ private fun ShoppingListPage(
 }
 
 @Composable
+fun ShoppingListContent(
 private fun AddItemToShoppingListPage(
     shoppingListId: Long,
     addItemsOverlay: Boolean,
@@ -246,7 +244,7 @@ private fun AddItemToShoppingListPage(
 @Composable
 private fun ShoppingListContent(
     viewModel: ShoppingListDetailsViewModel,
-    addItemsOverlay: Boolean,
+    editOverlay: Boolean,
     grouped: Map<String,Map<String, List<ShoppingListEntry>>>
 ){
     LazyColumn() {
@@ -266,22 +264,15 @@ private fun ShoppingListContent(
                     ShoppingItemRow(
                         item = shoppingListEntry,
                         onCheckedChange =
-                            if (!addItemsOverlay) {
+                            if (!editOverlay) {
                                 { checked -> viewModel.setCheckmark(shoppingListEntry, checked) }
                             } else {
                                 // Disable when not available
                                 { }
                             }
                         ,
-                        checkboxVisible = !addItemsOverlay,
-                        onDelete =
-                            if (!addItemsOverlay) {
-                                { viewModel.delete(shoppingListEntry) }
-                            } else {
-                                // Disable when not available
-                                { }
-                            },
-                        modifier = Modifier.animateItem()
+                        editList = !editOverlay,
+                        onDelete = { viewModel.delete(shoppingListEntry) }
                     )
 
                 }
@@ -326,7 +317,7 @@ fun categoryColor(
     }
 
 @Composable
-private fun CategoryHeader(category: String) {
+fun CategoryHeader(category: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -343,12 +334,11 @@ private fun CategoryHeader(category: String) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ShoppingItemRow(
-    modifier: Modifier = Modifier,
+fun ShoppingItemRow(
     themeViewModel: ThemeViewModel = koinViewModel(),
     item: ShoppingListEntry,
     onCheckedChange: (Boolean) -> Unit,
-    checkboxVisible: Boolean,
+    editList: Boolean,
     onDelete: () -> Unit
 ) {
     //used for swiperemove
@@ -466,7 +456,7 @@ private fun ShoppingItemRow(
                 }
             }
 
-            if (checkboxVisible) {
+            if (editList) {
                 Checkbox(
                     checked = item.isChecked,
                     onCheckedChange = onCheckedChange

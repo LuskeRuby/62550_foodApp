@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Update
 import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
 import com.example.a62550_foodapp.db.projection.ShoppingListEntry
+import com.example.a62550_foodapp.db.projection.ShoppingListItemGroupEntry
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -36,6 +37,23 @@ interface ShoppingListItemGroupDao {
     @Delete
     suspend fun delete(item: ShoppingListItemGroup)
 
+    @Query("""
+        DELETE FROM shopping_list_item_groups
+        WHERE id = :id
+    """)
+    suspend fun delete(id: Long)
+
+    @Query("""
+        DELETE FROM shopping_list_item_groups
+        WHERE shopping_list_id = :shoppingListId
+        AND item_group_id = :itemGroupId
+        AND (recipe_id = :recipeId OR (recipe_id IS NULL AND :recipeId IS NULL))
+    """)
+    suspend fun delete(
+        shoppingListId: Long,
+        itemGroupId: Long,
+        recipeId: Long?
+    )
 
     @Query("""
         SELECT *
@@ -61,17 +79,6 @@ interface ShoppingListItemGroupDao {
         checked: Boolean
     )
 
-    @Query("""
-        DELETE FROM shopping_list_item_groups
-        WHERE shopping_list_id = :shoppingListId
-        AND item_group_id = :itemGroupId
-        AND (recipe_id = :recipeId OR (recipe_id IS NULL AND :recipeId IS NULL))
-    """)
-    suspend fun delete(
-        shoppingListId: Long,
-        itemGroupId: Long,
-        recipeId: Long?
-    )
 
     /**
      * Calculates the total shopping list price for a specific supermarket.
@@ -180,6 +187,22 @@ WHERE slig.shopping_list_id = :shoppingListId
         storeCount: Int
     ): Flow<List<ShoppingListEntry>>
 
+
+    @Query("""
+        SELECT 
+        slig.id                 AS id,
+        ig.name                 AS name,
+        ig.category             AS category,
+        ig.unit_type            AS unitType,
+        slig.portion_quantity   AS quantity,
+        slig.portion_size       AS size
+        
+        FROM shopping_list_item_groups slig
+        JOIN item_groups ig
+            ON slig.item_group_id = ig.id 
+        WHERE slig.shopping_list_id = :shoppingListId
+    """)
+    fun getAllItemGroupEntries(shoppingListId: Long): Flow<List<ShoppingListItemGroupEntry>>
 
     @Query("""
         SELECT COUNT(*) 

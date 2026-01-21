@@ -2,11 +2,14 @@ package com.example.a62550_foodapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.a62550_foodapp.db.dao.ItemGroupDao
 import com.example.a62550_foodapp.db.dao.ShoppingListItemGroupDao
 import com.example.a62550_foodapp.db.dao.SupermarketDao
 import com.example.a62550_foodapp.db.entity.ItemGroup
 import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
 import com.example.a62550_foodapp.db.projection.ShoppingListEntry
+import com.example.a62550_foodapp.db.projection.ShoppingListItemGroupEntry
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +25,8 @@ class ShoppingListDetailsViewModel(
     private val shoppingListId: Long,
     private val shoppingListItemGroupDao: ShoppingListItemGroupDao,
     private val supermarketDao: SupermarketDao
+    private val itemGroupDao: ItemGroupDao,
+    private val shoppingListItemGroupDao: ShoppingListItemGroupDao
 ) : ViewModel() {
 
     private val storeFilter = MutableStateFlow<Set<Long>>(emptySet())
@@ -42,7 +47,7 @@ class ShoppingListDetailsViewModel(
                 initialValue = emptyMap()
             )
 
-    // actual list we edit
+    // actual DB table we edit
     private val itemGroupList: StateFlow<List<ShoppingListItemGroup>> =
         shoppingListItemGroupDao.getItemGroupsMatchingListId(shoppingListId)
             .stateIn(
@@ -51,6 +56,8 @@ class ShoppingListDetailsViewModel(
                 initialValue = emptyList()
             )
 
+    // items visible in ShoppingListDetails
+    @OptIn(ExperimentalCoroutinesApi::class)
     val items: StateFlow<List<ShoppingListEntry>> =
         storeFilter.flatMapLatest { selectedStores ->
 
@@ -79,6 +86,24 @@ class ShoppingListDetailsViewModel(
                     available + unavailable
                 }
         }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
+
+    // for shoppingListDetails searchbar
+    val itemGroups: StateFlow<List<ItemGroup>> =
+        itemGroupDao.getAllItemGroups()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
+
+    // items visible while adding itemGroups to shopping list
+    val itemGroupEntries: StateFlow<List<ShoppingListItemGroupEntry>> =
+        shoppingListItemGroupDao.getAllItemGroupEntries(shoppingListId)
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
@@ -166,16 +191,33 @@ class ShoppingListDetailsViewModel(
     }
 
 
-        fun delete(item: ShoppingListEntry) {
-            viewModelScope.launch {
-                shoppingListItemGroupDao.delete(
-                    shoppingListId = shoppingListId,
-                    itemGroupId = item.itemGroupId,
-                    recipeId = item.recipeId
-                )
-            }
+    fun delete(item: ShoppingListEntry) {
+        viewModelScope.launch {
+            shoppingListItemGroupDao.delete( id = item.id )
         }
+    }
 
+    fun delete(item: ShoppingListItemGroupEntry) {
+        viewModelScope.launch {
+            shoppingListItemGroupDao.delete( id = item.id )
+        }
+    }
+
+
+    fun setCheckmark(
+        item: ShoppingListEntry,
+        checked: Boolean
+    ) {
+        viewModelScope.launch {
+            shoppingListItemGroupDao.updateCheckmark(
+                shoppingListId = shoppingListId,
+                itemGroupId = item.itemGroupId,
+                recipeId = item.recipeId,
+                checked = checked
+            )
+        }
+    }
+}
 
         fun setCheckmark(
             item: ShoppingListEntry,
