@@ -31,12 +31,12 @@ object DatabaseMockData {
 
         /* ---------- SUPERMARKETS ---------- */
 
-        val nettoId = supermarketDao.insert(Supermarket(name = "Netto", logo = null)).toInt()
-        val kvicklyId = supermarketDao.insert(Supermarket(name = "Kvickly", logo = null)).toInt()
-        val foetexId = supermarketDao.insert(Supermarket(name = "Føtex", logo = null)).toInt()
-        val menyId = supermarketDao.insert(Supermarket(name = "Meny", logo = null)).toInt()
-        val bilkaId = supermarketDao.insert(Supermarket(name = "Bilka", logo = null)).toInt()
-        val rema1000Id = supermarketDao.insert(Supermarket(name = "Rema 1000", logo = null)).toInt()
+        val nettoId = supermarketDao.insert(Supermarket(name = "Netto", logo = copyDrawableToInternalStorage(context, R.drawable.netto, "netto.png"))).toInt()
+        val kvicklyId = supermarketDao.insert(Supermarket(name = "Kvickly", logo = copyDrawableToInternalStorage(context, R.drawable.kvickly, "kvickly.png"))).toInt()
+        val foetexId = supermarketDao.insert(Supermarket(name = "Føtex", logo = copyDrawableToInternalStorage(context, R.drawable.foetex, "foetex.png"))).toInt()
+        val menyId = supermarketDao.insert(Supermarket(name = "Meny", logo = copyDrawableToInternalStorage(context, R.drawable.meny, "meny.png"))).toInt()
+        val bilkaId = supermarketDao.insert(Supermarket(name = "Bilka", logo = copyDrawableToInternalStorage(context, R.drawable.bilka, "bilka.png"))).toInt()
+        val rema1000Id = supermarketDao.insert(Supermarket(name = "Rema 1000", logo = copyDrawableToInternalStorage(context, R.drawable.rema, "rema.png"))).toInt()
 
         /* ---------- ITEM GROUPS ---------- */
 
