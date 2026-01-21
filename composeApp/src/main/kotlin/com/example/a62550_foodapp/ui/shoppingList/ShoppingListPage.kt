@@ -139,7 +139,7 @@ fun ShoppingListPage(
             BackHandler { editListNameOverlay = false }
             EditShoppingListFormOverlay(
                 onDismiss = {editListNameOverlay = false},
-                onEdit = { id: Int, name: String ->
+                onEdit = { id: Long, name: String ->
                     shoppingListViewModel.editShoppingList(
                         id = id,
                         name = name
@@ -152,7 +152,7 @@ fun ShoppingListPage(
             BackHandler { deleteListOverlay = false }
             DeleteShoppingListFormOverlay(
                 onDismiss = {deleteListOverlay = false},
-                onDelete = { id: Int, name: String ->
+                onDelete = { id: Long, name: String ->
                     shoppingListViewModel.deleteShoppingList(
                         id = id,
                         name = name
@@ -305,7 +305,7 @@ private fun NewShoppingListFormOverlay(
 @Composable
 private fun EditShoppingListFormOverlay(
     onDismiss: () -> Unit,
-    onEdit: (Int, String) -> Unit,
+    onEdit: (Long, String) -> Unit,
     selectedShoppingList: ShoppingList?
 ) {
 
@@ -380,7 +380,7 @@ private fun EditShoppingListFormOverlay(
 @Composable
 private fun DeleteShoppingListFormOverlay(
     onDismiss: () -> Unit,
-    onDelete: (Int, String) -> Unit,
+    onDelete: (Long, String) -> Unit,
     selectedShoppingList: ShoppingList?,
     themeViewModel : ThemeViewModel = koinViewModel()
 ) {

@@ -13,10 +13,10 @@ import com.example.a62550_foodapp.db.dao.*
         Recipe::class,
         RecipeItem::class,
         ShoppingList::class,
-        ShoppingListItem::class,
+        ShoppingListItemGroup::class,
         Supermarket::class
     ],
-    version = 22,
+    version = 25,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -29,7 +29,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun recipeItemDao(): RecipeItemDao
 
     abstract fun shoppingListDao(): ShoppingListDao
-    abstract fun shoppingListItemDao(): ShoppingListItemDao
+    abstract fun shoppingListItemGroupDao(): ShoppingListItemGroupDao
 
     abstract fun supermarketDao(): SupermarketDao
 }

@@ -120,8 +120,8 @@ class MainActivity : ComponentActivity() {
 sealed class NavState {
     object RecipeList : NavState()
     object DiscoverRecipes : NavState()
-    data class CreateRecipe(val existingRecipeId: Int? = null) : NavState()
-    data class RecipeDetail(val id: Int) : NavState()
+    data class CreateRecipe(val existingRecipeId: Long? = null) : NavState()
+    data class RecipeDetail(val id: Long) : NavState()
 
     data class ApiRecipeDetail(val mealId: String) : NavState()
 }

@@ -13,17 +13,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
+import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 
 @Composable
 fun SuperMarketPage(
-    recipeViewModel: RecipeViewModel = koinViewModel()
+    recipeViewModel: RecipeViewModel = koinViewModel(),
+    storeFilterViewModel: StoreFilterViewModel = koinViewModel()
 ) {
 
     val allSupermarkets by recipeViewModel.allSupermarkets.collectAsState(initial = emptyList())
-    val selectedSupermarkets by recipeViewModel.selectedSupermarkets.collectAsState()
+    val selectedSupermarkets by storeFilterViewModel.selectedStores.collectAsState()
 
     Column(
         modifier = Modifier
@@ -46,7 +48,7 @@ fun SuperMarketPage(
 
             if (selectedSupermarkets.isNotEmpty()) {
                 TextButton(
-                    onClick = { recipeViewModel.clearSupermarketFilter() }
+                    onClick = { storeFilterViewModel.clear() }
                 ) {
                     Text("Clear")
                 }
@@ -73,7 +75,7 @@ fun SuperMarketPage(
                             .fillMaxWidth()
                             .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
                             .clickable {
-                                recipeViewModel.toggleSupermarket(supermarket.id)
+                                storeFilterViewModel.toggleStore(supermarket.id)
                             }
                             .padding(vertical = 8.dp, horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -99,7 +101,7 @@ fun SuperMarketPage(
                         Checkbox(
                             checked = supermarket.id in selectedSupermarkets,
                             onCheckedChange = {
-                                recipeViewModel.toggleSupermarket(supermarket.id)
+                                storeFilterViewModel.toggleStore(supermarket.id)
                             }
                         )
                     }

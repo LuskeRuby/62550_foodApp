@@ -8,7 +8,7 @@ import androidx.annotation.DrawableRes
 fun saveRecipeImage(
     context: Context,
     sourceUri: Uri,
-    recipeId: Int
+    recipeId: Long
 ): String {
     val fileName = "recipe_$recipeId.jpg"
     val file = File(context.filesDir, fileName)
