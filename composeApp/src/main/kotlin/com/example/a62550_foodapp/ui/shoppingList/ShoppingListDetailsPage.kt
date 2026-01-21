@@ -31,8 +31,6 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.collections.component1
 import kotlin.collections.component2
-import com.example.a62550_foodapp.ui.components.SearchSelectField
-import com.example.a62550_foodapp.viewmodel.ItemGroupViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import androidx.compose.runtime.LaunchedEffect
 
@@ -52,9 +50,8 @@ fun ShoppingListDetailsPage(
         )
     } else {
         BackHandler() { addItemsOverlay = false }
-        AddItemToShoppingListPage(
+        AddItemGroupToShoppingListPage(
             shoppingListId  = shoppingListId,
-            addItemsOverlay = addItemsOverlay,
             disableItemOverlay = { addItemsOverlay = false }
         )
     }
@@ -111,7 +108,7 @@ private fun ShoppingListPage(
             // body
             ShoppingListContent(
                 viewModel = viewModel,
-                addItemsOverlay = addItemsOverlay,
+                editOverlay = addItemsOverlay,
                 grouped = grouped
             )
 
@@ -136,109 +133,9 @@ private fun ShoppingListPage(
 }
 
 @Composable
-private fun AddItemToShoppingListPage(
-    shoppingListId: Long,
-    addItemsOverlay: Boolean,
-    disableItemOverlay: () -> Unit = {},
-    themeViewModel: ThemeViewModel = koinViewModel(),
-    viewModel: ShoppingListDetailsViewModel =
-        koinViewModel(
-            key = "ShoppingListDetails-$shoppingListId",
-            parameters = { parametersOf(shoppingListId) }
-        )
-) {
-    val itemGroupViewModel: ItemGroupViewModel = koinViewModel()
-    val itemGroups by itemGroupViewModel.itemGroups.collectAsState()
-    val items by viewModel.items.collectAsState()
-    val filterViewModel: StoreFilterViewModel = koinViewModel()
-    val selectedStores by filterViewModel.selectedStores.collectAsState()
-
-    LaunchedEffect(selectedStores) {
-        viewModel.setStoreFilter(selectedStores)
-    }
-    val grouped = items.groupBy { it.superMarketName }
-        .mapValues { (_, categoryItems) -> categoryItems.groupBy { it.category } }
-
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .background(themeViewModel.backgroundColor)) {
-
-        // header
-        Text(
-            "Tilføj til indkøbslisten",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(16.dp)
-        )
-
-        //TODO handle portion size
-        SearchSelectField(
-            label = "Search items",
-            items = itemGroups,
-            itemText = { it.name },
-            itemUnit = { it.unitType },
-            onItemSelected = { entry ->
-                viewModel.add(
-                    addedItem = entry,
-                    portionSize = 0f
-                )
-            }
-        )
-
-        // body
-        ShoppingListContent(
-            viewModel = viewModel,
-            addItemsOverlay = addItemsOverlay,
-            grouped = grouped
-        )
-    }
-
-
-    // footer
-    Box(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .align(Alignment.BottomCenter),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom
-        ) {
-            Button(
-                onClick = disableItemOverlay,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = koinViewModel<ThemeViewModel>().totalPriceColor,
-                    contentColor = Color.White
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(text = "Færdig")
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(
-                onClick = disableItemOverlay,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Gray,
-                    contentColor = Color.White
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(text = "Tilbage")
-            }
-        }
-    }
-}
-
-@Composable
-private fun ShoppingListContent(
+fun ShoppingListContent(
     viewModel: ShoppingListDetailsViewModel,
-    addItemsOverlay: Boolean,
+    editOverlay: Boolean,
     grouped: Map<String,Map<String, List<ShoppingListEntry>>>
 ){
     LazyColumn() {
@@ -256,22 +153,15 @@ private fun ShoppingListContent(
                     ShoppingItemRow(
                         item = shoppingListEntry,
                         onCheckedChange =
-                            if (!addItemsOverlay) {
+                            if (!editOverlay) {
                                 { checked -> viewModel.setCheckmark(shoppingListEntry, checked) }
                             } else {
                                 // Disable when not available
                                 { }
                             }
                         ,
-                        checkboxVisible = !addItemsOverlay,
-                        onDelete =
-                            if (!addItemsOverlay) {
-                                { viewModel.delete(shoppingListEntry) }
-                            } else {
-                                // Disable when not available
-                                { }
-                            },
-                        modifier = Modifier.animateItem()
+                        editList = !editOverlay,
+                        onDelete = { viewModel.delete(shoppingListEntry) }
                     )
 
                 }
@@ -316,7 +206,7 @@ fun categoryColor(
     }
 
 @Composable
-private fun CategoryHeader(category: String) {
+fun CategoryHeader(category: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -333,12 +223,11 @@ private fun CategoryHeader(category: String) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ShoppingItemRow(
-    modifier: Modifier = Modifier,
+fun ShoppingItemRow(
     themeViewModel: ThemeViewModel = koinViewModel(),
     item: ShoppingListEntry,
     onCheckedChange: (Boolean) -> Unit,
-    checkboxVisible: Boolean,
+    editList: Boolean,
     onDelete: () -> Unit
 ) {
     //used for swiperemove
@@ -452,7 +341,7 @@ private fun ShoppingItemRow(
                 }
             }
 
-            if (checkboxVisible) {
+            if (editList) {
                 Checkbox(
                     checked = item.isChecked,
                     onCheckedChange = onCheckedChange

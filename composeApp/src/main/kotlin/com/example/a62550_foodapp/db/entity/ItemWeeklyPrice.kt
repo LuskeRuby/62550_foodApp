@@ -1,5 +1,6 @@
 package com.example.a62550_foodapp.db.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -26,8 +27,10 @@ import androidx.room.Index
 )
 //TODO Rename variables
 data class ItemWeeklyPrice(
-    val item_id: Long,
-    val supermarket_id: Long,
+    @ColumnInfo(name = "item_id")
+    val itemId: Long,
+    @ColumnInfo(name = "supermarket_id")
+    val supermarketId: Long,
     val year: Int,
     val week: Int,
     val price: Float
