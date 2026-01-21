@@ -26,9 +26,6 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-/* ───────────────────────────────────────────────────────────── */
-/* Page shell                                                    */
-/* ───────────────────────────────────────────────────────────── */
 
 @Composable
 fun ShoppingListDetailsPage(
@@ -51,9 +48,6 @@ fun ShoppingListDetailsPage(
     }
 }
 
-/* ───────────────────────────────────────────────────────────── */
-/* Main shopping list page                                       */
-/* ───────────────────────────────────────────────────────────── */
 
 @Composable
 private fun ShoppingListPage(
@@ -77,13 +71,7 @@ private fun ShoppingListPage(
         viewModel.setStoreFilter(selectedStores)
     }
 
-    /**
-     * 🔑 IMPORTANT GROUPING LOGIC
-     *
-     * - Available items → grouped by store → category
-     * - Unavailable items → store = "" → category = "Utilgængelige varer"
-     * - UI remains unchanged
-     */
+
     val grouped =
         items
             .groupBy { it.superMarketName ?: "" }
@@ -140,10 +128,6 @@ private fun ShoppingListPage(
     }
 }
 
-/* ───────────────────────────────────────────────────────────── */
-/* List content                                                  */
-/* ───────────────────────────────────────────────────────────── */
-
 @Composable
 private fun ShoppingListContent(
     viewModel: ShoppingListDetailsViewModel,
@@ -181,9 +165,6 @@ private fun ShoppingListContent(
     }
 }
 
-/* ───────────────────────────────────────────────────────────── */
-/* Headers                                                       */
-/* ───────────────────────────────────────────────────────────── */
 
 @Composable
 private fun SuperMarketHeader(name: String) {
