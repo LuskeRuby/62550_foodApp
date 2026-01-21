@@ -148,7 +148,7 @@ JOIN items i
 
 JOIN item_weekly_prices iwp
     ON iwp.item_id = i.id
-    
+
 JOIN supermarkets sm
     ON sm.id = iwp.supermarket_id
 
@@ -159,8 +159,8 @@ WHERE slig.shopping_list_id = :shoppingListId
         OR iwp.supermarket_id IN (:storeIds)
       )
 
-  AND iwp.price = (
-      SELECT MIN(p2.price)
+  AND NOT EXISTS (
+      SELECT 1
       FROM item_weekly_prices p2
       JOIN items i2 ON i2.id = p2.item_id
       WHERE i2.item_group_id = ig.id
@@ -168,6 +168,7 @@ WHERE slig.shopping_list_id = :shoppingListId
               :storeCount = 0
               OR p2.supermarket_id IN (:storeIds)
             )
+        AND p2.price < iwp.price
   )
 """)
     fun getCheapestShoppingListEntriesFlow(
@@ -175,6 +176,7 @@ WHERE slig.shopping_list_id = :shoppingListId
         storeIds: List<Long>,
         storeCount: Int
     ): Flow<List<ShoppingListEntry>>
+
 
 
     @Query("""
