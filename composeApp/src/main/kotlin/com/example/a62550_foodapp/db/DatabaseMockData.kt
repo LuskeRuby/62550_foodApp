@@ -204,15 +204,6 @@ object DatabaseMockData {
 
         val shoppingListId = shoppingListDao.insert(ShoppingList(name = "Weekly groceries")).toInt()
 
-        shoppingListItemGroupDao.insert(
-            ShoppingListItemGroup(
-                shoppingListId = shoppingListId.toLong(),
-                itemGroupId = fallbackGroup.toLong(),
-                recipeId = null,
-                portionQuantity = 2,
-                portionSize = 100f,
-                isChecked = false
-            )
-        )
+
     }
 }
