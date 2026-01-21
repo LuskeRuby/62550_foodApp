@@ -28,9 +28,16 @@ fun RecipeDetailScreen(
         .collectAsState(initial = emptyList())
     val storeFilterViewModel: StoreFilterViewModel = koinViewModel()
     val selectedStores by storeFilterViewModel.selectedStores.collectAsState()
+    val shoppingListUi = shoppingLists.map {
+        ShoppingListUi(
+            id = it.id,
+            name = it.name
+        )
+    }
 
     var portions by remember { mutableStateOf(1) }
     var scaledPrice by remember { mutableStateOf(0f) }
+    var showAddToListSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(portions) {
         scaledPrice = recipeViewModel.getRecipePriceByPortions(
@@ -75,14 +82,20 @@ fun RecipeDetailScreen(
                 preparationMinutes = r.preparationTimeMinutes,
                 price = scaledPrice,
                 onAdd = {
+                    showAddToListSheet = true
+                },
+                themeViewModel = themeViewModel
+            )
+
+            /*
+            onAdd = {
                     recipeViewModel.addRecipeToShoppingList(
                         shoppingListId = 1L,
                         recipeId = recipeId,
                         portions = portions
                     )
-                },
-                themeViewModel = themeViewModel
-            )
+                }
+             */
 
             //Content
             Column(
@@ -122,4 +135,25 @@ fun RecipeDetailScreen(
     ) {
         CircularProgressIndicator()
     }
+
+    AddRecipeToShoppingListSheet(
+        visible = showAddToListSheet,
+        shoppingLists = listOf(
+            ShoppingListUi(1, "Weekly groceries"),
+            ShoppingListUi(2, "Meal prep"),
+            ShoppingListUi(3, "Party")
+        ),
+        onDismiss = { showAddToListSheet = false },
+        onShoppingListSelected = {
+            showAddToListSheet = false
+            // later: real DB call
+        },
+        onCreateNewShoppingList = {
+            showAddToListSheet = false
+            // later: create + add
+        }
+    )
+
+
 }
+

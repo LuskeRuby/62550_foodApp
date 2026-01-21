@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import java.util.Locale
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Add
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import androidx.compose.ui.text.style.TextOverflow
 //API og main screen
@@ -237,5 +240,101 @@ fun InstructionsCard(
             modifier = Modifier.padding(16.dp),
             lineHeight = 20.sp
         )
+    }
+}
+
+data class ShoppingListUi(
+    val id: Long,
+    val name: String
+)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddRecipeToShoppingListSheet(
+    visible: Boolean,
+    shoppingLists: List<ShoppingListUi>,
+    onDismiss: () -> Unit,
+    onShoppingListSelected: (ShoppingListUi) -> Unit,
+    onCreateNewShoppingList: () -> Unit
+) {
+    if (!visible) return
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        dragHandle = { BottomSheetDefaults.DragHandle() }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+        ) {
+
+            //Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Tilføj til indkøbsliste",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = null)
+                }
+            }
+
+            Divider()
+
+            //List
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = false),
+                contentPadding = PaddingValues(vertical = 8.dp)
+            ) {
+                items(shoppingLists, key = { it.id }) { list ->
+                    ListItem(
+                        headlineContent = { Text(list.name) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onShoppingListSelected(list) }
+                            .padding(horizontal = 8.dp)
+                    )
+                }
+            }
+
+            //Bottom action
+            Divider()
+
+            Spacer(Modifier.height(12.dp))
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .height(52.dp)
+                    .clickable(onClick = onCreateNewShoppingList),
+                shape = RoundedCornerShape(26.dp),
+                tonalElevation = 2.dp
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Ny indkøbsliste",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+        }
     }
 }
