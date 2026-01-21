@@ -27,8 +27,7 @@ fun <T> SearchSelectField(
     items: List<T>,
     itemText: (T) -> String,
     itemUnit: (T) -> String? = { null },
-    onItemSelected: (T) -> Unit,
-    modifier: Modifier = Modifier
+    onItemSelected: (T) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedItem: T? by remember { mutableStateOf(null) }
@@ -44,7 +43,8 @@ fun <T> SearchSelectField(
         else -> null
     }
 
-    Column(modifier = modifier) {
+    Column(modifier = Modifier.
+        padding(horizontal = 16.dp)) {
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
