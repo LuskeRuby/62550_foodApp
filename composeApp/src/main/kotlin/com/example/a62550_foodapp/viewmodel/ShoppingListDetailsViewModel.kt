@@ -8,6 +8,7 @@ import com.example.a62550_foodapp.db.entity.ItemGroup
 import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
 import com.example.a62550_foodapp.db.projection.ShoppingListEntry
 import com.example.a62550_foodapp.db.projection.ShoppingListItemGroupEntry
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +41,7 @@ class ShoppingListDetailsViewModel(
             )
 
     // items visible in ShoppingListDetails
+    @OptIn(ExperimentalCoroutinesApi::class)
     val items: StateFlow<List<ShoppingListEntry>> =
         storeFilter
             .flatMapLatest { stores ->

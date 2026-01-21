@@ -98,8 +98,7 @@ val appModule = module {
         ShoppingListDetailsViewModel(
             shoppingListId = shoppingListId,
             shoppingListItemGroupDao = get(),
-            itemGroupDao = get(),
-            storeFilterViewModel = get()
+            itemGroupDao = get()
         )
     }
 

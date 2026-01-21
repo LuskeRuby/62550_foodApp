@@ -31,8 +31,6 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.collections.component1
 import kotlin.collections.component2
-import com.example.a62550_foodapp.ui.components.SearchSelectField
-import com.example.a62550_foodapp.viewmodel.ItemGroupViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import androidx.compose.runtime.LaunchedEffect
 
@@ -223,14 +221,7 @@ fun CategoryHeader(category: String) {
     }
 }
 
-val filterViewModel: StoreFilterViewModel = koinViewModel()
-val selectedStores by filterViewModel.selectedStores.collectAsState()
-
-LaunchedEffect(selectedStores) {
-    viewModel.setStoreFilter(selectedStores)
-}
-
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingItemRow(
     themeViewModel: ThemeViewModel = koinViewModel(),
