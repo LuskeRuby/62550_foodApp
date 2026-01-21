@@ -23,6 +23,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import coil.compose.AsyncImage
 import kotlinx.coroutines.flow.first
+import com.example.a62550_foodapp.ui.shoppingList.AddItemGroupToShoppingListPage
 
 @Composable
 fun CreateRecipeScreen(
@@ -31,13 +32,26 @@ fun CreateRecipeScreen(
     onRecipeSaved: () -> Unit,
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
-    CreateRecipeForm(
-        recipeViewModel = recipeViewModel,
-        existingRecipeId = existingRecipeId,
-        onRecipeSaved = onRecipeSaved,
-        onAddIngredients = { /* ingredient edit later */ }
-    )
+    var showIngredientEditor by remember { mutableStateOf(false) }
+
+    if (showIngredientEditor && existingRecipeId != null) {
+
+        AddItemGroupToShoppingListPage(
+            shoppingListId = existingRecipeId,
+            disableItemOverlay = { showIngredientEditor = false }
+        )
+
+    } else {
+
+        CreateRecipeForm(
+            recipeViewModel = recipeViewModel,
+            existingRecipeId = existingRecipeId,
+            onRecipeSaved = onRecipeSaved,
+            onAddIngredients = { showIngredientEditor = true }
+        )
+    }
 }
+
 
 @Composable
 private fun CreateRecipeForm(
@@ -194,7 +208,6 @@ private fun CreateRecipeForm(
 
         Button(
             onClick = onAddIngredients,
-            enabled = false, //todo
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
