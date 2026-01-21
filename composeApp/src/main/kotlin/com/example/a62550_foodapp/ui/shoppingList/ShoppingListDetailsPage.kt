@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -29,7 +28,6 @@ import com.example.a62550_foodapp.db.projection.ShoppingListEntry
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
 import org.koin.androidx.compose.koinViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
-import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -76,8 +74,6 @@ private fun ShoppingListPage(
     val items by viewModel.items.collectAsState()
     val totalUi by viewModel.shoppingListTotalPrice.collectAsState()
 
-    //TODO delete this ?
-    //val selectedSupermarket by viewModel.selectedSupermarketId.collectAsState()
 
     val grouped = items.groupBy { it.superMarketName }
         .mapValues { (_, categoryItems) -> categoryItems.groupBy { it.category } }
@@ -87,17 +83,22 @@ private fun ShoppingListPage(
         Column(modifier = Modifier.fillMaxSize()) {
 
             // header
-            Text(
-                "Indkøbsliste",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(16.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Indkøbsliste",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(16.dp)
+                )
 
-            //SupermarketSelector(
-            //    selectedId = selectedSupermarket,
-            //    onSelect = viewModel::selectSupermarket
-            //)
+                TotalBox(totalUi)
+            }
 
             // body
             ShoppingListContent(
@@ -107,26 +108,21 @@ private fun ShoppingListPage(
             )
 
             // footer
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TotalFooter(totalUi)
-            }
+
         }
 
         FloatingActionButton(
             onClick = onAddItemsButtonClick,
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 20.dp),
+                .align(Alignment.BottomCenter)
+                .padding(end = 20.dp, bottom = 20.dp)
+                .height(48.dp)
+                .width(160.dp),
+            shape = RoundedCornerShape(24.dp),
             containerColor = themeViewModel.addButtonColor,
             contentColor = themeViewModel.onPrimaryColor
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Add Item")
+            Text(text = "Tilføj varer")
         }
     }
 }
@@ -149,7 +145,9 @@ private fun AddItemToShoppingListPage(
     val grouped = items.groupBy { it.superMarketName }
         .mapValues { (_, categoryItems) -> categoryItems.groupBy { it.category } }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(themeViewModel.backgroundColor)) {
 
         // header
         Text(
@@ -179,12 +177,16 @@ private fun AddItemToShoppingListPage(
             addItemsOverlay = addItemsOverlay,
             grouped = grouped
         )
+    }
 
-        // footer
+
+    // footer
+    Box(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .align(Alignment.BottomCenter),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom
         ) {
@@ -201,9 +203,7 @@ private fun AddItemToShoppingListPage(
             ) {
                 Text(text = "Færdig")
             }
-
             Spacer(modifier = Modifier.width(8.dp))
-
             Button(
                 onClick = disableItemOverlay,
                 colors = ButtonDefaults.buttonColors(
@@ -282,30 +282,6 @@ fun SuperMarketHeader(name: String){
     }
 }
 
-
-//TODO delete this ?
-
-//@Composable
-//private fun SupermarketSelector(
-//    selectedId: Int,
-//    onSelect: (Int) -> Unit
-//) {
-//    Row(
-//        Modifier.padding(horizontal = 16.dp),
-//        horizontalArrangement = Arrangement.spacedBy(8.dp)
-//    ) {
-//        FilterChip(
-//            selected = selectedId == 1,
-//            onClick = { onSelect(1) },
-//            label = { Text("Netto") }
-//        )
-//        FilterChip(
-//            selected = selectedId == 2,
-//            onClick = { onSelect(2) },
-//            label = { Text("Kvickly") }
-//        )
-//    }
-//}
 
 @Composable
 fun categoryColor(
@@ -492,7 +468,7 @@ private fun CheckboxText(
 
 
 @Composable
-private fun TotalFooter(totalUi: ShoppingListDetailsViewModel.TotalUi) {
+private fun TotalBox(totalUi: ShoppingListDetailsViewModel.TotalUi) {
     Surface(
         shape = RoundedCornerShape(50),
         shadowElevation = 8.dp,
