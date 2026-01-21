@@ -8,8 +8,10 @@ import com.example.a62550_foodapp.db.entity.ItemGroup
 import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
 import com.example.a62550_foodapp.db.projection.ShoppingListEntry
 import com.example.a62550_foodapp.db.projection.ShoppingListItemGroupEntry
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -18,9 +20,15 @@ import kotlin.Int
 class ShoppingListDetailsViewModel(
     private val shoppingListId: Long,
     private val itemGroupDao: ItemGroupDao,
-    private val shoppingListItemGroupDao: ShoppingListItemGroupDao,
-    private val storeFilterViewModel: StoreFilterViewModel
+    private val shoppingListItemGroupDao: ShoppingListItemGroupDao
 ) : ViewModel() {
+
+    private val storeFilter = MutableStateFlow<Set<Long>>(emptySet())
+
+    fun setStoreFilter(stores: Set<Long>) {
+        storeFilter.value = stores
+
+    }
 
     // actual DB table we edit
     private val itemGroupList: StateFlow<List<ShoppingListItemGroup>> =
@@ -33,15 +41,19 @@ class ShoppingListDetailsViewModel(
 
     // items visible in ShoppingListDetails
     val items: StateFlow<List<ShoppingListEntry>> =
-        shoppingListItemGroupDao.getCheapestShoppingListEntriesFlow(
-            shoppingListId = shoppingListId,
-            storeIds = storeFilterViewModel.selectedStores.value.toList(),
-            storeCount = storeFilterViewModel.selectedStores.value.size
-        ).stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
-        )
+        storeFilter
+            .flatMapLatest { stores ->
+                shoppingListItemGroupDao.getCheapestShoppingListEntriesFlow(
+                    shoppingListId = shoppingListId,
+                    storeIds = stores.toList(),
+                    storeCount = stores.size
+                )
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
 
     // for shoppingListDetails searchbar
     val itemGroups: StateFlow<List<ItemGroup>> =
@@ -65,6 +77,7 @@ class ShoppingListDetailsViewModel(
         val total: Float,
         val missingCount: Int
     )
+
     val shoppingListTotalPrice: StateFlow<TotalUi> =
         items.map { list ->
             val missing = list.count { it.price == null }
@@ -138,17 +151,13 @@ class ShoppingListDetailsViewModel(
 
     fun delete(item: ShoppingListEntry) {
         viewModelScope.launch {
-            shoppingListItemGroupDao.delete(
-                id = item.id
-            )
+            shoppingListItemGroupDao.delete( id = item.id )
         }
     }
 
     fun delete(item: ShoppingListItemGroupEntry) {
         viewModelScope.launch {
-            shoppingListItemGroupDao.delete(
-                id = item.id
-            )
+            shoppingListItemGroupDao.delete( id = item.id )
         }
     }
 

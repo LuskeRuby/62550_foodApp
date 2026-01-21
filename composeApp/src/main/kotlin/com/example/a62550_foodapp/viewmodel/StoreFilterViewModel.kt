@@ -20,11 +20,9 @@ class StoreFilterViewModel : ViewModel() {
 
     /** Toggle a store on/off in the filter */
     fun toggleStore(storeId: Long) {
-        _selectedStores.value =
-            if (_selectedStores.value.contains(storeId))
-                _selectedStores.value - storeId
-            else
-                _selectedStores.value + storeId
+        _selectedStores.update { current ->
+            if (current.contains(storeId)) current - storeId else current + storeId
+        }
     }
 
     /** Clear all selected stores (means: use all stores) */

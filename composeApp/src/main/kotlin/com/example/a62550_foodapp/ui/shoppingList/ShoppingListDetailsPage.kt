@@ -31,6 +31,10 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.collections.component1
 import kotlin.collections.component2
+import com.example.a62550_foodapp.ui.components.SearchSelectField
+import com.example.a62550_foodapp.viewmodel.ItemGroupViewModel
+import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
+import androidx.compose.runtime.LaunchedEffect
 
 // top layer so we can reuse ShoppingListContent and ShoppingItemRow
 @Composable
@@ -71,9 +75,15 @@ private fun ShoppingListPage(
     val items by viewModel.items.collectAsState()
     val totalUi by viewModel.shoppingListTotalPrice.collectAsState()
 
-
     val grouped = items.groupBy { it.superMarketName }
         .mapValues { (_, categoryItems) -> categoryItems.groupBy { it.category } }
+
+    val filterViewModel: StoreFilterViewModel = koinViewModel()
+    val selectedStores by filterViewModel.selectedStores.collectAsState()
+
+    LaunchedEffect(selectedStores) {
+        viewModel.setStoreFilter(selectedStores)
+    }
 
 
     Box(modifier = Modifier.fillMaxSize().background(themeViewModel.backgroundColor)) {
@@ -137,7 +147,11 @@ fun ShoppingListContent(
             categoryMap.forEach { (category, categoryItems) ->
                 item { CategoryHeader(category) }
 
-                items(categoryItems, key = { it.id }) { shoppingListEntry ->
+                items(
+                    categoryItems,
+                    key = { "${it.id}-${it.itemGroupId}-${it.superMarketName}" }
+                ) {
+                        shoppingListEntry ->
                     ShoppingItemRow(
                         item = shoppingListEntry,
                         onCheckedChange =
@@ -209,7 +223,14 @@ fun CategoryHeader(category: String) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+val filterViewModel: StoreFilterViewModel = koinViewModel()
+val selectedStores by filterViewModel.selectedStores.collectAsState()
+
+LaunchedEffect(selectedStores) {
+    viewModel.setStoreFilter(selectedStores)
+}
+
+
 @Composable
 fun ShoppingItemRow(
     themeViewModel: ThemeViewModel = koinViewModel(),
@@ -340,7 +361,7 @@ fun ShoppingItemRow(
 }
 
 @Composable
-fun CheckboxText(
+private fun CheckboxText(
     checked: Boolean,
     text: String,
     modifier: Modifier = Modifier,

@@ -133,18 +133,18 @@ WHERE slig.shopping_list_id = :shoppingListId
      */
     @Query("""
 SELECT
-    slig.id                 AS id,
-    ig.id                   AS itemGroupId,
-    MIN(i.id)               AS itemId,
-    MIN(i.name)             AS itemName,
-    MIN(i.size)             AS size,
-    MIN(i.unitType)         AS unitType,
-    slig.portion_quantity   AS quantity,
-    MIN(iwp.price)          AS price,
-    slig.is_checked         AS isChecked,
-    ig.category             AS category,
-    slig.recipe_id          AS recipeId,
-    MIN(sm.name)            AS superMarketName
+    slig.id               AS id,
+    ig.id                 AS itemGroupId,
+    i.id                  AS itemId,
+    i.name                AS itemName,
+    i.size                AS size,
+    i.unitType            AS unitType,
+    slig.portion_quantity AS quantity,
+    iwp.price             AS price,
+    slig.is_checked       AS isChecked,
+    ig.category           AS category,
+    slig.recipe_id        AS recipeId,
+    sm.name               AS superMarketName
 FROM shopping_list_item_groups slig
 
 JOIN item_groups ig
@@ -159,14 +159,27 @@ JOIN item_weekly_prices iwp
 JOIN supermarkets sm
     ON sm.id = iwp.supermarket_id
 
-WHERE slig.shopping_list_id = :shoppingListId
-
-  AND (
+JOIN (
+    SELECT
+        ig2.id AS ig_id,
+        iwp2.supermarket_id AS sm_id,
+        MIN(iwp2.price) AS min_price
+    FROM item_groups ig2
+    JOIN items i2
+        ON i2.item_group_id = ig2.id
+    JOIN item_weekly_prices iwp2
+        ON iwp2.item_id = i2.id
+    WHERE (
         :storeCount = 0
-        OR iwp.supermarket_id IN (:storeIds)
-      )
+        OR iwp2.supermarket_id IN (:storeIds)
+    )
+    GROUP BY ig2.id
+) cheapest
+ON cheapest.ig_id = ig.id
+AND cheapest.min_price = iwp.price
+AND cheapest.sm_id = iwp.supermarket_id   -- 🔥 THIS LINE FIXES YOUR BUG
 
-GROUP BY slig.id, ig.id
+WHERE slig.shopping_list_id = :shoppingListId
 """)
     fun getCheapestShoppingListEntriesFlow(
         shoppingListId: Long,
