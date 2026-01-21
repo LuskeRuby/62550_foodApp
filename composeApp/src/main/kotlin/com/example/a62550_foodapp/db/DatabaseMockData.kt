@@ -159,182 +159,148 @@ object DatabaseMockData {
 
         val itemIds = items.map { itemDao.insert(it).toInt() }
 
-        /* ---------- PRICES ---------- */
+        /* ---------- PRICES (PER ITEM, PER SUPERMARKET — EXPLICIT) ---------- */
 
-        fun price(itemGroupId: Int, marketId: Int, p: Float) {
+        fun price(itemId: Int, marketId: Int, p: Float) {
             itemWeeklyPriceDao.insert(
-                ItemWeeklyPrice(itemGroupId.toLong(), marketId.toLong(), year, week, p)
+                ItemWeeklyPrice(itemId.toLong(), marketId.toLong(), year, week, p)
             )
         }
 
-// ---- Pasta ----
-        price(pasta, nettoId, 9.95f)
-        price(pasta, kvicklyId, 11.95f)
-        price(pasta, foetexId, 10.50f)
-        price(pasta, menyId, 13.95f)
-        price(pasta, bilkaId, 9.50f)
-        price(pasta, rema1000Id, 10.00f)
+        var i = 0
 
-// ---- Ris ----
-        price(rice, nettoId, 12.95f)
-        price(rice, kvicklyId, 14.50f)
-        price(rice, foetexId, 13.00f)
-        price(rice, menyId, 16.00f)
-        price(rice, bilkaId, 12.50f)
-        price(rice, rema1000Id, 13.50f)
+// ===== PASTA =====
+        val spaghetti = itemIds[i++]
+        price(spaghetti, nettoId, 9.95f)
+        price(spaghetti, kvicklyId, 11.95f)
+        price(spaghetti, foetexId, 10.50f)
+        price(spaghetti, menyId, 13.95f)
+        price(spaghetti, bilkaId, 9.50f)
+        price(spaghetti, rema1000Id, 10.00f)
 
-// ---- Oksekød ----
-        price(beef, nettoId, 38.00f)
-        price(beef, kvicklyId, 42.00f)
-        price(beef, foetexId, 39.00f)
-        price(beef, menyId, 45.00f)
-        price(beef, bilkaId, 37.00f)
-        price(beef, rema1000Id, 40.00f)
+        val penne = itemIds[i++]
+        price(penne, nettoId, 12.95f)
+        price(penne, kvicklyId, 14.95f)
+        price(penne, foetexId, 13.50f)
+        price(penne, menyId, 16.95f)
+        price(penne, bilkaId, 12.50f)
+        price(penne, rema1000Id, 13.00f)
 
-// ---- Kylling ----
-        price(chicken, nettoId, 29.00f)
-        price(chicken, kvicklyId, 32.00f)
-        price(chicken, foetexId, 30.00f)
-        price(chicken, menyId, 35.00f)
-        price(chicken, bilkaId, 28.00f)
-        price(chicken, rema1000Id, 30.00f)
+// ===== RICE =====
+        val basmati = itemIds[i++]
+        price(basmati, nettoId, 12.95f)
+        price(basmati, kvicklyId, 14.50f)
+        price(basmati, foetexId, 13.00f)
+        price(basmati, menyId, 16.00f)
+        price(basmati, bilkaId, 12.50f)
+        price(basmati, rema1000Id, 13.50f)
 
-// ---- Svinekød ----
-        price(pork, nettoId, 27.00f)
-        price(pork, kvicklyId, 30.00f)
-        price(pork, foetexId, 28.50f)
-        price(pork, menyId, 33.00f)
-        price(pork, bilkaId, 26.50f)
-        price(pork, rema1000Id, 29.00f)
+        val jasmin = itemIds[i++]
+        price(jasmin, nettoId, 13.95f)
+        price(jasmin, kvicklyId, 15.50f)
+        price(jasmin, foetexId, 14.00f)
+        price(jasmin, menyId, 17.00f)
+        price(jasmin, bilkaId, 13.50f)
+        price(jasmin, rema1000Id, 14.50f)
 
-// ---- Bacon ----
-        price(bacon, nettoId, 18.00f)
-        price(bacon, kvicklyId, 21.00f)
-        price(bacon, foetexId, 19.50f)
-        price(bacon, menyId, 23.00f)
-        price(bacon, bilkaId, 17.50f)
-        price(bacon, rema1000Id, 19.00f)
+// ===== BEEF =====
+        val beefMinced = itemIds[i++]
+        price(beefMinced, nettoId, 38f)
+        price(beefMinced, kvicklyId, 42f)
+        price(beefMinced, foetexId, 39f)
+        price(beefMinced, menyId, 45f)
+        price(beefMinced, bilkaId, 37f)
+        price(beefMinced, rema1000Id, 40f)
 
-// ---- Hakket kød ----
-        price(groundMeat, nettoId, 30.00f)
-        price(groundMeat, kvicklyId, 33.00f)
-        price(groundMeat, foetexId, 31.50f)
-        price(groundMeat, menyId, 36.00f)
-        price(groundMeat, bilkaId, 29.50f)
-        price(groundMeat, rema1000Id, 32.00f)
+        val beefCubes = itemIds[i++]
+        price(beefCubes, nettoId, 41f)
+        price(beefCubes, kvicklyId, 45f)
+        price(beefCubes, foetexId, 42f)
+        price(beefCubes, menyId, 48f)
+        price(beefCubes, bilkaId, 39.5f)
+        price(beefCubes, rema1000Id, 43f)
 
-// ---- Skinke ----
-        price(ham, nettoId, 15.00f)
-        price(ham, kvicklyId, 18.00f)
-        price(ham, foetexId, 16.50f)
-        price(ham, menyId, 20.00f)
-        price(ham, bilkaId, 14.50f)
-        price(ham, rema1000Id, 17.00f)
+// ===== CHICKEN =====
+        val chickenBreast = itemIds[i++]
+        price(chickenBreast, nettoId, 29f)
+        price(chickenBreast, kvicklyId, 32f)
+        price(chickenBreast, foetexId, 30f)
+        price(chickenBreast, menyId, 35f)
+        price(chickenBreast, bilkaId, 28f)
+        price(chickenBreast, rema1000Id, 30f)
 
-// ---- Stegt flæsk ----
-        price(porkFlank, nettoId, 22.00f)
-        price(porkFlank, kvicklyId, 25.00f)
-        price(porkFlank, foetexId, 23.50f)
-        price(porkFlank, menyId, 28.00f)
-        price(porkFlank, bilkaId, 21.50f)
-        price(porkFlank, rema1000Id, 24.00f)
+        val chickenLegs = itemIds[i++]
+        price(chickenLegs, nettoId, 26f)
+        price(chickenLegs, kvicklyId, 29f)
+        price(chickenLegs, foetexId, 27.5f)
+        price(chickenLegs, menyId, 33f)
+        price(chickenLegs, bilkaId, 25f)
+        price(chickenLegs, rema1000Id, 28f)
 
-// ---- Fisk ----
-        price(fish, nettoId, 35.00f)
-        price(fish, kvicklyId, 39.00f)
-        price(fish, foetexId, 37.00f)
-        price(fish, menyId, 45.00f)
-        price(fish, bilkaId, 34.00f)
-        price(fish, rema1000Id, 38.00f)
+        // ===== VEGETABLES (same price model) =====
+        fun vegPrices(id: Int) {
+            price(id, nettoId, 6f)
+            price(id, kvicklyId, 7.5f)
+            price(id, foetexId, 6.5f)
+            price(id, menyId, 9f)
+            price(id, bilkaId, 5.5f)
+            price(id, rema1000Id, 6f)
+        }
 
-// ---- Sild ----
-        price(herring, nettoId, 12.00f)
-        price(herring, kvicklyId, 14.00f)
-        price(herring, foetexId, 13.00f)
-        price(herring, menyId, 16.00f)
-        price(herring, bilkaId, 11.50f)
-        price(herring, rema1000Id, 13.50f)
+        val onionItem = itemIds[i++]; vegPrices(onionItem)
+        val garlicItem = itemIds[i++]; vegPrices(garlicItem)
+        val carrotItem = itemIds[i++]; vegPrices(carrotItem)
+        val pepperItem = itemIds[i++]; vegPrices(pepperItem)
+        val tomato1 = itemIds[i++]; vegPrices(tomato1)
+        val tomato2 = itemIds[i++]; vegPrices(tomato2)
+        val broccoliItem = itemIds[i++]; vegPrices(broccoliItem)
 
-// ---- Grønt ----
-        listOf(onion, garlic, carrot, pepper, tomato, broccoli, mushrooms, potatoes, peas, chives, beetroot, redCabbage)
-            .forEach { gId ->
-                price(gId, nettoId, 6.00f)
-                price(gId, kvicklyId, 7.50f)
-                price(gId, foetexId, 6.50f)
-                price(gId, menyId, 9.00f)
-                price(gId, bilkaId, 5.50f)
-                price(gId, rema1000Id, 6.00f)
-            }
+        // ===== MEJERI =====
+        fun dairy(id: Int, base: Float) {
+            price(id, nettoId, base)
+            price(id, kvicklyId, base + 1.5f)
+            price(id, foetexId, base + 0.5f)
+            price(id, menyId, base + 3f)
+            price(id, bilkaId, base - 0.5f)
+            price(id, rema1000Id, base + 0.8f)
+        }
 
-// ---- Mejeri ----
-        price(cream, nettoId, 8.00f)
-        price(cream, kvicklyId, 9.50f)
-        price(cream, foetexId, 8.50f)
-        price(cream, menyId, 11.00f)
-        price(cream, bilkaId, 7.50f)
-        price(cream, rema1000Id, 8.50f)
+        val creamItem = itemIds[i++]; dairy(creamItem, 8f)
+        val milkItem = itemIds[i++]; dairy(milkItem, 7f)
+        val cheeseItem = itemIds[i++]; dairy(cheeseItem, 18f)
+        val butterItem = itemIds[i++]; dairy(butterItem, 12f)
+        val eggsItem = itemIds[i++]; dairy(eggsItem, 15f)
 
-        price(milk, nettoId, 7.00f)
-        price(milk, kvicklyId, 8.50f)
-        price(milk, foetexId, 7.50f)
-        price(milk, menyId, 10.00f)
-        price(milk, bilkaId, 6.50f)
-        price(milk, rema1000Id, 7.50f)
+        // ===== KOLONIAL =====
+        fun pantry(id: Int, base: Float) {
+            price(id, nettoId, base)
+            price(id, kvicklyId, base + 2f)
+            price(id, foetexId, base + 1f)
+            price(id, menyId, base + 4f)
+            price(id, bilkaId, base - 0.5f)
+            price(id, rema1000Id, base + 1f)
+        }
 
-        price(cheese, nettoId, 18.00f)
-        price(cheese, kvicklyId, 22.00f)
-        price(cheese, foetexId, 20.00f)
-        price(cheese, menyId, 25.00f)
-        price(cheese, bilkaId, 17.50f)
-        price(cheese, rema1000Id, 19.00f)
+        val curryItem = itemIds[i++]; pantry(curryItem, 7f)
+        val chiliItem = itemIds[i++]; pantry(chiliItem, 7f)
+        val soyItem = itemIds[i++]; pantry(soyItem, 8f)
+        val beansItem = itemIds[i++]; pantry(beansItem, 8f)
+        val cornItem = itemIds[i++]; pantry(cornItem, 8f)
+        val peasItem = itemIds[i++]; pantry(peasItem, 7f)
 
-        price(butter, nettoId, 12.00f)
-        price(butter, kvicklyId, 14.00f)
-        price(butter, foetexId, 13.00f)
-        price(butter, menyId, 16.00f)
-        price(butter, bilkaId, 11.50f)
-        price(butter, rema1000Id, 13.00f)
+// ===== BRØD =====
+        val wrapsItem = itemIds[i++]; pantry(wrapsItem, 14f)
+        val breadItem = itemIds[i++]; pantry(breadItem, 12f)
 
-        price(eggs, nettoId, 15.00f)
-        price(eggs, kvicklyId, 18.00f)
-        price(eggs, foetexId, 16.50f)
-        price(eggs, menyId, 20.00f)
-        price(eggs, bilkaId, 14.50f)
-        price(eggs, rema1000Id, 16.00f)
+// ===== Fallback =====
+        val fallbackItem = itemIds.last()
+        price(fallbackItem, nettoId, 0f)
+        price(fallbackItem, kvicklyId, 0f)
+        price(fallbackItem, foetexId, 0f)
+        price(fallbackItem, menyId, 0f)
+        price(fallbackItem, bilkaId, 0f)
+        price(fallbackItem, rema1000Id, 0f)
 
-// ---- Kolonial & krydderi ----
-        listOf(curry, chili, soy, beans, corn, appleFilling, flour)
-            .forEach { gId ->
-                price(gId, nettoId, 7.00f)
-                price(gId, kvicklyId, 9.00f)
-                price(gId, foetexId, 8.00f)
-                price(gId, menyId, 11.00f)
-                price(gId, bilkaId, 6.50f)
-                price(gId, rema1000Id, 7.50f)
-            }
-
-// ---- Brød ----
-        price(wraps, nettoId, 14.00f)
-        price(wraps, kvicklyId, 17.00f)
-        price(wraps, foetexId, 15.50f)
-        price(wraps, menyId, 19.00f)
-        price(wraps, bilkaId, 13.50f)
-        price(wraps, rema1000Id, 15.00f)
-
-        price(bread, nettoId, 12.00f)
-        price(bread, kvicklyId, 14.50f)
-        price(bread, foetexId, 13.00f)
-        price(bread, menyId, 17.00f)
-        price(bread, bilkaId, 11.50f)
-        price(bread, rema1000Id, 13.00f)
-
-// ---- Fallback (test = gratis) ----
-        price(fallbackGroup, nettoId, 0f)
-        price(fallbackGroup, kvicklyId, 0f)
-        price(fallbackGroup, foetexId, 0f)
-        price(fallbackGroup, menyId, 0f)
-        price(fallbackGroup, bilkaId, 0f)
-        price(fallbackGroup, rema1000Id, 0f)
 
 
         /* ---------- RECIPES ---------- */
@@ -690,6 +656,14 @@ object DatabaseMockData {
                 ShoppingListItemGroup(
                     shoppingListId = shoppingListId.toLong(),
                     itemGroupId = cheese.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 200f,
+                    isChecked = false
+                ),
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = fallbackGroup.toLong(),
                     recipeId = null,
                     portionQuantity = 1,
                     portionSize = 200f,
