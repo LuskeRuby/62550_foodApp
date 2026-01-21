@@ -76,8 +76,12 @@ private fun ShoppingListPage(
     val items by viewModel.items.collectAsState()
     val totalUi by viewModel.shoppingListTotalPrice.collectAsState()
 
-    val grouped = items.groupBy { it.superMarketName }
-        .mapValues { (_, categoryItems) -> categoryItems.groupBy { it.category } }
+    val grouped =
+        items
+            .groupBy { it.superMarketName.orEmpty() }
+            .mapValues { (_, categoryItems) ->
+                categoryItems.groupBy { it.category.ifBlank { "Ukendt kategori" } }
+            }
 
     val filterViewModel: StoreFilterViewModel = koinViewModel()
     val selectedStores by filterViewModel.selectedStores.collectAsState()
@@ -156,8 +160,12 @@ private fun AddItemToShoppingListPage(
     LaunchedEffect(selectedStores) {
         viewModel.setStoreFilter(selectedStores)
     }
-    val grouped = items.groupBy { it.superMarketName }
-        .mapValues { (_, categoryItems) -> categoryItems.groupBy { it.category } }
+    val grouped =
+        items
+            .groupBy { it.superMarketName.orEmpty() }
+            .mapValues { (_, categoryItems) ->
+                categoryItems.groupBy { it.category.ifBlank { "Ukendt kategori" } }
+            }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -243,14 +251,16 @@ private fun ShoppingListContent(
 ){
     LazyColumn() {
         grouped.forEach { (superMarket, categoryMap) ->
-            item {SuperMarketHeader(superMarket)}
+            if (superMarket.isNotBlank()) {
+                item { SuperMarketHeader(superMarket) }
+            }
 
             categoryMap.forEach { (category, categoryItems) ->
                 item { CategoryHeader(category) }
 
                 items(
                     categoryItems,
-                    key = { "${it.id}-${it.itemGroupId}-${it.superMarketName}" }
+                    key = { "${it.id}-${it.superMarketName}" }
                 ) {
                         shoppingListEntry ->
                     ShoppingItemRow(
@@ -397,9 +407,13 @@ private fun ShoppingItemRow(
             )
 
             //size
+            val sizeText =
+                item.size?.let { "${it.toInt()} ${item.unitType}" }
+                    ?: item.unitType
+
             CheckboxText(
                 checked = item.isChecked,
-                text = "${item.quantity} × ${item.size.toInt()} ${item.unitType}",
+                text = "${item.quantity} × $sizeText",
                 modifier = Modifier.width(90.dp),
                 fontSize = 13.sp,
                 color = themeViewModel.textPrimary,
@@ -508,7 +522,7 @@ private fun TotalBox(totalUi: ShoppingListDetailsViewModel.TotalUi) {
 
             if (totalUi.missingCount > 0) {
                 Text(
-                    text = "* Nogle varer mangler pris",
+                    text = "* Utotal pris",
                     fontSize = 16.sp,
                     color = Color.White.copy(alpha = 0.85f)
                 )

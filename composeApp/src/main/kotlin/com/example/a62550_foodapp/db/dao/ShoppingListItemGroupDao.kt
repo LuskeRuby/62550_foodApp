@@ -192,4 +192,62 @@ WHERE slig.shopping_list_id = :shoppingListId
         recipeId: Long
     ): Int
 
+    @Query("""
+SELECT
+    slig.id                    AS id,
+    ig.id                      AS itemGroupId,
+    ci.item_id                 AS itemId,
+    COALESCE(i.name, ig.name)  AS itemName,
+    ig.category                AS category,
+    slig.portion_quantity      AS quantity,
+    i.size                     AS size,
+    ig.unitType                AS unitType,
+    ci.price                   AS price,
+    slig.is_checked            AS isChecked,
+    slig.recipe_id             AS recipeId,
+    sm.name                    AS superMarketName
+FROM shopping_list_item_groups slig
+
+JOIN item_groups ig
+    ON ig.id = slig.item_group_id
+
+LEFT JOIN (
+    SELECT
+        iwp.item_id,
+        i.item_group_id,
+        iwp.supermarket_id,
+        iwp.price
+    FROM item_weekly_prices iwp
+    JOIN items i ON i.id = iwp.item_id
+    WHERE (
+        :storeCount = 0
+        OR iwp.supermarket_id IN (:storeIds)
+    )
+    AND iwp.price = (
+        SELECT MIN(iwp2.price)
+        FROM item_weekly_prices iwp2
+        JOIN items i2 ON i2.id = iwp2.item_id
+        WHERE i2.item_group_id = i.item_group_id
+        AND (
+            :storeCount = 0
+            OR iwp2.supermarket_id IN (:storeIds)
+        )
+    )
+) ci
+    ON ci.item_group_id = ig.id
+
+LEFT JOIN items i
+    ON i.id = ci.item_id
+
+LEFT JOIN supermarkets sm
+    ON sm.id = ci.supermarket_id
+
+WHERE slig.shopping_list_id = :shoppingListId
+GROUP BY slig.id
+""")
+    fun getShoppingListEntriesWithFallbackFlow(
+        shoppingListId: Long,
+        storeIds: List<Long>,
+        storeCount: Int
+    ): Flow<List<ShoppingListEntry>>
 }

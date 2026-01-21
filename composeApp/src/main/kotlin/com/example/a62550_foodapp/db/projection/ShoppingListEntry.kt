@@ -10,16 +10,16 @@ import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
 data class ShoppingListEntry(
     val id: Long, // ID of ShoppingListItemGroup
 
-    val itemId: Long,
+    val itemId: Long?,
     val itemGroupId: Long,
     val recipeId: Long?,
-    val superMarketName: String,
+    val superMarketName: String?,
 
     val itemName: String,
     val category: String,
 
     val quantity: Int,
-    val size: Float,
+    val size: Float?,
     val unitType: String,
 
     val price: Float?,
@@ -33,7 +33,7 @@ data class ShoppingListEntry(
             itemGroupId = itemGroupId,
             recipeId = recipeId,
             portionQuantity = quantity,
-            portionSize = size,
+            portionSize = size ?: 0f,
             isChecked = isChecked
         )
     }

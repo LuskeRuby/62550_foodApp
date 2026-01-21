@@ -88,7 +88,7 @@ object DatabaseMockData {
         val wraps = g("Wraps", "Brød", "stk")
         val bread = g("Brød", "Brød", "stk")
 
-        val fallbackGroup = g("Mystisk ingrediens", "Ukendt", "g")
+
 
         /* ---------- ITEMS ---------- */
 
@@ -154,7 +154,6 @@ object DatabaseMockData {
             item(appleFilling, "Æbleskivemasse 200 g", 200f, "g"),
             item(flour, "Hvedemel 1 kg", 1000f, "g"),
 
-            item(fallbackGroup, "Ukendt Vare", 100f,"g")
         )
 
         val itemIds = items.map { itemDao.insert(it).toInt() }
@@ -656,14 +655,6 @@ object DatabaseMockData {
                 ShoppingListItemGroup(
                     shoppingListId = shoppingListId.toLong(),
                     itemGroupId = cheese.toLong(),
-                    recipeId = null,
-                    portionQuantity = 1,
-                    portionSize = 200f,
-                    isChecked = false
-                ),
-                ShoppingListItemGroup(
-                    shoppingListId = shoppingListId.toLong(),
-                    itemGroupId = fallbackGroup.toLong(),
                     recipeId = null,
                     portionQuantity = 1,
                     portionSize = 200f,
