@@ -324,7 +324,7 @@ private fun AddIngredientsOverlay(
                         quantity
                     )
                     selectedGroupId = null
-                    quantity = 4   // ⭐ reset default
+                    quantity = 4
                 }
             ) { Text("Add") }
         }

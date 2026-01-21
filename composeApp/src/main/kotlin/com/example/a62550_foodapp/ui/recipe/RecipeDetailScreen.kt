@@ -31,7 +31,7 @@ fun RecipeDetailScreen(
     val storeFilterViewModel: StoreFilterViewModel = koinViewModel()
     val selectedStores by storeFilterViewModel.selectedStores.collectAsState()
 
-    var portions by remember { mutableStateOf(1) }
+    var portions by remember { mutableStateOf(4) }
     var scaledPrice by remember { mutableStateOf(0f) }
     var showIngredients by remember { mutableStateOf(true) }
     var ingredients by remember { mutableStateOf<List<Triple<String, Int, String>>>(emptyList()) }
