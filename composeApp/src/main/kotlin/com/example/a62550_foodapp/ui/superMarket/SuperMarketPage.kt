@@ -5,18 +5,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import org.koin.androidx.compose.koinViewModel
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.graphics.Color
 
 @Composable
 fun SuperMarketPage(
@@ -24,8 +25,8 @@ fun SuperMarketPage(
     storeFilterViewModel: StoreFilterViewModel = koinViewModel()
 ) {
 
-    val allSupermarkets by recipeViewModel.allSupermarkets.collectAsState(initial = emptyList())
-    val selectedSupermarkets by storeFilterViewModel.selectedStores.collectAsState()
+    val allSupermarkets by recipeViewModel.allSupermarkets.collectAsStateWithLifecycle(emptyList())
+    val selectedSupermarkets by storeFilterViewModel.selectedStores.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -100,9 +101,7 @@ fun SuperMarketPage(
 
                         Checkbox(
                             checked = supermarket.id in selectedSupermarkets,
-                            onCheckedChange = {
-                                storeFilterViewModel.toggleStore(supermarket.id)
-                            }
+                            onCheckedChange = null // Row håndterer klik
                         )
                     }
                 }

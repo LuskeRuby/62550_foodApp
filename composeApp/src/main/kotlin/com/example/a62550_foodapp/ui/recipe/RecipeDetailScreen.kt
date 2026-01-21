@@ -4,22 +4,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
-import org.koin.androidx.compose.koinViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import com.example.a62550_foodapp.viewmodel.ShoppingListViewModel
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun RecipeDetailScreen(
@@ -33,30 +28,27 @@ fun RecipeDetailScreen(
     val recipeItems by recipeViewModel
         .getItemsForRecipeFlow(recipeId)
         .collectAsState(initial = emptyList())
+
     val storeFilterViewModel: StoreFilterViewModel = koinViewModel()
     val selectedStores by storeFilterViewModel.selectedStores.collectAsState()
-    val scope = rememberCoroutineScope()
 
-    var showCreateShoppingListDialog by remember { mutableStateOf(false) }
-    var newShoppingListName by remember { mutableStateOf("") }
+    val shoppingListViewModel: ShoppingListViewModel = koinViewModel()
+    val shoppingLists by shoppingListViewModel.shoppingLists.collectAsState()
+
+    val scope = rememberCoroutineScope()
 
     var portions by remember { mutableStateOf(4) }
     var scaledPrice by remember { mutableStateOf(0f) }
     var showIngredients by remember { mutableStateOf(true) }
     var ingredients by remember { mutableStateOf<List<Triple<String, Int, String>>>(emptyList()) }
 
-    val shoppingListViewModel: ShoppingListViewModel = koinViewModel()
-    val shoppingLists by shoppingListViewModel.shoppingLists.collectAsState()
+    var showAddToListSheet by remember { mutableStateOf(false) }
+    var showCreateShoppingListDialog by remember { mutableStateOf(false) }
+    var newShoppingListName by remember { mutableStateOf("") }
 
     val shoppingListUi = shoppingLists.map {
-        ShoppingListUi(
-            id = it.id,
-            name = it.name
-        )
+        ShoppingListUi(id = it.id, name = it.name)
     }
-
-    var showAddToListSheet by remember { mutableStateOf(false) }
-
 
     LaunchedEffect(portions, selectedStores) {
         scaledPrice = recipeViewModel.getRecipePriceByPortions(
@@ -65,24 +57,23 @@ fun RecipeDetailScreen(
             selectedStores = selectedStores
         )
     }
-        LaunchedEffect(recipeItems, portions, selectedStores) {
-            ingredients = recipeViewModel.resolveIngredients(
-                items = recipeItems,
-                portions = portions
-            )
-        }
+
+    LaunchedEffect(recipeItems, portions) {
+        ingredients = recipeViewModel.resolveIngredients(
+            items = recipeItems,
+            portions = portions
+        )
+    }
 
     val scrollState = rememberScrollState()
 
     recipe?.let { r ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(themeViewModel.backgroundColor)
         ) {
 
-            //Header
             RecipeHeaderCollapsing(
                 imageUrl = r.imagePath,
                 title = r.title,
@@ -91,16 +82,13 @@ fun RecipeDetailScreen(
                 onEdit = { onEdit(r.id) }
             )
 
-            //Actionbar
             RecipeActionBar(
                 portions = portions,
                 onDecrease = { if (portions > 1) portions-- },
                 onIncrease = { portions++ },
                 preparationMinutes = r.preparationTimeMinutes,
                 price = scaledPrice,
-                onAdd = {
-                    showAddToListSheet = true
-                },
+                onAdd = { showAddToListSheet = true },
                 themeViewModel = themeViewModel
             )
 
@@ -115,7 +103,6 @@ fun RecipeDetailScreen(
                     onClick = { showIngredients = true },
                     label = { Text("Ingredienser") }
                 )
-
                 FilterChip(
                     selected = !showIngredients,
                     onClick = { showIngredients = false },
@@ -123,7 +110,6 @@ fun RecipeDetailScreen(
                 )
             }
 
-            //Content
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -133,22 +119,16 @@ fun RecipeDetailScreen(
                 Spacer(Modifier.height(16.dp))
 
                 if (showIngredients) {
-
                     IngredientsCard(
                         ingredients = ingredients.map { (name, qty, unit) ->
                             name to "$qty $unit"
                         }
                     )
-
                 } else {
-
-                    InstructionsCard(
-                        instructions = r.instructions
-                    )
+                    InstructionsCard(instructions = r.instructions)
                 }
             }
         }
-
     } ?: Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -162,7 +142,6 @@ fun RecipeDetailScreen(
         onDismiss = { showAddToListSheet = false },
         onShoppingListSelected = { list ->
             showAddToListSheet = false
-
             recipeViewModel.addRecipeToShoppingList(
                 shoppingListId = list.id,
                 recipeId = recipeId,
@@ -191,7 +170,6 @@ fun RecipeDetailScreen(
                 TextButton(
                     onClick = {
                         val name = newShoppingListName.trim()
-
                         if (name.isNotBlank()) {
                             scope.launch {
                                 val newListId =
@@ -204,26 +182,19 @@ fun RecipeDetailScreen(
                                 )
                             }
                         }
-
                         newShoppingListName = ""
                         showCreateShoppingListDialog = false
                     }
-                ) {
-                    Text("Opret")
-                }
-             },
+                ) { Text("Opret") }
+            },
             dismissButton = {
                 TextButton(
                     onClick = {
                         newShoppingListName = ""
                         showCreateShoppingListDialog = false
                     }
-                ) {
-                    Text("Annuller")
-                }
+                ) { Text("Annuller") }
             }
         )
     }
-
-
 }

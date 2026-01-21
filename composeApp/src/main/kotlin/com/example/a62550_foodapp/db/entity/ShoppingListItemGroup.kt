@@ -45,7 +45,7 @@ data class ShoppingListItemGroup(
     val itemGroupId: Long,
 
     @ColumnInfo(name = "recipe_id")
-    val recipeId: Long?,
+    val recipeId: Long?, // NULL = manually added item
 
     @ColumnInfo(name = "portion_quantity")
     val portionQuantity: Int,
