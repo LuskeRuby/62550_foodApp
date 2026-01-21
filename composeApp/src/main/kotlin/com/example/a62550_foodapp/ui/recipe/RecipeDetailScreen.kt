@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,6 +14,7 @@ import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
+import androidx.compose.material3.Text
 
 @Composable
 fun RecipeDetailScreen(
@@ -31,22 +33,22 @@ fun RecipeDetailScreen(
 
     var portions by remember { mutableStateOf(1) }
     var scaledPrice by remember { mutableStateOf(0f) }
+    var showIngredients by remember { mutableStateOf(true) }
+    var ingredients by remember { mutableStateOf<List<Triple<String, Int, String>>>(emptyList()) }
 
-    LaunchedEffect(portions) {
+    LaunchedEffect(portions, selectedStores) {
         scaledPrice = recipeViewModel.getRecipePriceByPortions(
             recipeId = recipeId,
             portions = portions,
             selectedStores = selectedStores
         )
     }
-/*
-    LaunchedEffect(recipeItems, portions) {
-        ingredients = recipeViewModel.resolveIngredients(
-            items = recipeItems,
-            portions = portions
-        )
-    }
- */
+        LaunchedEffect(recipeItems, portions, selectedStores) {
+            ingredients = recipeViewModel.resolveIngredients(
+                items = recipeItems,
+                portions = portions
+            )
+        }
 
     val scrollState = rememberScrollState()
 
@@ -84,6 +86,25 @@ fun RecipeDetailScreen(
                 themeViewModel = themeViewModel
             )
 
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = showIngredients,
+                    onClick = { showIngredients = true },
+                    label = { Text("Ingredienser") }
+                )
+
+                FilterChip(
+                    selected = !showIngredients,
+                    onClick = { showIngredients = false },
+                    label = { Text("Beskrivelse") }
+                )
+            }
+
             //Content
             Column(
                 modifier = Modifier
@@ -93,26 +114,20 @@ fun RecipeDetailScreen(
             ) {
                 Spacer(Modifier.height(16.dp))
 
-                /*
-                IngredientsCard(
-                    ingredients = ingredients.map {
-                        it.groupName to buildString {
-                            val q = it.quantity
-                            append(
-                                if (q % 1f == 0f) q.toInt()
-                                else String.format(Locale.getDefault(), "%.1f", q)
-                            )
-                            append(" ")
-                            append(it.unitType)
+                if (showIngredients) {
+
+                    IngredientsCard(
+                        ingredients = ingredients.map { (name, qty, unit) ->
+                            name to "$qty $unit"
                         }
-                    }
-                )
+                    )
 
-                 */
+                } else {
 
-                InstructionsCard(
-                    instructions = r.instructions
-                )
+                    InstructionsCard(
+                        instructions = r.instructions
+                    )
+                }
             }
         }
 
