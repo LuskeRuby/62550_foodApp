@@ -79,8 +79,13 @@ dependencies {
     /* ---------- Images ---------- */
     implementation("io.coil-kt:coil-compose:2.6.0")
 
-    // Test dependencies
+    // Test dependencies - Unit Tests
     testImplementation("junit:junit:4.13.2")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("org.mockito:mockito-core:5.2.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+
+    // Network & Serialization
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
