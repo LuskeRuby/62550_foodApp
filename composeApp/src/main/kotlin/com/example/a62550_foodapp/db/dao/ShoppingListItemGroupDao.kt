@@ -128,16 +128,16 @@ WHERE slig.shopping_list_id = :shoppingListId
 SELECT
     slig.id                 AS id,
     ig.id                   AS itemGroupId,
-    i.id                    AS itemId,
-    i.name                  AS itemName,
-    i.size                  AS size,
-    i.unitType              AS unitType,
+    MIN(i.id)               AS itemId,
+    MIN(i.name)             AS itemName,
+    MIN(i.size)             AS size,
+    MIN(i.unitType)         AS unitType,
     slig.portion_quantity   AS quantity,
-    iwp.price               AS price,
+    MIN(iwp.price)          AS price,
     slig.is_checked         AS isChecked,
     ig.category             AS category,
     slig.recipe_id          AS recipeId,
-    sm.name                 AS superMarketName
+    MIN(sm.name)            AS superMarketName
 FROM shopping_list_item_groups slig
 
 JOIN item_groups ig
@@ -148,7 +148,7 @@ JOIN items i
 
 JOIN item_weekly_prices iwp
     ON iwp.item_id = i.id
-    
+
 JOIN supermarkets sm
     ON sm.id = iwp.supermarket_id
 
@@ -159,16 +159,7 @@ WHERE slig.shopping_list_id = :shoppingListId
         OR iwp.supermarket_id IN (:storeIds)
       )
 
-  AND iwp.price = (
-      SELECT MIN(p2.price)
-      FROM item_weekly_prices p2
-      JOIN items i2 ON i2.id = p2.item_id
-      WHERE i2.item_group_id = ig.id
-        AND (
-              :storeCount = 0
-              OR p2.supermarket_id IN (:storeIds)
-            )
-  )
+GROUP BY slig.id, ig.id
 """)
     fun getCheapestShoppingListEntriesFlow(
         shoppingListId: Long,
