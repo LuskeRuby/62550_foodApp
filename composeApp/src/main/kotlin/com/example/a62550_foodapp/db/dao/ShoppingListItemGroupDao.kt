@@ -169,11 +169,11 @@ GROUP BY slig.id, ig.id
 
 
     @Query("""
-    SELECT COUNT(*)
-    FROM shopping_list_item_groups
-    WHERE shopping_list_id = :shoppingListId
-      AND recipe_id = :recipeId
-""")
+        SELECT COUNT(*) 
+        FROM shopping_list_item_groups
+        WHERE shopping_list_id = :shoppingListId
+          AND recipe_id = :recipeId
+    """)
     suspend fun recipeExistsInList(
         shoppingListId: Long,
         recipeId: Long

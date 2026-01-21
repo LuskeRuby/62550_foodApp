@@ -5,7 +5,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-
 @Entity(
     tableName = "shopping_list_item_groups",
     foreignKeys = [
@@ -29,14 +28,8 @@ import androidx.room.PrimaryKey
         )
     ],
     indices = [
-        // Enforce uniqueness when recipe_id IS NOT NULL
         Index(
             value = ["shopping_list_id", "item_group_id", "recipe_id"],
-            unique = true
-        ),
-        // Enforce uniqueness when recipe_id IS NULL
-        Index(
-            value = ["shopping_list_id", "item_group_id"],
             unique = true
         )
     ]
@@ -62,14 +55,4 @@ data class ShoppingListItemGroup(
 
     @ColumnInfo(name = "is_checked")
     val isChecked: Boolean
-) {
-    /**
-      * Compares shoppingListId, itemGroupId and recipeId
-     */
-    @Override
-    fun equals(other: ShoppingListItemGroup): Boolean {
-        return this.shoppingListId == other.shoppingListId &&
-               this.itemGroupId == other.itemGroupId &&
-               this.recipeId == other.recipeId
-    }
-}
+)
