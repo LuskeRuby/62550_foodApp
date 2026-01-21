@@ -177,7 +177,7 @@ JOIN (
 ) cheapest
 ON cheapest.ig_id = ig.id
 AND cheapest.min_price = iwp.price
-AND cheapest.sm_id = iwp.supermarket_id   -- 🔥 THIS LINE FIXES YOUR BUG
+AND cheapest.sm_id = iwp.supermarket_id  
 
 WHERE slig.shopping_list_id = :shoppingListId
 """)
@@ -224,7 +224,7 @@ SELECT
     ig.category                AS category,
     slig.portion_quantity      AS quantity,
     i.size                     AS size,
-    ig.unitType                AS unitType,
+    ig.unit_type               AS unitType,
     ci.price                   AS price,
     slig.is_checked            AS isChecked,
     slig.recipe_id             AS recipeId,
