@@ -33,6 +33,8 @@ import androidx.compose.ui.platform.LocalDensity
 import org.koin.androidx.compose.koinViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 
 // ---------- HEADER ----------
@@ -55,8 +57,6 @@ fun RecipeHeaderCollapsing(
             .fillMaxWidth()
             .height(height)
     ) {
-
-        // ----- IMAGE -----
         AsyncImage(
             model = imageUrl,
             contentDescription = title,
@@ -376,5 +376,16 @@ fun RecipeDetailLayout(
                 }
             }
         }
+    }
+}
+
+fun showRecipeAddedSnackbar(
+    scope: CoroutineScope,
+    snackbarHostState: SnackbarHostState
+) {
+    scope.launch {
+        snackbarHostState.showSnackbar(
+            message = "Tilføjet til indkøbsliste"
+        )
     }
 }

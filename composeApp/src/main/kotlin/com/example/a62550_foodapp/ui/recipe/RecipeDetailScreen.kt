@@ -20,6 +20,7 @@ import com.example.a62550_foodapp.viewmodel.*
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 @Composable
 fun RecipeDetailScreen(
@@ -40,8 +41,6 @@ fun RecipeDetailScreen(
     val shoppingListViewModel: ShoppingListViewModel = koinViewModel()
     val shoppingLists by shoppingListViewModel.shoppingLists.collectAsState()
 
-    val scope = rememberCoroutineScope()
-
     // UI state
     var portions by remember { mutableStateOf(4) }
     var scaledPrice by remember { mutableStateOf(0f) }
@@ -50,6 +49,9 @@ fun RecipeDetailScreen(
     var showAddToListSheet by remember { mutableStateOf(false) }
     var showCreateShoppingListDialog by remember { mutableStateOf(false) }
     var newShoppingListName by remember { mutableStateOf("") }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     val shoppingListUi = shoppingLists.map {
         ShoppingListUi(id = it.id, name = it.name)
@@ -72,97 +74,129 @@ fun RecipeDetailScreen(
         )
     }
 
-    recipe?.let { r ->
-
-        val scrollState = rememberScrollState()
-
-        RecipeDetailLayout(
-            title = r.title,
-            imagePath = r.imagePath,
-            preparationMinutes = r.preparationTimeMinutes,
-            price = scaledPrice,
-            portions = portions,
-            onDecreasePortions = { if (portions > 1) portions-- },
-            onIncreasePortions = { portions++ },
-            ingredients = ingredients.map { (n, q, u) -> n to "$q $u" },
-            description = r.description,
-            instructions = r.instructions,
-            scrollState = scrollState,
-            onBack = onBack,
-            onEdit = { onEdit(r.id) },
-            onAddToList = { showAddToListSheet = true },
-            themeViewModel = themeViewModel
-        )
-
-    } ?: Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
-    }
-
-    // Dialog for creating a new shopping list
-    if (showCreateShoppingListDialog) {
-        AlertDialog(
-            onDismissRequest = { showCreateShoppingListDialog = false },
-            title = { Text("Ny indkøbsliste") },
-            text = {
-                OutlinedTextField(
-                    value = newShoppingListName,
-                    onValueChange = { newShoppingListName = it },
-                    label = { Text("Navn") },
-                    singleLine = true
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val name = newShoppingListName.trim()
-                        if (name.isNotBlank()) {
-                            scope.launch {
-                                val newListId =
-                                    shoppingListViewModel.createShoppingListAndReturnId(name)
-
-                                recipeViewModel.addRecipeToShoppingList(
-                                    shoppingListId = newListId,
-                                    recipeId = recipeId,
-                                    portions = portions
-                                )
-                            }
-                        }
-                        newShoppingListName = ""
-                        showCreateShoppingListDialog = false
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                Snackbar(
+                    modifier = Modifier.padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    containerColor = themeViewModel.cardBackgroundColor,
+                    contentColor = themeViewModel.textPrimary
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = data.visuals.message,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
-                ) { Text("Opret") }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        newShoppingListName = ""
-                        showCreateShoppingListDialog = false
-                    }
-                ) { Text("Annuller") }
+                }
             }
-        )
-    }
-    AddRecipeToShoppingListSheet(
-        visible = showAddToListSheet,
-        shoppingLists = shoppingListUi,
-        onDismiss = { showAddToListSheet = false },
-        onShoppingListSelected = { list ->
-            showAddToListSheet = false
-            recipeViewModel.addRecipeToShoppingList(
-                shoppingListId = list.id,
-                recipeId = recipeId,
-                portions = portions
-            )
-        },
-        onCreateNewShoppingList = {
-            showAddToListSheet = false
-            showCreateShoppingListDialog = true
         }
-    )
+    ) { padding ->
 
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            recipe?.let { r ->
+
+                val scrollState = rememberScrollState()
+
+                RecipeDetailLayout(
+                    title = r.title,
+                    imagePath = r.imagePath,
+                    preparationMinutes = r.preparationTimeMinutes,
+                    price = scaledPrice,
+                    portions = portions,
+                    onDecreasePortions = { if (portions > 1) portions-- },
+                    onIncreasePortions = { portions++ },
+                    ingredients = ingredients.map { (n, q, u) -> n to "$q $u" },
+                    description = r.description,
+                    instructions = r.instructions,
+                    scrollState = scrollState,
+                    onBack = onBack,
+                    onEdit = { onEdit(r.id) },
+                    onAddToList = { showAddToListSheet = true },
+                    themeViewModel = themeViewModel
+                )
+
+            } ?: Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+
+            // Dialog for creating a new shopping list
+            if (showCreateShoppingListDialog) {
+                AlertDialog(
+                    onDismissRequest = { showCreateShoppingListDialog = false },
+                    title = { Text("Ny indkøbsliste") },
+                    text = {
+                        OutlinedTextField(
+                            value = newShoppingListName,
+                            onValueChange = { newShoppingListName = it },
+                            label = { Text("Navn") },
+                            singleLine = true
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                val name = newShoppingListName.trim()
+                                if (name.isNotBlank()) {
+                                    scope.launch {
+                                        val newListId =
+                                            shoppingListViewModel.createShoppingListAndReturnId(name)
+
+                                        recipeViewModel.addRecipeToShoppingList(
+                                            shoppingListId = newListId,
+                                            recipeId = recipeId,
+                                            portions = portions
+                                        )
+                                    }
+                                    showRecipeAddedSnackbar(scope, snackbarHostState)
+                                }
+                                newShoppingListName = ""
+                                showCreateShoppingListDialog = false
+                            }
+                        ) { Text("Opret") }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                newShoppingListName = ""
+                                showCreateShoppingListDialog = false
+                            }
+                        ) { Text("Annuller") }
+                    }
+                )
+            }
+            AddRecipeToShoppingListSheet(
+                visible = showAddToListSheet,
+                shoppingLists = shoppingListUi,
+                onDismiss = { showAddToListSheet = false },
+                onShoppingListSelected = { list ->
+                    showAddToListSheet = false
+                    recipeViewModel.addRecipeToShoppingList(
+                        shoppingListId = list.id,
+                        recipeId = recipeId,
+                        portions = portions
+                    )
+                    showRecipeAddedSnackbar(scope, snackbarHostState)
+                },
+                onCreateNewShoppingList = {
+                    showAddToListSheet = false
+                    showCreateShoppingListDialog = true
+                }
+            )
+        }
+    }
 }
 
 @Composable
