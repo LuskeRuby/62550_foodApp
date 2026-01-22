@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import java.util.Locale
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -245,14 +246,42 @@ fun AddRecipeToShoppingListSheet(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
 
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Text(
+                    text = "Tilføj til indkøbsliste",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+            }
+
+            Spacer(Modifier.height(4.dp))
+
             LazyColumn {
-                items(shoppingLists, key = { it.id }) { list ->
+                itemsIndexed(shoppingLists, key = { _, it -> it.id }) { index, list ->
                     ListItem(
-                        headlineContent = { Text(list.name) },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Default.List,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        headlineContent = {
+                            Text(list.name)
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onShoppingListSelected(list) }
                     )
+
+                    if (index < shoppingLists.lastIndex) {
+                        Divider(modifier = Modifier.padding(horizontal = 16.dp))
+                    }
                 }
             }
 
