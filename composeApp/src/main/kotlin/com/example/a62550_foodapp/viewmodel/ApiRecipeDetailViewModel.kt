@@ -86,7 +86,12 @@ class ApiRecipeDetailViewModel(
 
             if (apiIngredients.isEmpty()) return@launch
 
-            val rows = mutableListOf<ShoppingListItemGroup>()
+            val existingEntries =
+                shoppingListItemGroupDao
+                    .getItemGroupsMatchingListId(shoppingListId)
+                    .first()
+                    .associateBy { it.itemGroupId }
+
 
             for (apiIng in apiIngredients) {
 
@@ -95,19 +100,33 @@ class ApiRecipeDetailViewModel(
                     apiMeasure = apiIng.measure
                 )
 
-                rows += ShoppingListItemGroup(
-                    shoppingListId = shoppingListId,
-                    itemGroupId = group.id,
-                    recipeId = null,
-                    portionQuantity = 1,
-                    portionSize = 1f,
-                    isChecked = false
-                )
+                val existing = existingEntries[group.id]
+
+                if (existing != null) {
+                    // increment quantity
+                    shoppingListItemGroupDao.update(
+                        existing.copy(
+                            portionQuantity = existing.portionQuantity + 1
+                        )
+                    )
+                } else {
+                    // insert new row
+                    shoppingListItemGroupDao.insert(
+                        ShoppingListItemGroup(
+                            shoppingListId = shoppingListId,
+                            itemGroupId = group.id,
+                            recipeId = null,
+                            portionQuantity = 1,
+                            portionSize = 1f,
+                            isChecked = false
+                        )
+                    )
+                }
+
             }
 
-            if (rows.isNotEmpty()) {
-                shoppingListItemGroupDao.insert(rows)
-            }
+
+
         }
     }
 

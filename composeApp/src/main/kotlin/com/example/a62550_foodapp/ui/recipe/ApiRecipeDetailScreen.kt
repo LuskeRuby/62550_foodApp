@@ -145,13 +145,23 @@ fun ApiRecipeDetailScreen(
                         val name = newShoppingListName.trim()
                         if (name.isNotBlank()) {
                             scope.launch {
-                                shoppingListViewModel.createShoppingListAndReturnId(name)
+                                val newListId =
+                                    shoppingListViewModel.createShoppingListAndReturnId(name)
+
+                                meal?.let {
+                                    viewModel.addMealToShoppingList(
+                                        shoppingListId = newListId,
+                                        meal = it
+                                    )
+                                }
                             }
                         }
                         newShoppingListName = ""
                         showCreateShoppingListDialog = false
                     }
-                ) { Text("Opret") }
+                ) {
+                    Text("Opret")
+                }
             },
             dismissButton = {
                 TextButton(
