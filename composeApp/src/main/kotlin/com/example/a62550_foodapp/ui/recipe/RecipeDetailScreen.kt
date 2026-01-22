@@ -81,13 +81,18 @@ fun RecipeDetailScreen(
                     modifier = Modifier.padding(16.dp),
                     shape = RoundedCornerShape(16.dp),
                     containerColor = themeViewModel.cardBackgroundColor,
-                    contentColor = themeViewModel.primaryColor
+                    contentColor = themeViewModel.textPrimary
                 ) {
-                    Text(
-                        text = data.visuals.message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = data.visuals.message,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
