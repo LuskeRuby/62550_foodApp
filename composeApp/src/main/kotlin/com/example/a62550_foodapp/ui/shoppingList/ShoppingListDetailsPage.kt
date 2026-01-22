@@ -2,12 +2,15 @@ package com.example.a62550_foodapp.ui.shoppingList
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,27 +38,38 @@ private data class SupermarketGroup(val name: String, val logo: String?)
 @Composable
 fun ShoppingListDetailsPage(
     shoppingListId: Long,
+    onBack: () -> Unit
 ) {
     var addItemsOverlay by remember { mutableStateOf(false) }
 
-    if (!addItemsOverlay) {
-        ShoppingListPage(
-            shoppingListId = shoppingListId,
-            onAddItemsButtonClick = { addItemsOverlay = true },
-            editOverlay = false
-        )
-    } else {
-        BackHandler { addItemsOverlay = false }
-        AddItemGroupToShoppingListPage(
-            shoppingListId = shoppingListId,
-            disableItemOverlay = { addItemsOverlay = false }
-        )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(indication = null,
+                interactionSource = remember { MutableInteractionSource()}) {} // to prevent clicking underlying buttons
+    ) {
+        if (!addItemsOverlay) {
+            ShoppingListPage(
+                onBack = onBack,
+                shoppingListId = shoppingListId,
+                onAddItemsButtonClick = { addItemsOverlay = true },
+                editOverlay = false
+            )
+        } else {
+            BackHandler { addItemsOverlay = false }
+            AddItemGroupToShoppingListPage(
+                shoppingListId = shoppingListId,
+                disableItemOverlay = { addItemsOverlay = false }
+            )
+        }
     }
+
 }
 
 
 @Composable
 private fun ShoppingListPage(
+    onBack: () -> Unit,
     shoppingListId: Long,
     onAddItemsButtonClick: () -> Unit,
     editOverlay: Boolean,
@@ -99,6 +113,13 @@ private fun ShoppingListPage(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+
                 Text(
                     text = "Indkøbsliste",
                     fontSize = 24.sp,
@@ -373,7 +394,7 @@ private fun ShoppingItemRow(
                     )
                 } ?: CheckboxText(
                     checked = item.isChecked,
-                    text = "Utilgængelig",
+                    text = "- kr",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = themeViewModel.priceTagColor
@@ -435,7 +456,7 @@ private fun TotalBox(totalUi: ShoppingListDetailsViewModel.TotalUi) {
 
             if (totalUi.missingCount > 0) {
                 Text(
-                    "* Nogle varer mangler pris",
+                    "mangler priser",
                     fontSize = 16.sp,
                     color = Color.White.copy(alpha = 0.85f)
                 )

@@ -115,7 +115,8 @@ fun ShoppingListPage(
             ) {
                 selectedShoppingList?.let {
                     ShoppingListDetailsPage(
-                        shoppingListId = it.id
+                        shoppingListId = it.id,
+                        onBack = { selectListPage = false }
                     )
                 }
             }

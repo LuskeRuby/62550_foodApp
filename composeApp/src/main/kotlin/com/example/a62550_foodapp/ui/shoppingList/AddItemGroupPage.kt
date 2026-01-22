@@ -27,7 +27,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -42,21 +41,18 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.collections.component1
 import kotlin.collections.component2
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.example.a62550_foodapp.db.entity.ItemGroup
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Button
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.Alignment
 
 @Composable
 public fun AddItemGroupToShoppingListPage(
@@ -101,7 +97,7 @@ public fun AddItemGroupToShoppingListPage(
 
         //TODO handle portion size
         SearchSelectField(
-            label = "Search items",
+            label = "Søg efter vare",
             items = itemGroups,
             itemText = { it.name },
 
@@ -123,20 +119,27 @@ public fun AddItemGroupToShoppingListPage(
                 .padding(horizontal = 16.dp)
         ) {
 
-            OutlinedTextField(
-                value = qtyText,
-                onValueChange = { qtyText = it.filter(Char::isDigit) },
-                label = { Text("Antal") },
-                modifier = Modifier.weight(1f)
-            )
+            Box(modifier = Modifier
+                .weight(1f)
+            ){
+                OutlinedTextField(
+                    value = qtyText,
+                    onValueChange = { qtyText = it.filter(Char::isDigit) },
+                    label = { Text("Mængde") },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = themeViewModel.textPrimary,
+                        unfocusedTextColor = themeViewModel.textSecondary
+                    )
+                )
 
-            OutlinedTextField(
-                value = selectedGroup?.unitType ?: "",
-                onValueChange = {},
-                label = { Text("Type") },
-                enabled = false,
-                modifier = Modifier.width(90.dp)
-            )
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 32.dp, top = 8.dp),
+                    text = selectedGroup?.unitType ?: "kg/L",
+                    color = themeViewModel.textSecondary
+                )
+            }
 
             // -------- ADD --------
             val canAdd = selectedGroup != null && qtyText.isNotBlank()
@@ -171,8 +174,9 @@ public fun AddItemGroupToShoppingListPage(
             ) {
                 Text("Tilføj")
             }
-
         }
+
+        Spacer(Modifier.height(8.dp))
 
         // body
         LazyColumn(
@@ -203,7 +207,7 @@ public fun AddItemGroupToShoppingListPage(
     }
 
 
-        // footer
+    // footer
     Box(modifier = Modifier.fillMaxSize()) {
         FloatingActionButton(
             onClick = disableItemOverlay,
