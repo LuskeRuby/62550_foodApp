@@ -49,16 +49,26 @@ fun DiscoverRecipesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Opskrifter fra TheMealDB") },
+                title = {
+                    Text(
+                        "Udforsk TheMealDB's opskrifter",
+                        color = themeViewModel.textPrimary
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = themeViewModel.textPrimary
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = themeViewModel.surfaceColor
+                )
             )
+
         }
     )
     //Kateogrier
@@ -98,8 +108,8 @@ fun DiscoverRecipesScreen(
                     ) {
                         Text(
                             text = "Vælg kategori",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = themeViewModel.textPrimary
+                            style = MaterialTheme.typography.labelLarge,
+                            color = themeViewModel.textSecondary
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -125,8 +135,8 @@ fun DiscoverRecipesScreen(
                         //Opskriftsliste
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
                             modifier = Modifier.fillMaxHeight()
                         ) {
                             items(meals) { meal ->
@@ -167,7 +177,7 @@ fun CategoryCard(
             containerColor = if (selected)
                 themeViewModel.primaryColor
             else
-                themeViewModel.surfaceColor
+                themeViewModel.cardBackgroundColor
         )
     ) {
         Box(
@@ -178,16 +188,19 @@ fun CategoryCard(
         ) {
             Text(
                 text = category.name,
+                style = MaterialTheme.typography.labelLarge,
+                maxLines = 1,
                 color = if (selected)
                     themeViewModel.onPrimaryColor
                 else
-                    themeViewModel.textPrimary,
-                style = MaterialTheme.typography.labelLarge,
-                maxLines = 1
+                    themeViewModel.textPrimary
             )
         }
     }
 }
+
+
+
 @Composable
 fun MealCard(
     meal: MealSummary,
@@ -197,7 +210,9 @@ fun MealCard(
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = themeViewModel.surfaceColor
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
