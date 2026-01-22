@@ -32,7 +32,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import org.koin.androidx.compose.koinViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
-
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 
 // ---------- HEADER ----------
@@ -55,6 +55,8 @@ fun RecipeHeaderCollapsing(
             .fillMaxWidth()
             .height(height)
     ) {
+
+        // ----- IMAGE -----
         AsyncImage(
             model = imageUrl,
             contentDescription = title,
@@ -62,43 +64,53 @@ fun RecipeHeaderCollapsing(
             modifier = Modifier.fillMaxSize()
         )
 
+        // ----- DARK OVERLAY -----
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp)
-                .background(
-                    Brush.verticalGradient(
-                        listOf(Color.Black.copy(0.6f), Color.Transparent)
-                    )
-                )
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.45f))
         )
 
+        // ----- BACK (TOP LEFT) -----
         IconButton(
             onClick = onBack,
-            modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(12.dp)
         ) {
-            Icon(Icons.Default.Close, null, tint = Color.White)
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.White
+            )
         }
 
+        // ----- EDIT (TOP RIGHT) -----
         onEdit?.let {
             IconButton(
                 onClick = it,
-                modifier = Modifier.align(Alignment.TopStart).padding(12.dp)
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(12.dp)
             ) {
-                Icon(Icons.Default.Edit, null, tint = Color.White)
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit recipe",
+                    tint = Color.White
+                )
             }
         }
 
+        // ----- TITLE (BOTTOM) -----
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = Color.White,
-            textAlign = TextAlign.Center,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
+                .align(Alignment.BottomStart)
                 .padding(16.dp)
         )
     }
