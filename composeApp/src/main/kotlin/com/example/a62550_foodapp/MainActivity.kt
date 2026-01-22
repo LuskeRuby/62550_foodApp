@@ -9,7 +9,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.a62550_foodapp.ui.MainView
 import com.example.a62550_foodapp.ui.recipe.RecipePage
-import com.example.a62550_foodapp.ui.recipe.CreateRecipeScreen
 import com.example.a62550_foodapp.ui.recipe.RecipeDetailScreen
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -21,6 +20,7 @@ import com.example.a62550_foodapp.ui.discover.DiscoverRecipesScreen
 import com.example.a62550_foodapp.ui.recipe.ApiRecipeDetailScreen
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
+import com.example.a62550_foodapp.ui.recipe.CreateRecipeScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -61,6 +61,7 @@ class MainActivity : ComponentActivity() {
                             BackHandler {
                                 navigationState = RecipeList
                             }
+
                             CreateRecipeScreen(
                                 recipeViewModel = recipeViewModel,
                                 existingRecipeId = state.existingRecipeId,

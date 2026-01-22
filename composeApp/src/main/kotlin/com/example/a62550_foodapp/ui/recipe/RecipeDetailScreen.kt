@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.example.a62550_foodapp.viewmodel.*
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.foundation.ScrollState
 
 @Composable
 fun RecipeDetailScreen(
@@ -71,129 +72,27 @@ fun RecipeDetailScreen(
         )
     }
 
-    // Scroll state also drives the collapsing header animation
-    val contentScrollState = rememberScrollState()
-    val collapseProgress = (contentScrollState.value / 300f).coerceIn(0f, 1f)
-
-    // Used so content starts below the action bar when header is collapsed
-    var actionBarHeight by remember { mutableStateOf(0.dp) }
-    val density = LocalDensity.current
-
     recipe?.let { r ->
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(themeViewModel.backgroundColor)
-        ) {
+        val scrollState = rememberScrollState()
 
-            // Top image + title that collapses on scroll
-            RecipeHeaderCollapsing(
-                imageUrl = r.imagePath,
-                title = r.title,
-                scrollState = contentScrollState,
-                onBack = onBack,
-                onEdit = { onEdit(r.id) }
-            )
-
-            // Sticky action bar under the header
-            Box(
-                modifier = Modifier.onSizeChanged {
-                    actionBarHeight = with(density) { it.height.toDp() }
-                }
-            ) {
-                RecipeActionBarLocal(
-                    portions = portions,
-                    onDecrease = { if (portions > 1) portions-- },
-                    onIncrease = { portions++ },
-                    preparationMinutes = r.preparationTimeMinutes,
-                    price = scaledPrice,
-                    onAdd = { showAddToListSheet = true },
-                    themeViewModel = themeViewModel
-                )
-            }
-
-            // Scrollable content that moves under the action bar when header is collapsed
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(contentScrollState)
-                    .padding(
-                        top = actionBarHeight * collapseProgress,
-                        bottom = 24.dp
-                    )
-            ) {
-
-                Spacer(Modifier.height(8.dp))
-
-                IngredientsCard(
-                    ingredients = ingredients.map { (name, qty, unit) ->
-                        name to "$qty $unit"
-                    }
-                )
-
-                Spacer(Modifier.height(24.dp))
-
-                // Description card (only shown if present)
-                if (!r.description.isNullOrBlank()) {
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        color = themeViewModel.cardBackgroundColor,
-                        shape = MaterialTheme.shapes.large
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-
-                            Text(
-                                text = "Beskrivelse",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Spacer(Modifier.height(8.dp))
-
-                            Text(
-                                text = r.description!!,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-
-                    Spacer(Modifier.height(24.dp))
-                }
-
-                // Instructions card (with fallback if missing)
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    color = themeViewModel.cardBackgroundColor,
-                    shape = MaterialTheme.shapes.large
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-
-                        Text(
-                            text = "Fremgangsmåde",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(Modifier.height(8.dp))
-
-                        r.instructions?.let { instructionsText ->
-                            Text(
-                                text = instructionsText,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        } ?: Text(
-                            text = "Ingen instruktioner angivet.",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-            }
-        }
+        RecipeDetailLayout(
+            title = r.title,
+            imagePath = r.imagePath,
+            preparationMinutes = r.preparationTimeMinutes,
+            price = scaledPrice,
+            portions = portions,
+            onDecreasePortions = { if (portions > 1) portions-- },
+            onIncreasePortions = { portions++ },
+            ingredients = ingredients.map { (n, q, u) -> n to "$q $u" },
+            description = r.description,
+            instructions = r.instructions,
+            scrollState = scrollState,
+            onBack = onBack,
+            onEdit = { onEdit(r.id) },
+            onAddToList = { showAddToListSheet = true },
+            themeViewModel = themeViewModel
+        )
 
     } ?: Box(
         modifier = Modifier.fillMaxSize(),
@@ -201,25 +100,6 @@ fun RecipeDetailScreen(
     ) {
         CircularProgressIndicator()
     }
-
-    // Bottom sheet for choosing shopping list
-    AddRecipeToShoppingListSheet(
-        visible = showAddToListSheet,
-        shoppingLists = shoppingListUi,
-        onDismiss = { showAddToListSheet = false },
-        onShoppingListSelected = { list ->
-            showAddToListSheet = false
-            recipeViewModel.addRecipeToShoppingList(
-                shoppingListId = list.id,
-                recipeId = recipeId,
-                portions = portions
-            )
-        },
-        onCreateNewShoppingList = {
-            showAddToListSheet = false
-            showCreateShoppingListDialog = true
-        }
-    )
 
     // Dialog for creating a new shopping list
     if (showCreateShoppingListDialog) {
@@ -268,7 +148,7 @@ fun RecipeDetailScreen(
 }
 
 @Composable
-private fun RecipeActionBarLocal(
+fun RecipeActionBarLocal(
     portions: Int,
     onDecrease: () -> Unit,
     onIncrease: () -> Unit,

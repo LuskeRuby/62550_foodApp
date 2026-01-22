@@ -165,7 +165,7 @@ private fun ShoppingListContent(
     }
 }
 
-
+//TODO make it look sexy
 @Composable
 private fun SuperMarketHeader(name: String) {
     Box(
@@ -182,6 +182,7 @@ private fun SuperMarketHeader(name: String) {
     }
 }
 
+//TODO add more/all categories
 @Composable
 fun CategoryHeader(category: String) {
     val themeViewModel: ThemeViewModel = koinViewModel()
