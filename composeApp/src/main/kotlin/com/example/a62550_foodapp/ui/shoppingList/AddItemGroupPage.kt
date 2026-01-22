@@ -1,6 +1,7 @@
 package com.example.a62550_foodapp.ui.shoppingList
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,10 +45,12 @@ import kotlin.collections.component2
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.example.a62550_foodapp.db.entity.ItemGroup
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Button
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.foundation.layout.PaddingValues
+
 
 @Composable
 public fun AddItemGroupToShoppingListPage(
@@ -79,46 +82,61 @@ public fun AddItemGroupToShoppingListPage(
             modifier = Modifier.padding(16.dp)
         )
 
-        //TODO handle portion size
-        SearchSelectField(
-            label = "Search items",
-            items = itemGroups,
-            itemText = { it.name },
-            itemUnit = { it.unitType },
 
-            value = searchText,
-            onValueChange = { searchText = it },
-
-            onItemSelected = { entry ->
-                selectedGroup = entry
-            }
-        )
-
-        Spacer(Modifier.height(8.dp))
+        // Spacer(Modifier.height(8.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         ) {
 
+            val rowHeight = TextFieldDefaults.MinHeight
+
+            // -------- SEARCH --------
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(rowHeight)
+            ) {
+                SearchSelectField(
+                    label = "Søg vare",
+                    items = itemGroups,
+                    itemText = { it.name },
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    onItemSelected = { selectedGroup = it }
+                )
+            }
+
+            // -------- QTY --------
             OutlinedTextField(
                 value = qtyText,
                 onValueChange = { qtyText = it.filter(Char::isDigit) },
-                label = { Text("Antal") },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .width(88.dp)
+                    .height(rowHeight),
+                singleLine = true
             )
 
-            OutlinedTextField(
-                value = selectedGroup?.unitType ?: "",
-                onValueChange = {},
-                label = { Text("Type") },
-                enabled = false,
-                modifier = Modifier.width(90.dp)
-            )
 
+            // -------- UNIT --------
+            Box(
+                modifier = Modifier
+                    .height(rowHeight)
+                    .padding(horizontal = 4.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = selectedGroup?.unitType ?: "",
+                    fontSize = 14.sp,
+                    color = themeViewModel.textSecondary
+                )
+            }
+
+            // -------- ADD --------
             Button(
                 enabled = selectedGroup != null && qtyText.isNotBlank(),
                 onClick = {
@@ -134,7 +152,9 @@ public fun AddItemGroupToShoppingListPage(
                     qtyText = ""
                     selectedGroup = null
                     searchText = ""
-                }
+                },
+                modifier = Modifier.height(rowHeight),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp)
             ) {
                 Text("Tilføj")
             }
