@@ -43,6 +43,11 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.a62550_foodapp.db.entity.ItemGroup
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
 
 @Composable
 public fun AddItemGroupToShoppingListPage(
@@ -59,6 +64,8 @@ public fun AddItemGroupToShoppingListPage(
     val grouped = itemGroupEntries.groupBy { it.category }
 
     var searchText by remember { mutableStateOf("") }
+    var selectedGroup by remember { mutableStateOf<ItemGroup?>(null) }
+    var qtyText by remember { mutableStateOf("") }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -83,13 +90,55 @@ public fun AddItemGroupToShoppingListPage(
             onValueChange = { searchText = it },
 
             onItemSelected = { entry ->
-                viewModel.add(
-                    addedItem = entry,
-                    portionSize = 0f
-                )
-                searchText = "" // ryd efter tilføj
+                selectedGroup = entry
             }
         )
+
+        Spacer(Modifier.height(8.dp))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+
+            OutlinedTextField(
+                value = qtyText,
+                onValueChange = { qtyText = it.filter(Char::isDigit) },
+                label = { Text("Antal") },
+                modifier = Modifier.weight(1f)
+            )
+
+            OutlinedTextField(
+                value = selectedGroup?.unitType ?: "",
+                onValueChange = {},
+                label = { Text("Type") },
+                enabled = false,
+                modifier = Modifier.width(90.dp)
+            )
+
+            Button(
+                enabled = selectedGroup != null && qtyText.isNotBlank(),
+                onClick = {
+                    val qty = qtyText.toFloatOrNull() ?: return@Button
+
+                    selectedGroup?.let {
+                        viewModel.add(
+                            addedItem = it,
+                            portionSize = qty
+                        )
+                    }
+
+                    qtyText = ""
+                    selectedGroup = null
+                    searchText = ""
+                }
+            ) {
+                Text("Tilføj")
+            }
+        }
 
         // body
         LazyColumn() {
