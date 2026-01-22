@@ -80,8 +80,8 @@ fun RecipeDetailScreen(
                 Snackbar(
                     modifier = Modifier.padding(16.dp),
                     shape = RoundedCornerShape(16.dp),
-                    containerColor = themeViewModel.cardBackgroundColor,
-                    contentColor = themeViewModel.textPrimary
+                    containerColor = themeViewModel.successColor,
+                    contentColor = themeViewModel.textWhite
                 ) {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
