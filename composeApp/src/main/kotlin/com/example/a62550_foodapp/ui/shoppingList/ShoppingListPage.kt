@@ -67,24 +67,28 @@ fun ShoppingListPage(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(themeViewModel.backgroundColor)
+            .background(themeViewModel.backgroundColorTwo)
     ) {
-
-        Text(
-            text = "Indkøbslister",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = themeViewModel.textPrimary,
-            modifier = Modifier
-                .padding(vertical = 16.dp, horizontal = 16.dp)
-                .align(Alignment.Center)
-        )
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Indkøbslister",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = themeViewModel.textPrimary,
+                    modifier = Modifier
+                        .padding(vertical = 16.dp, horizontal = 16.dp)
+                )
+            }
+
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
