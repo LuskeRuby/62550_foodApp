@@ -170,15 +170,18 @@ private fun CreateRecipeForm(
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Rediger billede",
-                    tint = themeViewModel.priceTagColor,
+                    tint = Color.White,
                     modifier = Modifier.size(32.dp)
                 )
+
                 Spacer(Modifier.height(6.dp))
+
                 Text(
                     text = "Rediger billede",
-                    color = themeViewModel.priceTagColor,
+                    color = Color.White,
                     fontWeight = FontWeight.Medium
                 )
+
             }
         }
 
@@ -193,7 +196,7 @@ private fun CreateRecipeForm(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            textStyle = MaterialTheme.typography.titleLarge,
+            textStyle = MaterialTheme.typography.bodyLarge,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = themeViewModel.cardBackgroundColor,
                 unfocusedContainerColor = themeViewModel.cardBackgroundColor
@@ -246,7 +249,7 @@ private fun CreateRecipeForm(
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Rediger ingredienser",
-                        tint = themeViewModel.priceTagColor,
+                        tint = themeViewModel.textPrimary,
                         modifier = Modifier
                             .size(22.dp)
                             .clickable { onAddIngredients() }
