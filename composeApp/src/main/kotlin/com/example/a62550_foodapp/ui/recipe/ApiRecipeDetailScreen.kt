@@ -24,6 +24,9 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 
 
 @Composable
@@ -37,6 +40,7 @@ fun ApiRecipeDetailScreen(
     val loading by viewModel.loading.collectAsState()
     val shoppingListViewModel: ShoppingListViewModel = koinViewModel()
     val shoppingLists by shoppingListViewModel.shoppingLists.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var showAddToListSheet by remember { mutableStateOf(false) }
     var showCreateShoppingListDialog by remember { mutableStateOf(false) }
@@ -53,58 +57,69 @@ fun ApiRecipeDetailScreen(
 
     val scrollState = rememberScrollState()
 
-    when {
-        loading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(
-                    color = themeViewModel.primaryColor
-                )
-            }
-        }
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
 
-        meal != null -> {
-            val m = meal!!
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            when {
+                loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = themeViewModel.primaryColor
+                        )
+                    }
+                }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
+                meal != null -> {
+                    val m = meal!!
 
-                //header
-                RecipeHeaderCollapsing(
-                    imageUrl = m.strMealThumb,
-                    title = m.strMeal,
-                    scrollState = scrollState,
-                    onBack = onBack,
-                    onEdit = null //hentet fra api kan ikke ædnres
-                )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
 
-                ApiRecipeActionBar(
-                    onAdd =  { showAddToListSheet = true },
-                    themeViewModel = themeViewModel
-                )
+                        //header
+                        RecipeHeaderCollapsing(
+                            imageUrl = m.strMealThumb,
+                            title = m.strMeal,
+                            scrollState = scrollState,
+                            onBack = onBack,
+                            onEdit = null //hentet fra api kan ikke ædnres
+                        )
 
-                //Content
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .verticalScroll(scrollState)
-                        .padding(bottom = 24.dp)
-                ) {
-                    Spacer(Modifier.height(16.dp))
+                        ApiRecipeActionBar(
+                            onAdd = { showAddToListSheet = true },
+                            themeViewModel = themeViewModel
+                        )
 
-                    IngredientsCard(
-                        ingredients = m.toApiIngredients().map {
-                            it.name to it.measure
+                        //Content
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(scrollState)
+                                .padding(bottom = 24.dp)
+                        ) {
+                            Spacer(Modifier.height(16.dp))
+
+                            IngredientsCard(
+                                ingredients = m.toApiIngredients().map {
+                                    it.name to it.measure
+                                }
+                            )
+
+                            InstructionsCard(
+                                instructions = m.strInstructions
+                            )
                         }
-                    )
-
-                    InstructionsCard(
-                        instructions = m.strInstructions
-                    )
+                    }
                 }
             }
         }
@@ -121,6 +136,7 @@ fun ApiRecipeDetailScreen(
                     meal = it
                 )
             }
+            showRecipeAddedSnackbar(scope, snackbarHostState)
         },
         onCreateNewShoppingList = {
             showAddToListSheet = false
@@ -153,7 +169,9 @@ fun ApiRecipeDetailScreen(
                                         shoppingListId = newListId,
                                         meal = it
                                     )
+
                                 }
+                                showRecipeAddedSnackbar(scope, snackbarHostState)
                             }
                         }
                         newShoppingListName = ""
