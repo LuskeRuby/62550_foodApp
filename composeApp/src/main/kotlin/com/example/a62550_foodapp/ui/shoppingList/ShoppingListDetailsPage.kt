@@ -183,7 +183,7 @@ private fun SuperMarketHeader(
     val backgroundColor = when (name.lowercase()) {
         "netto" -> Color(0xFFFFCC00)           // Yellow (Netto brand color)
         "kvickly" -> Color(0xFFFF1E31)         // Bright Red (Kvickly brand color)
-        "føtex" -> Color(0xFF27AE60)           // Green (Føtex brand color)
+        "føtex" -> Color(0xFF3257A1)           // Green (Føtex brand color)
         "meny" -> Color(0xFF86180C)            // Darker Red (Meny brand color)
         "bilka" -> Color(0xFF3B8DDC)           // Darker blue (Bilka brand color)
         "rema 1000" -> Color(0xFF6B95B6)       // Light blue (Rema 1000 brand color)
