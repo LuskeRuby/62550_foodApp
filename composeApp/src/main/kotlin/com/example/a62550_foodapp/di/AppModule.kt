@@ -111,7 +111,9 @@ val appModule = module {
 
     viewModel {
         ApiRecipeDetailViewModel(
-            api = get()
+            api = get(),
+            itemGroupDao = get(),
+            shoppingListItemGroupDao = get()
         )
     }
 
