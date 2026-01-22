@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,6 +33,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun ShoppingListDetailsPage(
     shoppingListId: Long,
+    onBack: () -> Unit
 ) {
     var addItemsOverlay by remember { mutableStateOf(false) }
 
@@ -43,6 +45,7 @@ fun ShoppingListDetailsPage(
     ) {
         if (!addItemsOverlay) {
             ShoppingListPage(
+                onBack = onBack,
                 shoppingListId = shoppingListId,
                 onAddItemsButtonClick = { addItemsOverlay = true },
                 editOverlay = false
@@ -61,6 +64,7 @@ fun ShoppingListDetailsPage(
 
 @Composable
 private fun ShoppingListPage(
+    onBack: () -> Unit,
     shoppingListId: Long,
     onAddItemsButtonClick: () -> Unit,
     editOverlay: Boolean,
@@ -104,6 +108,13 @@ private fun ShoppingListPage(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+
                 Text(
                     text = "Indkøbsliste",
                     fontSize = 24.sp,
@@ -302,7 +313,7 @@ private fun ShoppingItemRow(
                     )
                 } ?: CheckboxText(
                     checked = item.isChecked,
-                    text = "Utilgængelig",
+                    text = "*",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = themeViewModel.priceTagColor
@@ -364,7 +375,7 @@ private fun TotalBox(totalUi: ShoppingListDetailsViewModel.TotalUi) {
 
             if (totalUi.missingCount > 0) {
                 Text(
-                    "* Nogle varer mangler pris",
+                    "* mangler pris",
                     fontSize = 16.sp,
                     color = Color.White.copy(alpha = 0.85f)
                 )
