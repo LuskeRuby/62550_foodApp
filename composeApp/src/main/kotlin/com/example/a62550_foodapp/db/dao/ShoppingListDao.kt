@@ -23,4 +23,8 @@ interface ShoppingListDao {
 
     @Delete
     suspend fun delete(shoppingList: ShoppingList)
+
+    @Query("DELETE FROM shopping_lists WHERE id = :id")
+    suspend fun  delete(id: Long)
+
 }
