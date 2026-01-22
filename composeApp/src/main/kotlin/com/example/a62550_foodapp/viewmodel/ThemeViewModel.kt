@@ -71,9 +71,13 @@ class ThemeViewModel : ViewModel() {
     // ============================================================
     val dryGoods = Color(0xFF996600)            // Brown - Tørvarer (dry goods)
     val meat = Color(0xFFD32F2F)                // Red - Kød (meat)
+    val fish = Color(0xFF0288D1)                // Light Blue - Fisk (fish)
     val vegetables = Color(0xFF388E3C)          // Green - Grøntsager (vegetables)
     val dairy = Color(0xFF1976D2)               // Blue - Mejeri (dairy)
+    val spices = Color(0xFFFF8F00)              // Amber/Orange - Krydderier (spices)
     val kolonial = Color(0xFF6A1B9A)            // Purple - Kolonial (colonial/pantry items)
+    val bread = Color(0xFF8D6E63)               // Warm Brown - Brød (bread)
+    val unavailable = Color(0xFF757575)         // Grey - Utilgængelige varer (unavailable items)
     val other = Color.Gray                      // Grey - Other categories
 
 
