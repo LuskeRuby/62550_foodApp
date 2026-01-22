@@ -4,17 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.a62550_foodapp.db.entity.ItemGroup
 import com.example.a62550_foodapp.ui.components.SearchSelectField
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
@@ -72,20 +67,28 @@ fun AddItemGroupToRecipePage(
             modifier = Modifier.fillMaxWidth()
         ) {
 
-            OutlinedTextField(
-                value = qtyText,
-                onValueChange = { qtyText = it.filter(Char::isDigit) },
-                label = { Text("Antal") },
-                modifier = Modifier.weight(1f)
-            )
+            Box(modifier = Modifier
+                .weight(1f)
+            ){
+                OutlinedTextField(
+                    value = qtyText,
+                    onValueChange = { qtyText = it.filter(Char::isDigit) },
+                    label = { Text("Mængde") },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = themeViewModel.textPrimary,
+                        unfocusedTextColor = themeViewModel.textSecondary
+                    )
+                )
 
-            OutlinedTextField(
-                value = selectedGroup?.unitType ?: "",
-                onValueChange = {},
-                label = { Text("Type") },
-                enabled = false,
-                modifier = Modifier.width(90.dp)
-            )
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(end = 32.dp, top = 8.dp),
+                    text = selectedGroup?.unitType ?: "kg/L",
+                    color = themeViewModel.textSecondary
+                )
+            }
+
 
             Button(
                 enabled = selectedGroup != null && qtyText.isNotBlank(),
