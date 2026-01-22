@@ -313,7 +313,7 @@ private fun ShoppingItemRow(
                     )
                 } ?: CheckboxText(
                     checked = item.isChecked,
-                    text = "*",
+                    text = "- kr",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = themeViewModel.priceTagColor
@@ -375,7 +375,7 @@ private fun TotalBox(totalUi: ShoppingListDetailsViewModel.TotalUi) {
 
             if (totalUi.missingCount > 0) {
                 Text(
-                    "* mangler pris",
+                    "mangler priser",
                     fontSize = 16.sp,
                     color = Color.White.copy(alpha = 0.85f)
                 )

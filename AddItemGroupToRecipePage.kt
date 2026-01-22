@@ -72,8 +72,7 @@ fun AddItemGroupToRecipePage(
                     itemText = { it.name },
                     value = searchText,
                     onValueChange = { searchText = it },
-                    onItemSelected = { selectedGroup = it },
-                    borderColor = themeViewModel.addButtonColor
+                    onItemSelected = { selectedGroup = it }
                 )
             }
 
@@ -88,9 +87,9 @@ fun AddItemGroupToRecipePage(
                     .height(rowHeight),
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = themeViewModel.addButtonColor,
-                    unfocusedBorderColor = themeViewModel.addButtonColor,
-                    cursorColor = themeViewModel.addButtonColor
+                    focusedBorderColor = if (canAdd) themeViewModel.addButtonColor else MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = if (canAdd) themeViewModel.addButtonColor else MaterialTheme.colorScheme.outline,
+                    cursorColor = if (canAdd) themeViewModel.addButtonColor else MaterialTheme.colorScheme.primary
                 )
             )
 
@@ -145,7 +144,8 @@ fun AddItemGroupToRecipePage(
                 key = { it.itemGroupId }
             ) { sg ->
 
-                val group = allGroups.firstOrNull { it.id == sg.itemGroupId }
+                val name =
+                    allGroups.firstOrNull { it.id == sg.itemGroupId }?.name ?: "(ukendt)"
 
                 Card(
                     modifier = Modifier
@@ -155,9 +155,9 @@ fun AddItemGroupToRecipePage(
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     EditRecipeItemRow(
-                        name = group?.name ?: "(ukendt)",
+                        name = name,
                         quantity = sg.quantity,
-                        unit = group?.unitType ?: "",
+                        unit = allGroups.firstOrNull { it.id == sg.itemGroupId }?.unitType ?: "",
                         onDelete = { recipeViewModel.removeTempGroup(sg.itemGroupId) },
                         themeViewModel = themeViewModel
                     )
@@ -222,32 +222,29 @@ private fun EditRecipeItemRow(
             }
         }
     ) {
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(themeViewModel.backgroundColor) // eller card color
+                .background(themeViewModel.backgroundColor)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = name,
-                    modifier = Modifier.weight(1f),
-                    fontSize = 15.sp,
-                    color = themeViewModel.textPrimary,
-                    fontWeight = FontWeight.Medium
-                )
 
-                Text(
-                    text = "$quantity $unit",
-                    fontSize = 13.sp,
-                    color = themeViewModel.textPrimary,
-                    textAlign = TextAlign.End
-                )
-            }
+            Text(
+                text = "$quantity x $name",
+                modifier = Modifier.weight(1f),
+                fontSize = 15.sp,
+                color = themeViewModel.textPrimary,
+                fontWeight = FontWeight.Medium
+            )
+
+            Text(
+                text = "$quantity × $unit",
+                modifier = Modifier.width(90.dp),
+                fontSize = 13.sp,
+                color = themeViewModel.textPrimary,
+                textAlign = TextAlign.End
+            )
         }
     }
 }

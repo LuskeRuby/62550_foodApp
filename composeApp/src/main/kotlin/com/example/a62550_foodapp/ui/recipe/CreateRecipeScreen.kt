@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +22,10 @@ import com.example.a62550_foodapp.ui.components.LocalImage
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Color
+
 
 @Composable
 fun CreateRecipeScreen(
@@ -97,6 +102,8 @@ private fun CreateRecipeForm(
                 .height(240.dp)
                 .clickable { imagePicker.launch("image/*") }
         ) {
+
+            // ----- IMAGE -----
             when {
                 imageUri != null -> {
                     AsyncImage(
@@ -124,7 +131,34 @@ private fun CreateRecipeForm(
                     }
                 }
             }
+
+            // ----- DARK OVERLAY -----
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.50f)) // tint på billedet
+            )
+
+            // ----- EDIT HINT -----
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Rediger billede",
+                    tint = themeViewModel.priceTagColor,
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = "Rediger billede",
+                    color = themeViewModel.priceTagColor,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
+
 
         Spacer(Modifier.height(16.dp))
 
@@ -136,7 +170,11 @@ private fun CreateRecipeForm(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            textStyle = MaterialTheme.typography.titleLarge
+            textStyle = MaterialTheme.typography.titleLarge,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = themeViewModel.cardBackgroundColor,
+                unfocusedContainerColor = themeViewModel.cardBackgroundColor
+            )
         )
 
         Spacer(Modifier.height(12.dp))
@@ -151,37 +189,73 @@ private fun CreateRecipeForm(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = themeViewModel.cardBackgroundColor,
+                unfocusedContainerColor = themeViewModel.cardBackgroundColor
+            )
         )
 
         Spacer(Modifier.height(20.dp))
 
-        // ---------- INGREDIENTS ----------
+// ---------- INGREDIENTS ----------
         if (selectedGroups.isNotEmpty()) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = themeViewModel.cardBackgroundColor // lyserøde boks
+                )
             ) {
                 Column(Modifier.padding(16.dp)) {
-                    Text("Ingredienser", fontWeight = FontWeight.Bold)
+
+                    // ---- HEADER ROW ----
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Ingredienser",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Rediger ingredienser",
+                            tint = themeViewModel.priceTagColor,
+                            modifier = Modifier
+                                .size(22.dp)
+                                .clickable { onAddIngredients() }
+                        )
+                    }
+
                     Spacer(Modifier.height(8.dp))
 
                     selectedGroups.forEach { sg ->
-                        val name =
-                            allGroups.firstOrNull { it.id == sg.itemGroupId }?.name ?: "(ukendt)"
+                        val group = allGroups.firstOrNull { it.id == sg.itemGroupId }
+
+                        val name = group?.name ?: "(ukendt)"
+                        val unit = group?.unitType ?: ""
 
                         Row(
-                            Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("$name — ${sg.quantity}", Modifier.weight(1f))
                             Text(
-                                "Fjern",
-                                color = themeViewModel.errorColor,
-                                modifier = Modifier.clickable {
-                                    recipeViewModel.removeTempGroup(sg.itemGroupId)
-                                }
+                                text = name,
+                                modifier = Modifier.weight(1f),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+
+                            Text(
+                                text = "${sg.quantity} $unit",
+                                fontSize = 13.sp,
+                                color = themeViewModel.textSecondary
                             )
                         }
                     }
@@ -191,16 +265,6 @@ private fun CreateRecipeForm(
             Spacer(Modifier.height(12.dp))
         }
 
-        Button(
-            onClick = onAddIngredients,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            Text("Tilføj ingredienser")
-        }
-
-        Spacer(Modifier.height(20.dp))
 
         // ---------- DESCRIPTION ----------
         OutlinedTextField(
@@ -209,7 +273,11 @@ private fun CreateRecipeForm(
             label = { Text("Beskrivelse") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = themeViewModel.cardBackgroundColor,
+                unfocusedContainerColor = themeViewModel.cardBackgroundColor
+            )
         )
 
         Spacer(Modifier.height(12.dp))
@@ -222,7 +290,11 @@ private fun CreateRecipeForm(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(140.dp)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = themeViewModel.cardBackgroundColor,
+                unfocusedContainerColor = themeViewModel.cardBackgroundColor
+            )
         )
 
         Spacer(Modifier.height(24.dp))
@@ -259,11 +331,15 @@ private fun CreateRecipeForm(
             enabled = title.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = themeViewModel.addButtonColor,
+                contentColor = themeViewModel.onPrimaryColor,
+                disabledContainerColor = Color.LightGray,
+                disabledContentColor = themeViewModel.onPrimaryColor.copy(alpha = 0.6f)
+            )
         ) {
             Text(if (existingRecipeId != null) "Gem ændringer" else "Gem opskrift")
         }
-
-        Spacer(Modifier.height(32.dp))
     }
 }

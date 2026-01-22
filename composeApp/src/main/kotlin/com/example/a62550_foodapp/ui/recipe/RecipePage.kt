@@ -1,5 +1,8 @@
 package com.example.a62550_foodapp.ui.recipe
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -29,6 +32,7 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.text.BasicTextField
 
 @Composable
 fun RecipePage(
@@ -67,53 +71,23 @@ fun RecipePage(
 
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // ---------- PORTIONS SELECTOR ----------
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 16.dp, top = 12.dp)
-            ) {
-                IconButton(
-                    onClick = { if (portions > 1) portions-- },
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(Icons.Default.RemoveCircle, null, tint = themeViewModel.priceTagColor)
-                }
 
-                Text(
-                    text = portions.toString(),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 6.dp)
-                )
-
-                IconButton(
-                    onClick = { portions++ },
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(Icons.Default.AddCircle, null, tint = themeViewModel.priceTagColor)
-                }
-
-                Spacer(Modifier.width(8.dp))
-
-                Text(
-                    text = "pers",
-                    color = themeViewModel.textSecondary,
-                    style = MaterialTheme.typography.labelMedium
-                )
-            }
-
-            // ---------- SEARCH ----------
-            OutlinedTextField(
-                value = searchText,
-                onValueChange = { searchText = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                placeholder = { Text("Søg opskrift") },
-                singleLine = true,
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = null)
-                }
+            RecipeHeader(
+                searchText = searchText,
+                onSearchChange = { searchText = it },
+                portions = portions,
+                onIncreasePortions = { portions++ },
+                onDecreasePortions = { if (portions > 1) portions-- },
+                onDiscoverClick = onDiscoverRecipesClick,
+                themeViewModel = themeViewModel
             )
+
+            Divider(
+                thickness = 1.dp,
+                color = themeViewModel.textSecondary.copy(alpha = 0.12f)
+            )
+
+
 
             // ---------- GRID ----------
             if (visibleRecipes.isEmpty()) {
@@ -155,8 +129,6 @@ fun RecipePage(
                 }
             }
         }
-
-        // ---------- ADD FAB ----------
         FloatingActionButton(
             onClick = onAddRecipeClick,
             containerColor = themeViewModel.addButtonColor,
@@ -165,20 +137,9 @@ fun RecipePage(
                 .align(Alignment.BottomEnd)
                 .padding(end = 20.dp, bottom = 20.dp)
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Add Recipe")
+            Icon(Icons.Default.Add, contentDescription = "Add")
         }
 
-        // ---------- DISCOVER FAB ----------
-        FloatingActionButton(
-            onClick = onDiscoverRecipesClick,
-            containerColor = themeViewModel.softFabColor,
-            contentColor = Color.White,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 20.dp, bottom = 20.dp)
-        ) {
-            Icon(Icons.Default.Public, contentDescription = "Find opskrifter på engelsk")
-        }
     }
 }
 
@@ -243,6 +204,180 @@ fun RecipeCard(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
+            }
+        }
+    }
+}
+@Composable
+fun RecipeHeader(
+    searchText: String,
+    onSearchChange: (String) -> Unit,
+    portions: Int,
+    onIncreasePortions: () -> Unit,
+    onDecreasePortions: () -> Unit,
+    onDiscoverClick: () -> Unit,
+    themeViewModel: ThemeViewModel
+) {
+    var searching by remember { mutableStateOf(false) }
+
+    Surface(
+        tonalElevation = 2.dp,
+        color = themeViewModel.surfaceColor,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .height(56.dp)
+                .padding(horizontal = 12.dp)
+        ) {
+
+            // søg ikon
+            Surface(
+                shape = RoundedCornerShape(24.dp),
+                tonalElevation = 1.dp,
+                color = themeViewModel.cardBackgroundColor,
+                modifier = Modifier
+                    .size(36.dp)
+                    .clickable {
+                        searching = !searching
+                        if (!searching) onSearchChange("")
+                    }
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = "Søg",
+                        tint = themeViewModel.textSecondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.width(8.dp))
+
+            //søgefelt
+            AnimatedVisibility(visible = searching) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    tonalElevation = 1.dp,
+                    color = themeViewModel.cardBackgroundColor,
+                    modifier = Modifier
+                        .height(36.dp)
+                        .widthIn(min = 140.dp, max = 200.dp)
+                ) {
+                    BasicTextField(
+                        value = searchText,
+                        onValueChange = onSearchChange,
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(
+                            color = themeViewModel.textPrimary
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        decorationBox = { inner ->
+                            if (searchText.isEmpty()) {
+                                Text(
+                                    text = "Søg opskrift",
+                                    color = themeViewModel.textSecondary
+                                )
+                            }
+                            inner()
+                        }
+                    )
+                }
+            }
+
+            Spacer(Modifier.width(8.dp))
+
+            //udforsk
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                tonalElevation = 1.dp,
+                color = themeViewModel.cardBackgroundColor,
+                modifier = Modifier
+                    .height(36.dp)
+                    .clickable(onClick = onDiscoverClick)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(
+                        horizontal = if (searching) 10.dp else 14.dp
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.Public,
+                        contentDescription = "Udforsk",
+                        tint = themeViewModel.textPrimary,
+                        modifier = Modifier.size(18.dp)
+                    )
+
+                    //text gone not serch
+                    AnimatedVisibility(visible = !searching) {
+                        Row {
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = "Udforsk",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Medium,
+                                color = themeViewModel.textPrimary
+                            )
+                        }
+                    }
+                }
+            }
+
+
+            Spacer(Modifier.weight(1f))
+
+            //portion
+            Surface(
+                shape = RoundedCornerShape(24.dp),
+                tonalElevation = 1.dp,
+                color = themeViewModel.cardBackgroundColor
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .height(36.dp)
+                        .padding(horizontal = if (searching) 10.dp else 8.dp)
+                ) {
+
+                    //remove - not search
+                    AnimatedVisibility(visible = !searching) {
+                        IconButton(
+                            onClick = onDecreasePortions,
+                            modifier = Modifier.size(28.dp),
+                            colors = IconButtonDefaults.iconButtonColors(
+                                contentColor = themeViewModel.priceTagColor
+                            )
+                        ) {
+                            Icon(Icons.Default.RemoveCircle, contentDescription = "Minus")
+                        }
+                    }
+
+                    Text(
+                        text = "$portions pers",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                        color = themeViewModel.textPrimary,
+                        modifier = Modifier.padding(horizontal = 6.dp)
+                    )
+
+                    //remove + when not searh
+                    AnimatedVisibility(visible = !searching) {
+                        IconButton(
+                            onClick = onIncreasePortions,
+                            modifier = Modifier.size(28.dp),
+                            colors = IconButtonDefaults.iconButtonColors(
+                                contentColor = themeViewModel.priceTagColor
+                            )
+                        ) {
+                            Icon(Icons.Default.AddCircle, contentDescription = "Plus")
+                        }
+                    }
+                }
             }
         }
     }
