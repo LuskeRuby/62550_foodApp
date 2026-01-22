@@ -222,29 +222,32 @@ private fun EditRecipeItemRow(
             }
         }
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(themeViewModel.backgroundColor)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .background(themeViewModel.backgroundColor) // eller card color
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = name,
+                    modifier = Modifier.weight(1f),
+                    fontSize = 15.sp,
+                    color = themeViewModel.textPrimary,
+                    fontWeight = FontWeight.Medium
+                )
 
-            Text(
-                text = "$quantity x $name",
-                modifier = Modifier.weight(1f),
-                fontSize = 15.sp,
-                color = themeViewModel.textPrimary,
-                fontWeight = FontWeight.Medium
-            )
-
-            Text(
-                text = "$quantity × $unit",
-                modifier = Modifier.width(90.dp),
-                fontSize = 13.sp,
-                color = themeViewModel.textPrimary,
-                textAlign = TextAlign.End
-            )
+                Text(
+                    text = "$quantity $unit",
+                    fontSize = 13.sp,
+                    color = themeViewModel.textPrimary,
+                    textAlign = TextAlign.End
+                )
+            }
         }
     }
 }
