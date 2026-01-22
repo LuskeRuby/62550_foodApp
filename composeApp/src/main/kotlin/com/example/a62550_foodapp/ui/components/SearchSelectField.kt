@@ -58,8 +58,10 @@ fun <T> SearchSelectField(
         )
 
         // sørg for at fokus altid bliver på feltet mens man søger
-        LaunchedEffect(value, expanded) {
-            if (expanded) focusRequester.requestFocus()
+        LaunchedEffect(expanded) {
+            if (expanded) {
+                focusRequester.requestFocus()
+            }
         }
 
         DropdownMenu(
