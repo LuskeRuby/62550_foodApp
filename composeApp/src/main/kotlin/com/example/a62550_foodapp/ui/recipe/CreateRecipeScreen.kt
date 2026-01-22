@@ -1,29 +1,26 @@
 package com.example.a62550_foodapp.ui.recipe
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
-import com.example.a62550_foodapp.viewmodel.RecipeViewModel
-import org.koin.androidx.compose.koinViewModel
-import androidx.compose.foundation.background
-import com.example.a62550_foodapp.viewmodel.ThemeViewModel
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.layout.ContentScale
-import com.example.a62550_foodapp.ui.components.LocalImage
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import kotlinx.coroutines.flow.first
-import com.example.a62550_foodapp.ui.shoppingList.AddItemGroupToShoppingListPage
+import com.example.a62550_foodapp.ui.components.LocalImage
+import com.example.a62550_foodapp.viewmodel.RecipeViewModel
+import com.example.a62550_foodapp.viewmodel.ThemeViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun CreateRecipeScreen(
@@ -32,26 +29,31 @@ fun CreateRecipeScreen(
     onRecipeSaved: () -> Unit,
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
-    var showIngredientEditor by remember { mutableStateOf(false) }
+    var editingIngredients by remember { mutableStateOf(false) }
 
-    if (showIngredientEditor && existingRecipeId != null) {
+    // ---- LOAD DATA FOR EDIT ONCE ----
+    LaunchedEffect(existingRecipeId) {
+        existingRecipeId?.let {
+            recipeViewModel.loadRecipeForEdit(it)
+        }
+    }
 
-        AddItemGroupToShoppingListPage(
-            shoppingListId = existingRecipeId,
-            disableItemOverlay = { showIngredientEditor = false }
-        )
-
-    } else {
-
-        CreateRecipeForm(
-            recipeViewModel = recipeViewModel,
-            existingRecipeId = existingRecipeId,
-            onRecipeSaved = onRecipeSaved,
-            onAddIngredients = { showIngredientEditor = true }
-        )
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (!editingIngredients) {
+            CreateRecipeForm(
+                recipeViewModel = recipeViewModel,
+                existingRecipeId = existingRecipeId,
+                onRecipeSaved = onRecipeSaved,
+                onAddIngredients = { editingIngredients = true }
+            )
+        } else {
+            AddItemGroupToRecipePage(
+                recipeViewModel = recipeViewModel,
+                onDone = { editingIngredients = false }
+            )
+        }
     }
 }
-
 
 @Composable
 private fun CreateRecipeForm(
@@ -61,42 +63,23 @@ private fun CreateRecipeForm(
     onAddIngredients: () -> Unit,
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
-    var title by remember { mutableStateOf("") }
-    var preparationTimeText by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf<String?>(null) }
-    var instructions by remember { mutableStateOf<String?>(null) }
+    // ---- UI STATE FROM VIEWMODEL ----
+    val title by recipeViewModel.editTitle.collectAsState()
+    val time by recipeViewModel.editTime.collectAsState()
+    val description by recipeViewModel.editDescription.collectAsState()
+    val instructions by recipeViewModel.editInstructions.collectAsState()
+    val imagePath by recipeViewModel.editImagePath.collectAsState()
+    val imageUri by recipeViewModel.editImageUri.collectAsState()
 
-    var selectedImage by remember { mutableStateOf<Uri?>(null) }
-    var existingImagePath by remember { mutableStateOf<String?>(null) }
-
-    val allGroups by recipeViewModel.getAllItemGroups().collectAsState(initial = emptyList())
     val selectedGroups by recipeViewModel.tempGroups.collectAsState()
-
-    var loaded by remember { mutableStateOf(false) }
-
-    // ---- LOAD EXISTING RECIPE WHEN EDITING ----
-    LaunchedEffect(existingRecipeId) {
-        if (existingRecipeId == null || loaded) return@LaunchedEffect
-        loaded = true
-
-        val recipe = recipeViewModel.getRecipeById(existingRecipeId).first()
-        recipe?.let {
-            title = it.title
-            preparationTimeText = it.preparationTimeMinutes.toString()
-            description = it.description
-            instructions = it.instructions
-            existingImagePath = it.imagePath
-        }
-
-        recipeViewModel.setTempGroups(
-            recipeViewModel.getSelectedGroupsForRecipe(existingRecipeId)
-        )
-    }
+    val allGroups by recipeViewModel.getAllItemGroups().collectAsState(initial = emptyList())
 
     // ---- IMAGE PICKER ----
     val imagePicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri -> selectedImage = uri }
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        recipeViewModel.setEditImageUri(uri)
+    }
 
     val scrollState = rememberScrollState()
 
@@ -107,7 +90,7 @@ private fun CreateRecipeForm(
             .background(themeViewModel.backgroundColor)
     ) {
 
-        // ---------- IMAGE (CLICK TO CHANGE) ----------
+        // ---------- IMAGE ----------
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -115,18 +98,18 @@ private fun CreateRecipeForm(
                 .clickable { imagePicker.launch("image/*") }
         ) {
             when {
-                selectedImage != null -> {
+                imageUri != null -> {
                     AsyncImage(
-                        model = selectedImage,
+                        model = imageUri,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
 
-                existingImagePath != null -> {
+                imagePath != null -> {
                     LocalImage(
-                        imagePath = existingImagePath,
+                        imagePath = imagePath,
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -148,7 +131,7 @@ private fun CreateRecipeForm(
         // ---------- TITLE ----------
         OutlinedTextField(
             value = title,
-            onValueChange = { title = it },
+            onValueChange = recipeViewModel::setEditTitle,
             label = { Text("Titel") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -160,10 +143,12 @@ private fun CreateRecipeForm(
 
         // ---------- TIME ----------
         OutlinedTextField(
-            value = preparationTimeText,
-            onValueChange = { preparationTimeText = it.filter(Char::isDigit) },
+            value = time,
+            onValueChange = { recipeViewModel.setEditTime(it.filter(Char::isDigit)) },
             label = { Text("Tid (minutter)") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                keyboardType = KeyboardType.Number
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
@@ -220,7 +205,7 @@ private fun CreateRecipeForm(
         // ---------- DESCRIPTION ----------
         OutlinedTextField(
             value = description ?: "",
-            onValueChange = { description = it.ifBlank { null } },
+            onValueChange = recipeViewModel::setEditDescription,
             label = { Text("Beskrivelse") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -232,7 +217,7 @@ private fun CreateRecipeForm(
         // ---------- INSTRUCTIONS ----------
         OutlinedTextField(
             value = instructions ?: "",
-            onValueChange = { instructions = it.ifBlank { null } },
+            onValueChange = recipeViewModel::setEditInstructions,
             label = { Text("Fremgangsmåde") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -245,7 +230,8 @@ private fun CreateRecipeForm(
         // ---------- SAVE ----------
         Button(
             onClick = {
-                val prep = preparationTimeText.toIntOrNull() ?: 0
+                val prep = time.toIntOrNull() ?: 0
+
                 if (existingRecipeId != null) {
                     recipeViewModel.updateRecipe(
                         recipeId = existingRecipeId,
@@ -253,7 +239,7 @@ private fun CreateRecipeForm(
                         preparationTimeMinutes = prep,
                         description = description,
                         instructions = instructions,
-                        imageUri = selectedImage,
+                        imageUri = imageUri,
                         selectedGroups = selectedGroups
                     )
                 } else {
@@ -262,10 +248,12 @@ private fun CreateRecipeForm(
                         preparationTimeMinutes = prep,
                         description = description,
                         instructions = instructions,
-                        imageUri = selectedImage,
+                        imageUri = imageUri,
                         selectedGroups = selectedGroups
                     )
                 }
+
+                recipeViewModel.resetEditState()
                 onRecipeSaved()
             },
             enabled = title.isNotBlank(),

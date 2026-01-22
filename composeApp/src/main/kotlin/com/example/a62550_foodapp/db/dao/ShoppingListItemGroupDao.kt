@@ -177,7 +177,7 @@ JOIN (
 ) cheapest
 ON cheapest.ig_id = ig.id
 AND cheapest.min_price = iwp.price
-AND cheapest.sm_id = iwp.supermarket_id   -- 🔥 THIS LINE FIXES YOUR BUG
+AND cheapest.sm_id = iwp.supermarket_id
 
 WHERE slig.shopping_list_id = :shoppingListId
 """)

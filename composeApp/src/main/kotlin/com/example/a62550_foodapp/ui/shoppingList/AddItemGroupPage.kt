@@ -24,6 +24,8 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,6 +41,8 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.collections.component1
 import kotlin.collections.component2
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @Composable
 public fun AddItemGroupToShoppingListPage(
@@ -53,6 +57,8 @@ public fun AddItemGroupToShoppingListPage(
     val itemGroupEntries: List<ShoppingListItemGroupEntry> by viewModel.itemGroupEntries.collectAsState()
     val itemGroups by viewModel.itemGroups.collectAsState()
     val grouped = itemGroupEntries.groupBy { it.category }
+
+    var searchText by remember { mutableStateOf("") }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -72,11 +78,16 @@ public fun AddItemGroupToShoppingListPage(
             items = itemGroups,
             itemText = { it.name },
             itemUnit = { it.unitType },
+
+            value = searchText,
+            onValueChange = { searchText = it },
+
             onItemSelected = { entry ->
                 viewModel.add(
                     addedItem = entry,
                     portionSize = 0f
                 )
+                searchText = "" // ryd efter tilføj
             }
         )
 
