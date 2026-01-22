@@ -105,9 +105,12 @@ class ApiRecipeDetailViewModel(
                 if (existing != null) {
                     // increment quantity
                     shoppingListItemGroupDao.update(
-                        existing.copy(
-                            portionQuantity = existing.portionQuantity + 1
-                        )
+                        shoppingListId = existing.shoppingListId,
+                        itemGroupId = existing.itemGroupId,
+                        recipeId = existing.recipeId,
+                        portionQuantity = existing.portionQuantity + 1,
+                        portionSize = existing.portionSize,
+                        isChecked = existing.isChecked
                     )
                 } else {
                     // insert new row
@@ -124,7 +127,6 @@ class ApiRecipeDetailViewModel(
                 }
 
             }
-
 
 
         }
