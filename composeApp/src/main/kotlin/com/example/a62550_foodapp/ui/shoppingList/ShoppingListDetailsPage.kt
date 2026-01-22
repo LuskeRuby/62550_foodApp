@@ -2,6 +2,8 @@ package com.example.a62550_foodapp.ui.shoppingList
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,19 +35,27 @@ fun ShoppingListDetailsPage(
 ) {
     var addItemsOverlay by remember { mutableStateOf(false) }
 
-    if (!addItemsOverlay) {
-        ShoppingListPage(
-            shoppingListId = shoppingListId,
-            onAddItemsButtonClick = { addItemsOverlay = true },
-            editOverlay = false
-        )
-    } else {
-        BackHandler { addItemsOverlay = false }
-        AddItemGroupToShoppingListPage(
-            shoppingListId = shoppingListId,
-            disableItemOverlay = { addItemsOverlay = false }
-        )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(indication = null,
+                interactionSource = remember { MutableInteractionSource()}) {} // to prevent clicking underlying buttons
+    ) {
+        if (!addItemsOverlay) {
+            ShoppingListPage(
+                shoppingListId = shoppingListId,
+                onAddItemsButtonClick = { addItemsOverlay = true },
+                editOverlay = false
+            )
+        } else {
+            BackHandler { addItemsOverlay = false }
+            AddItemGroupToShoppingListPage(
+                shoppingListId = shoppingListId,
+                disableItemOverlay = { addItemsOverlay = false }
+            )
+        }
     }
+
 }
 
 
