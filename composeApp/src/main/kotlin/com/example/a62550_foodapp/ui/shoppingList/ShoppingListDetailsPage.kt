@@ -130,6 +130,11 @@ private fun ShoppingListPage(
                 TotalBox(totalUi)
             }
 
+            HorizontalDivider(
+                thickness = 3.dp,
+                color = themeViewModel.softDivide
+            )
+
             /* List */
             ShoppingListContent(
                 viewModel = viewModel,
@@ -185,8 +190,7 @@ private fun ShoppingListContent(
                                 {}
                             },
                         editList = !editOverlay,
-                        onDelete = { viewModel.delete(entry) },
-                        supermarketName = supermarket.name
+                        onDelete = { viewModel.delete(entry) }
                     )
                 }
             }
@@ -202,24 +206,20 @@ private fun SuperMarketHeader(
 ) {
     // Determine color based on supermarket name
     val backgroundColor = when (name.lowercase()) {
-        "netto" -> Color(0xFFFFCC00)           // Yellow (Netto brand color)
-        "kvickly" -> Color(0xFFFF1E31)         // Bright Red (Kvickly brand color)
-        "føtex" -> Color(0xFF3257A1)           // Green (Føtex brand color)
-        "meny" -> Color(0xFF86180C)            // Darker Red (Meny brand color)
-        "bilka" -> Color(0xFF3B8DDC)           // Darker blue (Bilka brand color)
-        "rema 1000" -> Color(0xFF6B95B6)       // Light blue (Rema 1000 brand color)
-        else -> Color(0xFF252525)              // Black fallback
+        "netto" -> themeViewModel.nettoColor
+        "kvickly" -> themeViewModel.kvicklyColor
+        "føtex" -> themeViewModel.føtex
+        "meny" -> themeViewModel.menyColor
+        "bilka" -> themeViewModel.bilkaColor
+        "rema 1000" -> themeViewModel.rema1000Color
+        else -> themeViewModel.otherSuperMarkets
     }
 
     // Logos that need white background behind them for visibility
-    val needsWhiteBackground = when (name.lowercase()) {
+    val needsWhiteBackground =
+        when (name.lowercase()) {
         "kvickly", "bilka" -> true
         else -> false
-    }
-
-    val textColor = when (name.lowercase()) {
-        "netto" -> Color.Black                 // Dark text on yellow
-        else -> Color.White                    // White text on dark backgrounds
     }
 
     Box(
@@ -251,7 +251,7 @@ private fun SuperMarketHeader(
         } else {
             Text(
                 text = name,
-                color = textColor,
+                color = themeViewModel.textOtherSuperMarkets,
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp
             )
@@ -259,11 +259,11 @@ private fun SuperMarketHeader(
     }
 }
 
-//TODO add more/all categories
 @Composable
 fun CategoryHeader(category: String) {
     val themeViewModel: ThemeViewModel = koinViewModel()
-    val color = when (category.lowercase()) {
+    val color =
+        when (category.lowercase()) {
         "tørvarer" -> themeViewModel.dryGoods
         "kød" -> themeViewModel.meat
         "fisk" -> themeViewModel.fish
@@ -299,19 +299,7 @@ private fun ShoppingItemRow(
     onCheckedChange: (Boolean) -> Unit,
     editList: Boolean,
     onDelete: () -> Unit,
-    supermarketName: String = ""
 ) {
-    // Get supermarket brand color for the left border accent
-    val supermarketColor = when (supermarketName.lowercase()) {
-        "netto" -> Color(0xFFFFCC00)           // Yellow
-        "kvickly" -> Color(0xFFFF1E31)         // Red
-        "føtex" -> Color(0xFF27AE60)           // Green
-        "meny" -> Color(0xFF86180C)            // Dark Red
-        "bilka" -> Color(0xFF3B8DDC)           // Blue
-        "rema 1000" -> Color(0xFF6B95B6)       // Light blue
-        else -> Color.Transparent
-    }
-
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { it * 0.4f },
         confirmValueChange = {
@@ -344,15 +332,6 @@ private fun ShoppingItemRow(
                     if (item.isChecked) themeViewModel.fadedBackground
                     else themeViewModel.backgroundColor,
                     RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
-                )
-                .then(
-                    if (supermarketColor != Color.Transparent) {
-                        Modifier.border(
-                            width = 3.dp,
-                            color = supermarketColor,
-                            shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp)
-                        )
-                    } else Modifier
                 )
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically

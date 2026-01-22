@@ -69,6 +69,17 @@ fun ShoppingListPage(
             .fillMaxSize()
             .background(themeViewModel.backgroundColor)
     ) {
+
+        Text(
+            text = "Indkøbslister",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            color = themeViewModel.textPrimary,
+            modifier = Modifier
+                .padding(vertical = 16.dp, horizontal = 16.dp)
+                .align(Alignment.Center)
+        )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
