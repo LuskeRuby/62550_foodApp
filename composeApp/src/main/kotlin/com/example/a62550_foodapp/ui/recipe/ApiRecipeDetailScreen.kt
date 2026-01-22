@@ -8,8 +8,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,8 +19,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.a62550_foodapp.api.dto.toApiIngredients
 import com.example.a62550_foodapp.viewmodel.ApiRecipeDetailViewModel
+import com.example.a62550_foodapp.viewmodel.ShoppingListViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.material3.AlertDialog
+
 
 @Composable
 fun ApiRecipeDetailScreen(
@@ -29,7 +35,18 @@ fun ApiRecipeDetailScreen(
 ) {
     val meal by viewModel.meal.collectAsState()
     val loading by viewModel.loading.collectAsState()
+    val shoppingListViewModel: ShoppingListViewModel = koinViewModel()
+    val shoppingLists by shoppingListViewModel.shoppingLists.collectAsState()
 
+    var showAddToListSheet by remember { mutableStateOf(false) }
+    var showCreateShoppingListDialog by remember { mutableStateOf(false) }
+    var newShoppingListName by remember { mutableStateOf("") }
+
+    val shoppingListUi = shoppingLists.map {
+        ShoppingListUi(id = it.id, name = it.name)
+    }
+
+    val scope = rememberCoroutineScope()
     LaunchedEffect(mealId) {
         viewModel.load(mealId)
     }
@@ -66,7 +83,7 @@ fun ApiRecipeDetailScreen(
                 )
 
                 ApiRecipeActionBar(
-                    onAdd = { /* MANGLER IMPLEMENT */ },
+                    onAdd =  { showAddToListSheet = true },
                     themeViewModel = themeViewModel
                 )
 
@@ -92,6 +109,63 @@ fun ApiRecipeDetailScreen(
             }
         }
     }
+    AddRecipeToShoppingListSheet(
+        visible = showAddToListSheet,
+        shoppingLists = shoppingListUi,
+        onDismiss = { showAddToListSheet = false },
+        onShoppingListSelected = { list ->
+            showAddToListSheet = false
+            meal?.let {
+                viewModel.addMealToShoppingList(
+                    shoppingListId = list.id,
+                    meal = it
+                )
+            }
+        },
+        onCreateNewShoppingList = {
+            showAddToListSheet = false
+            showCreateShoppingListDialog = true
+        }
+    )
+    if (showCreateShoppingListDialog) {
+        AlertDialog(
+            onDismissRequest = { showCreateShoppingListDialog = false },
+            title = { Text("Ny indkøbsliste") },
+            text = {
+                OutlinedTextField(
+                    value = newShoppingListName,
+                    onValueChange = { newShoppingListName = it },
+                    label = { Text("Navn") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val name = newShoppingListName.trim()
+                        if (name.isNotBlank()) {
+                            scope.launch {
+                                shoppingListViewModel.createShoppingListAndReturnId(name)
+                            }
+                        }
+                        newShoppingListName = ""
+                        showCreateShoppingListDialog = false
+                    }
+                ) { Text("Opret") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        newShoppingListName = ""
+                        showCreateShoppingListDialog = false
+                    }
+                ) { Text("Annuller") }
+            }
+        )
+    }
+
+
+
 }
 
 @Composable
