@@ -64,6 +64,7 @@ class ShoppingListDetailsViewModel(
                         .map {
                             it.copy(
                                 superMarketName = null,
+                                superMarketLogo = null,
                                 category = "Utilgængelige varer"
                             )
                         }

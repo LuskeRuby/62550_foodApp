@@ -1,6 +1,7 @@
 package com.example.a62550_foodapp.ui.shoppingList
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,8 +47,16 @@ import androidx.compose.runtime.setValue
 import com.example.a62550_foodapp.db.entity.ItemGroup
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Button
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.draw.clip
+import androidx.compose.material3.ButtonDefaults
 
 @Composable
 public fun AddItemGroupToShoppingListPage(
@@ -60,6 +69,17 @@ public fun AddItemGroupToShoppingListPage(
         )
 ) {
     val itemGroupEntries: List<ShoppingListItemGroupEntry> by viewModel.itemGroupEntries.collectAsState()
+    val mergedItems = itemGroupEntries
+        .groupBy { it.name to it.unitType }
+        .map { (_, items) ->
+            val first = items.first()
+
+            first.copy(
+                quantity = items.sumOf { it.quantity },                // hvis Int
+                size = items.sumOf { it.size.toDouble() }.toFloat()   // hvis Float
+            )
+        }
+
     val itemGroups by viewModel.itemGroups.collectAsState()
     val grouped = itemGroupEntries.groupBy { it.category }
 
@@ -84,7 +104,6 @@ public fun AddItemGroupToShoppingListPage(
             label = "Search items",
             items = itemGroups,
             itemText = { it.name },
-            itemUnit = { it.unitType },
 
             value = searchText,
             onValueChange = { searchText = it },
@@ -119,8 +138,11 @@ public fun AddItemGroupToShoppingListPage(
                 modifier = Modifier.width(90.dp)
             )
 
+            // -------- ADD --------
+            val canAdd = selectedGroup != null && qtyText.isNotBlank()
+
             Button(
-                enabled = selectedGroup != null && qtyText.isNotBlank(),
+                enabled = canAdd,
                 onClick = {
                     val qty = qtyText.toFloatOrNull() ?: return@Button
 
@@ -134,17 +156,43 @@ public fun AddItemGroupToShoppingListPage(
                     qtyText = ""
                     selectedGroup = null
                     searchText = ""
-                }
+                },
+                modifier = Modifier.height(48.dp),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (canAdd)
+                        themeViewModel.addButtonColor
+                    else
+                        Color.LightGray,
+                    contentColor = themeViewModel.onPrimaryColor,
+                    disabledContainerColor = Color.LightGray,
+                    disabledContentColor = themeViewModel.onPrimaryColor.copy(alpha = 0.6f)
+                )
             ) {
                 Text("Tilføj")
             }
+
         }
 
         // body
-        LazyColumn() {
-            grouped.forEach { (category, categoryItems) ->
-                item { CategoryHeader(category) }
-                items (categoryItems, key = { it.id }) { itemGroupEntry ->
+        LazyColumn(
+            modifier = Modifier.padding(top = 12.dp)
+        ) {
+            items(
+                mergedItems,
+                key = { it.name + it.unitType }
+            ) { itemGroupEntry ->
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 2.dp,
+                        pressedElevation = 4.dp
+                    )
+                ) {
                     EditItemRow(
                         item = itemGroupEntry,
                         onDelete = { viewModel.delete(itemGroupEntry) }
@@ -155,7 +203,7 @@ public fun AddItemGroupToShoppingListPage(
     }
 
 
-    // footer
+        // footer
     Box(modifier = Modifier.fillMaxSize()) {
         FloatingActionButton(
             onClick = disableItemOverlay,
@@ -195,51 +243,57 @@ fun EditItemRow(
         }
     )
 
-    SwipeToDismissBox(
-        state = dismissState,
-        enableDismissFromStartToEnd = false,
-        backgroundContent = {
-            Box(
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(themeViewModel.backgroundColor)
+            .clip(RoundedCornerShape(12.dp))
+    ) {
+        SwipeToDismissBox(
+            state = dismissState,
+            enableDismissFromStartToEnd = false,
+            backgroundContent = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Red)
+                        .padding(end = 20.dp),
+                    contentAlignment = Alignment.CenterEnd,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete item",
+                        tint = Color.White
+                    )
+                }
+            }
+        ) {
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Red)
-                    .padding(end = 20.dp),
-                contentAlignment = Alignment.CenterEnd,
+                    .fillMaxWidth()
+                    .background(themeViewModel.backgroundColor)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete item",
-                    tint = Color.White
+
+                //name
+                Text(
+                    text = "${item.quantity} x ${item.name}",
+                    modifier = Modifier.weight(1f),
+                    fontSize = 15.sp,
+                    color = themeViewModel.textPrimary,
+                    fontWeight = FontWeight.Medium
+                )
+
+                //size
+                Text(
+                    text = "${item.quantity} × ${item.size.toInt()} ${item.unitType}",
+                    modifier = Modifier.width(90.dp),
+                    fontSize = 13.sp,
+                    color = themeViewModel.textPrimary,
+                    textAlign = TextAlign.End
                 )
             }
-        }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(themeViewModel.backgroundColor,
-                    RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            //name
-            Text(
-                text = "${item.quantity} x ${item.name}",
-                modifier = Modifier.weight(1f),
-                fontSize = 15.sp,
-                color = themeViewModel.textPrimary,
-                fontWeight = FontWeight.Medium
-            )
-
-            //size
-            Text(
-                text = "${item.quantity} × ${item.size.toInt()} ${item.unitType}",
-                modifier = Modifier.width(90.dp),
-                fontSize = 13.sp,
-                color = themeViewModel.textPrimary,
-                textAlign = TextAlign.End
-            )
         }
     }
 }
