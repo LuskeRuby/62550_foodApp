@@ -20,7 +20,6 @@ import com.example.a62550_foodapp.ui.components.SearchSelectField
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
-import androidx.compose.ui.focus.onFocusChanged
 
 @Composable
 fun AddItemGroupToRecipePage(
@@ -35,23 +34,23 @@ fun AddItemGroupToRecipePage(
     var searchText by remember { mutableStateOf("") }
     var qtyText by remember { mutableStateOf("") }
 
-    LazyColumn(
+
+        Column(
         modifier = Modifier
             .fillMaxSize()
             .background(themeViewModel.backgroundColor)
             .padding(16.dp)
     ) {
 
-        item {
-            Text(
-                "Tilføj ingredienser",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
+        Text(
+            "Tilføj ingredienser",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
 
-            Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
-            // -------- SEARCH --------
+        // -------- SEARCH --------
             SearchSelectField(
                 label = "Søg ingrediens",
                 items = allGroups,
@@ -66,99 +65,88 @@ fun AddItemGroupToRecipePage(
 
             Spacer(Modifier.height(8.dp))
 
-            // -------- QTY + UNIT + ADD --------
-            val rowHeight = TextFieldDefaults.MinHeight
+        // -------- QTY + UNIT + ADD --------
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
+            OutlinedTextField(
+                value = qtyText,
+                onValueChange = { qtyText = it.filter(Char::isDigit) },
+                label = { Text("Antal") },
+                modifier = Modifier.weight(1f)
+            )
+
+            OutlinedTextField(
+                value = selectedGroup?.unitType ?: "",
+                onValueChange = {},
+                label = { Text("Type") },
+                enabled = false,
+                modifier = Modifier.width(90.dp)
+            )
+
+            Button(
+                enabled = selectedGroup != null && qtyText.isNotBlank(),
+                onClick = {
+                    val qty = qtyText.toIntOrNull() ?: return@Button
+
+                    selectedGroup?.let {
+                        recipeViewModel.addTempGroup(it.id, qty)
+                    }
+
+                    qtyText = ""
+                    selectedGroup = null
+                    searchText = ""
+                }
+
             ) {
-
-                OutlinedTextField(
-                    value = qtyText,
-                    onValueChange = { qtyText = it.filter(Char::isDigit) },
-                    modifier = Modifier
-                        .width(92.dp)
-                        .defaultMinSize(minHeight = rowHeight),
-                    singleLine = true
-                )
-
-                Box(
-                    modifier = Modifier
-                        .height(rowHeight)
-                        .weight(1f),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Text(
-                        text = selectedGroup?.unitType ?: "",
-                        fontSize = 14.sp,
-                        color = themeViewModel.textSecondary
-                    )
-                }
-
-                Button(
-                    enabled = selectedGroup != null && qtyText.isNotBlank(),
-                    onClick = {
-                        val qty = qtyText.toIntOrNull() ?: return@Button
-
-                        selectedGroup?.let {
-                            recipeViewModel.addTempGroup(it.id, qty)
-                        }
-
-                        qtyText = ""
-                        selectedGroup = null
-                        searchText = ""
-                    },
-                    modifier = Modifier.height(rowHeight),
-                    contentPadding = PaddingValues(horizontal = 20.dp)
-                ) {
-                    Text("Tilføj")
-                }
+                Text("Tilføj")
             }
-
-            Spacer(Modifier.height(16.dp))
         }
+
+        Spacer(Modifier.height(16.dp))
 
         // -------- SELECTED LIST --------
-        items(tempSelected, key = { it.itemGroupId }) { sg ->
+        LazyColumn(
+            modifier = Modifier.weight(1f)
+        ) {
+            items(tempSelected, key = { it.itemGroupId }) { sg ->
 
-            val name =
-                allGroups.firstOrNull { it.id == sg.itemGroupId }?.name ?: "(ukendt)"
+                val name =
+                    allGroups.firstOrNull { it.id == sg.itemGroupId }?.name ?: "(ukendt)"
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Text(
-                    "$name — ${sg.quantity}",
-                    modifier = Modifier.weight(1f),
-                    fontWeight = FontWeight.Medium
-                )
-
-                TextButton(
-                    onClick = { recipeViewModel.removeTempGroup(sg.itemGroupId) }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Fjern", color = themeViewModel.errorColor)
+
+                    Text(
+                        "$name — ${sg.quantity}",
+                        modifier = Modifier.weight(1f),
+                        fontWeight = FontWeight.Medium
+                    )
+
+                    TextButton(
+                        onClick = { recipeViewModel.removeTempGroup(sg.itemGroupId) }
+                    ) {
+                        Text("Fjern", color = themeViewModel.errorColor)
+                    }
                 }
             }
         }
 
-        item {
-            Spacer(Modifier.height(16.dp))
-
-            // -------- DONE --------
-            Button(
-                onClick = onDone,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-            ) {
-                Text("Færdig")
-            }
+        // -------- DONE --------
+        Button(
+            onClick = onDone,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+        ) {
+            Text("Færdig")
         }
     }
 }
