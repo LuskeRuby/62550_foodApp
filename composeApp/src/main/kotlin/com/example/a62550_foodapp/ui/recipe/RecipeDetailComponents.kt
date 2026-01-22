@@ -23,6 +23,13 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import java.util.Locale
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import org.koin.androidx.compose.koinViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 
@@ -249,6 +256,113 @@ fun AddRecipeToShoppingListSheet(
             }
 
             Spacer(Modifier.height(12.dp))
+        }
+    }
+}
+
+@Composable
+fun RecipeDetailLayout(
+    title: String,
+    imagePath: String?,
+    preparationMinutes: Int,
+    price: Float,
+    portions: Int,
+    onDecreasePortions: () -> Unit,
+    onIncreasePortions: () -> Unit,
+    ingredients: List<Pair<String, String>>,
+    description: String?,
+    instructions: String?,
+    scrollState: ScrollState,
+    onBack: () -> Unit,
+    onEdit: (() -> Unit)?,
+    onAddToList: (() -> Unit)?,
+    themeViewModel: ThemeViewModel
+) {
+    val collapseProgress = (scrollState.value / 300f).coerceIn(0f, 1f)
+
+    var actionBarHeight by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(themeViewModel.backgroundColor)
+    ) {
+
+        RecipeHeaderCollapsing(
+            imageUrl = imagePath,
+            title = title,
+            scrollState = scrollState,
+            onBack = onBack,
+            onEdit = onEdit
+        )
+
+        Box(
+            modifier = Modifier.onSizeChanged {
+                actionBarHeight = with(density) { it.height.toDp() }
+            }
+        ) {
+            RecipeActionBarLocal(
+                portions = portions,
+                onDecrease = onDecreasePortions,
+                onIncrease = onIncreasePortions,
+                preparationMinutes = preparationMinutes,
+                price = price,
+                onAdd = { onAddToList?.invoke() },
+                themeViewModel = themeViewModel
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(scrollState)
+                .padding(
+                    top = actionBarHeight * collapseProgress,
+                    bottom = 24.dp
+                )
+        ) {
+
+            Spacer(Modifier.height(8.dp))
+
+            IngredientsCard(ingredients = ingredients)
+
+            Spacer(Modifier.height(24.dp))
+
+            if (!description.isNullOrBlank()) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    color = themeViewModel.cardBackgroundColor,
+                    shape = MaterialTheme.shapes.large
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text("Beskrivelse", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(8.dp))
+                        Text(description, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+
+                Spacer(Modifier.height(24.dp))
+            }
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                color = themeViewModel.cardBackgroundColor,
+                shape = MaterialTheme.shapes.large
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("Fremgangsmåde", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        instructions ?: "Ingen instruktioner angivet.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
         }
     }
 }

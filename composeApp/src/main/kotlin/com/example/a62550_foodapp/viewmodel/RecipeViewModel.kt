@@ -263,8 +263,37 @@ class RecipeViewModel(
      * TEMP INGREDIENT SELECTION (CREATE / EDIT SCREEN)
      * ------------------------------------------------------------------------- */
 
+    // ---- EDIT STATE (UI FORM STATE) ----
+
+    private val _editTitle = MutableStateFlow("")
+    val editTitle = _editTitle.asStateFlow()
+
+    private val _editTime = MutableStateFlow("")
+    val editTime = _editTime.asStateFlow()
+
+    private val _editDescription = MutableStateFlow<String?>(null)
+    val editDescription = _editDescription.asStateFlow()
+
+    private val _editInstructions = MutableStateFlow<String?>(null)
+    val editInstructions = _editInstructions.asStateFlow()
+
+    private val _editImagePath = MutableStateFlow<String?>(null)
+    val editImagePath = _editImagePath.asStateFlow()
+
+    private val _editImageUri = MutableStateFlow<Uri?>(null)
+    val editImageUri = _editImageUri.asStateFlow()
+
+    private val _ingredientsLoadedForEdit = MutableStateFlow(false)
+
     private val _tempGroups = MutableStateFlow<List<SelectedItemGroup>>(emptyList())
     val tempGroups = _tempGroups.asStateFlow()
+
+    fun ingredientsLoaded(): Boolean =
+        _ingredientsLoadedForEdit.value
+
+    fun markIngredientsLoaded() {
+        _ingredientsLoadedForEdit.value = true
+    }
 
     fun setTempGroups(groups: List<SelectedItemGroup>) {
         _tempGroups.value = groups
@@ -286,6 +315,45 @@ class RecipeViewModel(
     fun clearTempGroups() {
         _tempGroups.value = emptyList()
     }
+
+    fun resetEditState() {
+        _ingredientsLoadedForEdit.value = false
+        _tempGroups.value = emptyList()
+
+        _editTitle.value = ""
+        _editTime.value = ""
+        _editDescription.value = null
+        _editInstructions.value = null
+        _editImagePath.value = null
+        _editImageUri.value = null
+    }
+
+    // setters for ui model
+    fun setEditTitle(v: String) { _editTitle.value = v }
+    fun setEditTime(v: String) { _editTime.value = v }
+    fun setEditDescription(v: String?) { _editDescription.value = v }
+    fun setEditInstructions(v: String?) { _editInstructions.value = v }
+    fun setEditImageUri(v: Uri?) { _editImageUri.value = v }
+    fun setEditImagePath(v: String?) { _editImagePath.value = v }
+
+    //load funktion
+    suspend fun loadRecipeForEdit(recipeId: Long) {
+        if (_ingredientsLoadedForEdit.value) return
+
+        val recipe = recipeDao.getRecipeById(recipeId).first() ?: return
+
+        _editTitle.value = recipe.title
+        _editTime.value = recipe.preparationTimeMinutes.toString()
+        _editDescription.value = recipe.description
+        _editInstructions.value = recipe.instructions
+        _editImagePath.value = recipe.imagePath
+        _editImageUri.value = null
+
+        _tempGroups.value = getSelectedGroupsForRecipe(recipeId)
+
+        _ingredientsLoadedForEdit.value = true
+    }
+
 
     /* -------------------------------------------------------------------------
      * SHOPPING LIST INTEGRATION

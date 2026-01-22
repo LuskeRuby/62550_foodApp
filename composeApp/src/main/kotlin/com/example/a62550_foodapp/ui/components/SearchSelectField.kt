@@ -27,14 +27,17 @@ fun <T> SearchSelectField(
     items: List<T>,
     itemText: (T) -> String,
     itemUnit: (T) -> String? = { null },
+
+    value: String,
+    onValueChange: (String) -> Unit,
+
     onItemSelected: (T) -> Unit
 ) {
-    var searchQuery by remember { mutableStateOf("") }
     var selectedItem: T? by remember { mutableStateOf(null) }
 
     val matches =
-        if (searchQuery.isNotBlank())
-            items.filter { itemText(it).contains(searchQuery, ignoreCase = true) }
+        if (value.isNotBlank())
+            items.filter { itemText(it).contains(value, ignoreCase = true) }
         else emptyList()
 
     val displayedUnitType = when {
@@ -43,8 +46,7 @@ fun <T> SearchSelectField(
         else -> null
     }
 
-    Column(modifier = Modifier.
-        padding(horizontal = 16.dp)) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -52,9 +54,9 @@ fun <T> SearchSelectField(
             modifier = Modifier.fillMaxWidth()
         ) {
             OutlinedTextField(
-                value = searchQuery,
+                value = value,
                 onValueChange = {
-                    searchQuery = it
+                    onValueChange(it)
                     selectedItem = null
                 },
                 label = { Text(label) },
@@ -66,7 +68,7 @@ fun <T> SearchSelectField(
 
         Spacer(Modifier.height(8.dp))
 
-        if (searchQuery.isNotBlank()) {
+        if (value.isNotBlank()) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(4.dp)) {
                     if (matches.isEmpty()) {
@@ -77,9 +79,9 @@ fun <T> SearchSelectField(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
+                                        selectedItem = item
+                                        onValueChange(itemText(item)) // 👈 BLIVER i feltet
                                         onItemSelected(item)
-                                        selectedItem = null
-                                        searchQuery = ""
                                     }
                                     .padding(8.dp)
                             ) {
@@ -93,4 +95,3 @@ fun <T> SearchSelectField(
         }
     }
 }
-
