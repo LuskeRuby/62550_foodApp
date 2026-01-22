@@ -12,7 +12,6 @@ import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
 import com.example.a62550_foodapp.db.entity.Supermarket
 import com.example.a62550_foodapp.model.Recipe as RecipeModel
 import com.example.a62550_foodapp.utils.saveRecipeImage
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.File
@@ -360,7 +359,7 @@ class RecipeViewModel(
      * ------------------------------------------------------------------------- */
 
     /**
-     * Adds all ingredients of a recipe to the shopping list.
+     * Adds all ingredients (itemGroups) of a recipe to the shopping list.
      */
     fun addRecipeToShoppingList(
         shoppingListId: Long,
@@ -374,7 +373,7 @@ class RecipeViewModel(
                 shoppingListItemGroupDao.recipeExistsInList(
                     shoppingListId = shoppingListId,
                     recipeId = recipeId
-                ) > 0
+                )
 
             if (alreadyExists) return@launch
 
@@ -382,13 +381,13 @@ class RecipeViewModel(
 
             if (recipeItems.isEmpty()) return@launch
 
-            val rows = recipeItems.map { ri ->
+            val rows = recipeItems.map { recipeItem ->
                 ShoppingListItemGroup(
                     shoppingListId = shoppingListId,
-                    itemGroupId = ri.itemGroupId,
+                    itemGroupId = recipeItem.itemGroupId,
                     recipeId = recipeId,
-                    portionQuantity = ri.sizeOfOnePortion * portions,
-                    portionSize = ri.sizeOfOnePortion.toFloat(),
+                    portionQuantity = portions,
+                    portionSize = recipeItem.sizeOfOnePortion.toFloat(),
                     isChecked = false
                 )
             }

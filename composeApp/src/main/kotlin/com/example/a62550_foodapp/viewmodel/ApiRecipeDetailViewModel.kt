@@ -86,7 +86,12 @@ class ApiRecipeDetailViewModel(
 
             if (apiIngredients.isEmpty()) return@launch
 
-            val rows = mutableListOf<ShoppingListItemGroup>()
+            val existingEntries =
+                shoppingListItemGroupDao
+                    .getItemGroupsMatchingListId(shoppingListId)
+                    .first()
+                    .associateBy { it.itemGroupId }
+
 
             for (apiIng in apiIngredients) {
 
@@ -95,19 +100,35 @@ class ApiRecipeDetailViewModel(
                     apiMeasure = apiIng.measure
                 )
 
-                rows += ShoppingListItemGroup(
-                    shoppingListId = shoppingListId,
-                    itemGroupId = group.id,
-                    recipeId = null,
-                    portionQuantity = 1,
-                    portionSize = 1f,
-                    isChecked = false
-                )
+                val existing = existingEntries[group.id]
+
+                if (existing != null) {
+                    // increment quantity
+                    shoppingListItemGroupDao.update(
+                        shoppingListId = existing.shoppingListId,
+                        itemGroupId = existing.itemGroupId,
+                        recipeId = existing.recipeId,
+                        portionQuantity = existing.portionQuantity + 1,
+                        portionSize = existing.portionSize,
+                        isChecked = existing.isChecked
+                    )
+                } else {
+                    // insert new row
+                    shoppingListItemGroupDao.insert(
+                        ShoppingListItemGroup(
+                            shoppingListId = shoppingListId,
+                            itemGroupId = group.id,
+                            recipeId = null,
+                            portionQuantity = 1,
+                            portionSize = 1f,
+                            isChecked = false
+                        )
+                    )
+                }
+
             }
 
-            if (rows.isNotEmpty()) {
-                shoppingListItemGroupDao.insert(rows)
-            }
+
         }
     }
 

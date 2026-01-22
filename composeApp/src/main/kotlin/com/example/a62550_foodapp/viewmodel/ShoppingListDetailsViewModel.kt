@@ -1,5 +1,6 @@
 package com.example.a62550_foodapp.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a62550_foodapp.db.dao.ItemGroupDao
@@ -34,6 +35,7 @@ class ShoppingListDetailsViewModel(
                 initialValue = emptyMap()
             )
 
+    // actual DB table we edit
     private val itemGroupList: StateFlow<List<ShoppingListItemGroup>> =
         shoppingListItemGroupDao.getItemGroupsMatchingListId(shoppingListId)
             .stateIn(
@@ -42,6 +44,7 @@ class ShoppingListDetailsViewModel(
                 initialValue = emptyList()
             )
 
+    // items visible in ShoppingListDetails
     @OptIn(ExperimentalCoroutinesApi::class)
     val items: StateFlow<List<ShoppingListEntry>> =
         storeFilter.flatMapLatest { selectedStores ->
@@ -73,6 +76,7 @@ class ShoppingListDetailsViewModel(
             initialValue = emptyList()
         )
 
+    // for shoppingListDetails searchbar suggestions
     val itemGroups: StateFlow<List<ItemGroup>> =
         itemGroupDao.getAllItemGroups()
             .stateIn(
@@ -81,6 +85,7 @@ class ShoppingListDetailsViewModel(
                 initialValue = emptyList()
             )
 
+    // items visible while adding itemGroups to shopping list
     val itemGroupEntries: StateFlow<List<ShoppingListItemGroupEntry>> =
         shoppingListItemGroupDao.getAllItemGroupEntries(shoppingListId)
             .stateIn(
@@ -108,54 +113,93 @@ class ShoppingListDetailsViewModel(
             initialValue = TotalUi(0f, 0)
         )
 
-    fun add(addedItem: ItemGroup, portionQuantity: Int = 1, portionSize: Float) {
+    fun add(addedItem: ItemGroup, recipeId: Long? = null, portionQuantity: Int = 1, portionSize: Float) {
         viewModelScope.launch {
             val entry = ShoppingListItemGroup(
                 shoppingListId = shoppingListId,
                 itemGroupId = addedItem.id,
-                recipeId = null,
+                recipeId = recipeId,
                 portionQuantity = portionQuantity,
                 portionSize = portionSize,
                 isChecked = false
             )
 
-            if (itemGroupList.value.any { it == entry }) {
+            val doesEntryExistInDB = shoppingListItemGroupDao.existsInDB(
+                shoppingListId = entry.shoppingListId,
+                itemGroupId = entry.itemGroupId,
+                recipeId = entry.recipeId
+            )
+
+            if (doesEntryExistInDB) {
                 update(entry)
             } else {
-                shoppingListItemGroupDao.insert(entry)
+                try {
+                    shoppingListItemGroupDao.insert(entry)
+                } catch (e: Exception) {
+                    Log.e("ShoppingListDetailsVM", "Failed to insert ShoppingListItemGroup", e)
+                }
             }
         }
     }
 
     fun update(item: ShoppingListItemGroup) {
         viewModelScope.launch {
-            val prevQty = itemGroupList.value.first { it.id == item.id }.portionQuantity
-            shoppingListItemGroupDao.update(
-                item.copy(portionQuantity = item.portionQuantity + prevQty)
+
+            val previousQuantity = shoppingListItemGroupDao.getQuantity(
+                shoppingListId = item.shoppingListId,
+                itemGroupId = item.itemGroupId,
+                recipeId = item.recipeId
             )
+
+            try {
+                shoppingListItemGroupDao.update(
+                    shoppingListId = item.shoppingListId,
+                    itemGroupId = item.itemGroupId,
+                    recipeId = item.recipeId,
+                    portionQuantity = item.portionQuantity + previousQuantity,
+                    portionSize = item.portionSize,
+                    isChecked = item.isChecked
+                )
+            } catch (e: Exception) {
+                Log.e("ShoppingListDetailsVM", "Failed to update ShoppingListItemGroup", e)
+            }
+
         }
     }
 
     fun delete(item: ShoppingListEntry) {
         viewModelScope.launch {
-            shoppingListItemGroupDao.delete(id = item.id)
+            try {
+                shoppingListItemGroupDao.delete(id = item.id)
+            } catch (e: Exception) {
+                Log.e("ShoppingListDetailsVM", "Failed to delete ShoppingListItemGroup", e)
+            }
+
         }
     }
 
     fun delete(item: ShoppingListItemGroupEntry) {
         viewModelScope.launch {
-            shoppingListItemGroupDao.delete(id = item.id)
+            try {
+                shoppingListItemGroupDao.delete(id = item.id)
+            } catch (e: Exception) {
+                Log.e("ShoppingListDetailsVM", "Failed to delete ShoppingListItemGroup", e)
+            }
         }
     }
 
     fun setCheckmark(item: ShoppingListEntry, checked: Boolean) {
         viewModelScope.launch {
-            shoppingListItemGroupDao.updateCheckmark(
-                shoppingListId = shoppingListId,
-                itemGroupId = item.itemGroupId,
-                recipeId = item.recipeId,
-                checked = checked
-            )
+            try {
+                shoppingListItemGroupDao.updateCheckmark(
+                    shoppingListId = shoppingListId,
+                    itemGroupId = item.itemGroupId,
+                    recipeId = item.recipeId,
+                    checked = checked
+                )
+            } catch (e: Exception) {
+                Log.e("ShoppingListDetailsVM", "Failed to set checkmark ShoppingListItemGroup", e)
+            }
         }
     }
 }

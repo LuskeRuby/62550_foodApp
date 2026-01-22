@@ -45,7 +45,9 @@ import kotlin.collections.component2
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.example.a62550_foodapp.db.entity.ItemGroup
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -79,6 +81,7 @@ public fun AddItemGroupToShoppingListPage(
         }
 
     val itemGroups by viewModel.itemGroups.collectAsState()
+    val grouped = itemGroupEntries.groupBy { it.category }
 
     var searchText by remember { mutableStateOf("") }
     var selectedGroup by remember { mutableStateOf<ItemGroup?>(null) }
@@ -96,59 +99,44 @@ public fun AddItemGroupToShoppingListPage(
             modifier = Modifier.padding(16.dp)
         )
 
+        //TODO handle portion size
+        SearchSelectField(
+            label = "Search items",
+            items = itemGroups,
+            itemText = { it.name },
 
-        // Spacer(Modifier.height(8.dp))
+            value = searchText,
+            onValueChange = { searchText = it },
+
+            onItemSelected = { entry ->
+                selectedGroup = entry
+            }
+        )
+
+        Spacer(Modifier.height(8.dp))
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         ) {
 
-            val rowHeight = TextFieldDefaults.MinHeight
-
-            // -------- SEARCH --------
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(rowHeight)
-            ) {
-                SearchSelectField(
-                    label = "Søg vare",
-                    items = itemGroups,
-                    itemText = { it.name },
-                    value = searchText,
-                    onValueChange = { searchText = it },
-                    onItemSelected = { selectedGroup = it }
-                )
-            }
-
-            // -------- QTY --------
             OutlinedTextField(
                 value = qtyText,
                 onValueChange = { qtyText = it.filter(Char::isDigit) },
-                modifier = Modifier
-                    .width(88.dp)
-                    .height(rowHeight),
-                singleLine = true
+                label = { Text("Antal") },
+                modifier = Modifier.weight(1f)
             )
 
-
-            // -------- UNIT --------
-            Box(
-                modifier = Modifier
-                    .height(rowHeight)
-                    .padding(horizontal = 4.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = selectedGroup?.unitType ?: "",
-                    fontSize = 14.sp,
-                    color = themeViewModel.textSecondary
-                )
-            }
+            OutlinedTextField(
+                value = selectedGroup?.unitType ?: "",
+                onValueChange = {},
+                label = { Text("Type") },
+                enabled = false,
+                modifier = Modifier.width(90.dp)
+            )
 
             // -------- ADD --------
             val canAdd = selectedGroup != null && qtyText.isNotBlank()
@@ -169,7 +157,7 @@ public fun AddItemGroupToShoppingListPage(
                     selectedGroup = null
                     searchText = ""
                 },
-                modifier = Modifier.height(rowHeight),
+                modifier = Modifier.height(48.dp),
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (canAdd)

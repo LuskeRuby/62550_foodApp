@@ -31,8 +31,23 @@ interface ShoppingListItemGroupDao {
     suspend fun insert(items: List<ShoppingListItemGroup>)
 
     //TODO avoid race condition when updating items
-    @Update
-    suspend fun update(item: ShoppingListItemGroup)
+    @Query("""
+        UPDATE shopping_list_item_groups
+        SET portion_quantity = :portionQuantity,
+            portion_size = :portionSize,
+            is_checked = :isChecked
+        WHERE shopping_list_id = :shoppingListId
+          AND item_group_id = :itemGroupId
+          AND (recipe_id = :recipeId OR (recipe_id IS NULL AND :recipeId IS NULL))
+    """)
+    suspend fun update(
+        shoppingListId: Long,
+        itemGroupId: Long,
+        recipeId: Long?,
+        portionQuantity: Int,
+        portionSize: Float,
+        isChecked: Boolean
+    )
 
     @Delete
     suspend fun delete(item: ShoppingListItemGroup)
@@ -205,15 +220,46 @@ WHERE slig.shopping_list_id = :shoppingListId
     fun getAllItemGroupEntries(shoppingListId: Long): Flow<List<ShoppingListItemGroupEntry>>
 
     @Query("""
-        SELECT COUNT(*) 
-        FROM shopping_list_item_groups
-        WHERE shopping_list_id = :shoppingListId
-          AND recipe_id = :recipeId
+        SELECT EXISTS (
+            SELECT 1
+            FROM shopping_list_item_groups
+            WHERE shopping_list_id = :shoppingListId
+              AND recipe_id = :recipeId OR (recipe_id IS NULL AND :recipeId IS NULL)
+        )
     """)
     suspend fun recipeExistsInList(
         shoppingListId: Long,
         recipeId: Long
+    ): Boolean
+
+    @Query("""
+        SELECT EXISTS (
+            SELECT 1
+            FROM shopping_list_item_groups
+            WHERE shopping_list_id = :shoppingListId
+                AND item_group_id = :itemGroupId
+                AND (recipe_id = :recipeId OR (recipe_id IS NULL AND :recipeId IS NULL))
+        )
+    """)
+    suspend fun existsInDB(
+        shoppingListId: Long,
+        itemGroupId: Long,
+        recipeId: Long?
+    ): Boolean
+
+    @Query("""
+        SELECT portion_quantity
+        FROM shopping_list_item_groups
+        WHERE shopping_list_id = :shoppingListId
+          AND item_group_id = :itemGroupId
+          AND (recipe_id = :recipeId OR (recipe_id IS NULL AND :recipeId IS NULL))
+    """)
+    suspend fun getQuantity(
+        shoppingListId: Long,
+        itemGroupId: Long,
+        recipeId: Long?
     ): Int
+
 
     @Query("""
 SELECT
