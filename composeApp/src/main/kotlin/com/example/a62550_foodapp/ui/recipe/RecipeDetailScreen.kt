@@ -20,6 +20,7 @@ import com.example.a62550_foodapp.viewmodel.*
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 @Composable
 fun RecipeDetailScreen(
@@ -74,7 +75,22 @@ fun RecipeDetailScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                Snackbar(
+                    modifier = Modifier.padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    containerColor = themeViewModel.cardBackgroundColor,
+                    contentColor = themeViewModel.primaryColor
+                ) {
+                    Text(
+                        text = data.visuals.message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
     ) { padding ->
 
         Box(
