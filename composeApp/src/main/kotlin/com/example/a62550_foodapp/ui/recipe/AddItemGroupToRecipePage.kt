@@ -51,16 +51,17 @@ fun AddItemGroupToRecipePage(
             .fillMaxSize()
     ) {
 
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(themeViewModel.backgroundColor) // GRÅ BAGGRUND
+        ) {
 
-            // ---------- TOP WHITE BOX ----------
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            // ===== WHITE HEADER BLOCK =====
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .background(themeViewModel.surfaceColor) // HVID
             ) {
                 Column {
 
@@ -69,10 +70,10 @@ fun AddItemGroupToRecipePage(
                         "Tilføj ingredienser",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp)
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 12.dp, bottom = 12.dp)
                     )
-
-                    Spacer(Modifier.height(12.dp))
 
                     // ---------- INPUT ROW ----------
                     Row(
@@ -81,7 +82,7 @@ fun AddItemGroupToRecipePage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 12.dp)
                     ) {
 
                         val rowHeight = TextFieldDefaults.MinHeight
@@ -103,7 +104,7 @@ fun AddItemGroupToRecipePage(
                             )
                         }
 
-                        // ---- QTY + UNIT ----
+                        // ---- QTY ----
                         OutlinedTextField(
                             value = qtyText,
                             onValueChange = { qtyText = it.filter(Char::isDigit) },
@@ -113,23 +114,13 @@ fun AddItemGroupToRecipePage(
                                 .focusRequester(qtyFocusRequester),
                             singleLine = true,
                             placeholder = { Text("0") },
-                            textStyle = LocalTextStyle.current.copy(
-                                textAlign = TextAlign.Start
-                            ),
                             trailingIcon = {
-                                Box(
-                                    modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .widthIn(min = 28.dp),
-                                    contentAlignment = Alignment.CenterEnd
-                                ) {
-                                    Text(
-                                        text = selectedGroup?.unitType ?: "kg/L",
-                                        color = themeViewModel.textSecondary,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
+                                Text(
+                                    text = selectedGroup?.unitType ?: "kg/L",
+                                    color = themeViewModel.textSecondary,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
                             },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = themeViewModel.addButtonColor,
@@ -137,7 +128,6 @@ fun AddItemGroupToRecipePage(
                                 cursorColor = themeViewModel.addButtonColor
                             )
                         )
-
 
                         // ---- ADD ----
                         Button(
@@ -152,7 +142,6 @@ fun AddItemGroupToRecipePage(
                                 searchText = ""
                             },
                             modifier = Modifier.height(rowHeight),
-                            contentPadding = PaddingValues(horizontal = 20.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = themeViewModel.addButtonColor,
                                 contentColor = themeViewModel.onPrimaryColor
@@ -164,25 +153,37 @@ fun AddItemGroupToRecipePage(
                 }
             }
 
+            // ===== GRÅ SPACER =====
+            Spacer(modifier = Modifier.height(12.dp))
+
             // ---------- LIST ----------
-            LazyColumn(
-                contentPadding = PaddingValues(bottom = 96.dp),
-                modifier = Modifier.padding(top = 4.dp)
+            Card(
+                shape = RoundedCornerShape(0.dp),
+                colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 8.dp)
             ) {
-                items(
-                    tempSelected,
-                    key = { it.itemGroupId }
-                ) { sg ->
+                LazyColumn(
+                    contentPadding = PaddingValues(bottom = 0.dp)
+                ) {
+                    items(
+                        tempSelected,
+                        key = { it.itemGroupId }
+                    ) { sg ->
 
-                    val group = allGroups.firstOrNull { it.id == sg.itemGroupId }
+                        val group = allGroups.firstOrNull { it.id == sg.itemGroupId }
 
-                    EditRecipeItemRow(
-                        name = group?.name ?: "(ukendt)",
-                        quantity = sg.quantity,
-                        unit = group?.unitType ?: "",
-                        onDelete = { recipeViewModel.removeTempGroup(sg.itemGroupId) },
-                        themeViewModel = themeViewModel
-                    )
+                        EditRecipeItemRow(
+                            name = group?.name ?: "(ukendt)",
+                            quantity = sg.quantity,
+                            unit = group?.unitType ?: "",
+                            onDelete = { recipeViewModel.removeTempGroup(sg.itemGroupId) },
+                            themeViewModel = themeViewModel
+                        )
+                    }
                 }
             }
         }
@@ -266,7 +267,7 @@ private fun EditRecipeItemRow(
                     text = "$quantity $unit",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
-                    color = themeViewModel.priceTagColor
+                    color = themeViewModel.textSecondary
                 )
             }
 
