@@ -4,34 +4,36 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.a62550_foodapp.db.dao.ItemGroupDao
 import com.example.a62550_foodapp.db.dao.ShoppingListItemGroupDao
+import com.example.a62550_foodapp.db.dao.SupermarketDao
 import com.example.a62550_foodapp.db.entity.ItemGroup
 import com.example.a62550_foodapp.db.entity.ShoppingListItemGroup
 import com.example.a62550_foodapp.db.projection.ShoppingListEntry
 import com.example.a62550_foodapp.db.projection.ShoppingListItemGroupEntry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlin.Int
 
 class ShoppingListDetailsViewModel(
     private val shoppingListId: Long,
-    private val itemGroupDao: ItemGroupDao,
-    private val shoppingListItemGroupDao: ShoppingListItemGroupDao
+    private val shoppingListItemGroupDao: ShoppingListItemGroupDao,
+    private val supermarketDao: SupermarketDao,
+    private val itemGroupDao: ItemGroupDao
 ) : ViewModel() {
 
     private val storeFilter = MutableStateFlow<Set<Long>>(emptySet())
 
     fun setStoreFilter(stores: Set<Long>) {
         storeFilter.value = stores
-
     }
+    private val storeNameMap: StateFlow<Map<Long, String>> =
+        supermarketDao.getAll()
+            .map { list -> list.associate { it.id to it.name } }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyMap()
+            )
 
-    // actual DB table we edit
     private val itemGroupList: StateFlow<List<ShoppingListItemGroup>> =
         shoppingListItemGroupDao.getItemGroupsMatchingListId(shoppingListId)
             .stateIn(
@@ -40,24 +42,37 @@ class ShoppingListDetailsViewModel(
                 initialValue = emptyList()
             )
 
-    // items visible in ShoppingListDetails
     @OptIn(ExperimentalCoroutinesApi::class)
     val items: StateFlow<List<ShoppingListEntry>> =
-        storeFilter
-            .flatMapLatest { stores ->
-                shoppingListItemGroupDao.getCheapestShoppingListEntriesFlow(
+        storeFilter.flatMapLatest { selectedStores ->
+            shoppingListItemGroupDao
+                .getShoppingListEntriesWithFallbackFlow(
                     shoppingListId = shoppingListId,
-                    storeIds = stores.toList(),
-                    storeCount = stores.size
+                    storeIds = selectedStores.toList(),
+                    storeCount = selectedStores.size
                 )
-            }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptyList()
-            )
+                .map { rawEntries ->
 
-    // for shoppingListDetails searchbar
+                    val available = rawEntries.filter { it.price != null }
+
+                    // Global, store-agnostic bucket
+                    val unavailable = rawEntries
+                        .filter { it.price == null }
+                        .map {
+                            it.copy(
+                                superMarketName = null,
+                                category = "Utilgængelige varer"
+                            )
+                        }
+
+                    available + unavailable
+                }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
+
     val itemGroups: StateFlow<List<ItemGroup>> =
         itemGroupDao.getAllItemGroups()
             .stateIn(
@@ -66,7 +81,6 @@ class ShoppingListDetailsViewModel(
                 initialValue = emptyList()
             )
 
-    // items visible while adding itemGroups to shopping list
     val itemGroupEntries: StateFlow<List<ShoppingListItemGroupEntry>> =
         shoppingListItemGroupDao.getAllItemGroupEntries(shoppingListId)
             .stateIn(
@@ -75,6 +89,8 @@ class ShoppingListDetailsViewModel(
                 initialValue = emptyList()
             )
 
+
+    // Total
     data class TotalUi(
         val total: Float,
         val missingCount: Int
@@ -82,15 +98,9 @@ class ShoppingListDetailsViewModel(
 
     val shoppingListTotalPrice: StateFlow<TotalUi> =
         items.map { list ->
-            val missing = list.count { it.price == null }
-
-            val sum = list.sumOf {
-                ((it.price ?: 0f) * it.quantity).toDouble()
-            }.toFloat()
-
             TotalUi(
-                total = sum,
-                missingCount = missing
+                total = list.sumOf { ((it.price ?: 0f) * it.quantity).toDouble() }.toFloat(),
+                missingCount = list.count { it.price == null }
             )
         }.stateIn(
             scope = viewModelScope,
@@ -98,11 +108,9 @@ class ShoppingListDetailsViewModel(
             initialValue = TotalUi(0f, 0)
         )
 
-
     fun add(addedItem: ItemGroup, portionQuantity: Int = 1, portionSize: Float) {
         viewModelScope.launch {
-
-            val newEntry = ShoppingListItemGroup(
+            val entry = ShoppingListItemGroup(
                 shoppingListId = shoppingListId,
                 itemGroupId = addedItem.id,
                 recipeId = null,
@@ -111,63 +119,36 @@ class ShoppingListDetailsViewModel(
                 isChecked = false
             )
 
-            val doesNewEntryExistInList = itemGroupList.value.any {
-                it.equals(newEntry)
-            }
-
-            if (doesNewEntryExistInList) {
-                update(newEntry)
+            if (itemGroupList.value.any { it == entry }) {
+                update(entry)
             } else {
-                try {
-                    shoppingListItemGroupDao.insert(newEntry)
-                } catch (e: Exception) {
-                    // Handle exception (e.g., log it)
-                    e.printStackTrace()
-                }
+                shoppingListItemGroupDao.insert(entry)
             }
-
         }
     }
 
-
-    fun update(itemToUpdate: ShoppingListItemGroup) {
+    fun update(item: ShoppingListItemGroup) {
         viewModelScope.launch {
-
-            val previousPortionQuantity: Int = itemGroupList.value.first {
-                it.id == itemToUpdate.id
-            }.portionQuantity
-
-            val updateEntry = itemToUpdate.copy(
-                portionQuantity = itemToUpdate.portionQuantity + previousPortionQuantity
+            val prevQty = itemGroupList.value.first { it.id == item.id }.portionQuantity
+            shoppingListItemGroupDao.update(
+                item.copy(portionQuantity = item.portionQuantity + prevQty)
             )
-
-            try {
-                shoppingListItemGroupDao.update(updateEntry)
-            } catch (e: Exception) {
-                // Handle exception (e.g., log it)
-                e.printStackTrace()
-            }
         }
     }
-
 
     fun delete(item: ShoppingListEntry) {
         viewModelScope.launch {
-            shoppingListItemGroupDao.delete( id = item.id )
+            shoppingListItemGroupDao.delete(id = item.id)
         }
     }
 
     fun delete(item: ShoppingListItemGroupEntry) {
         viewModelScope.launch {
-            shoppingListItemGroupDao.delete( id = item.id )
+            shoppingListItemGroupDao.delete(id = item.id)
         }
     }
 
-
-    fun setCheckmark(
-        item: ShoppingListEntry,
-        checked: Boolean
-    ) {
+    fun setCheckmark(item: ShoppingListEntry, checked: Boolean) {
         viewModelScope.launch {
             shoppingListItemGroupDao.updateCheckmark(
                 shoppingListId = shoppingListId,
