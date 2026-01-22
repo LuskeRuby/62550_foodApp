@@ -145,6 +145,24 @@ fun RecipeDetailScreen(
             }
         )
     }
+    AddRecipeToShoppingListSheet(
+        visible = showAddToListSheet,
+        shoppingLists = shoppingListUi,
+        onDismiss = { showAddToListSheet = false },
+        onShoppingListSelected = { list ->
+            showAddToListSheet = false
+            recipeViewModel.addRecipeToShoppingList(
+                shoppingListId = list.id,
+                recipeId = recipeId,
+                portions = portions
+            )
+        },
+        onCreateNewShoppingList = {
+            showAddToListSheet = false
+            showCreateShoppingListDialog = true
+        }
+    )
+
 }
 
 @Composable
