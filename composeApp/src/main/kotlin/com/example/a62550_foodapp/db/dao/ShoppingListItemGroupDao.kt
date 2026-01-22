@@ -159,7 +159,8 @@ SELECT
     slig.is_checked       AS isChecked,
     ig.category           AS category,
     slig.recipe_id        AS recipeId,
-    sm.name               AS superMarketName
+    sm.name               AS superMarketName,
+    sm.logo               AS superMarketLogo
 FROM shopping_list_item_groups slig
 
 JOIN item_groups ig
@@ -274,7 +275,8 @@ SELECT
     ci.price                   AS price,
     slig.is_checked            AS isChecked,
     slig.recipe_id             AS recipeId,
-    sm.name                    AS superMarketName
+    sm.name                    AS superMarketName,
+    sm.logo                    AS superMarketLogo
 FROM shopping_list_item_groups slig
 
 JOIN item_groups ig

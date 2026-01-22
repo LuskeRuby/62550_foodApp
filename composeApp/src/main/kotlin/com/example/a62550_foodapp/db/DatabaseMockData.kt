@@ -159,6 +159,8 @@ object DatabaseMockData {
         val itemIds = items.map { itemDao.insert(it).toInt() }
 
         /* ---------- PRICES (PER ITEM, PER SUPERMARKET — EXPLICIT) ---------- */
+        // Prices are varied so different supermarkets are cheapest for different items
+        // This ensures multiple supermarket banners appear in the shopping list
 
         fun price(itemId: Int, marketId: Int, p: Float) {
             itemWeeklyPriceDao.insert(
@@ -168,9 +170,9 @@ object DatabaseMockData {
 
         var i = 0
 
-// ===== PASTA =====
+// ===== PASTA (Netto is cheapest) =====
         val spaghetti = itemIds[i++]
-        price(spaghetti, nettoId, 9.95f)
+        price(spaghetti, nettoId, 8.95f)      // CHEAPEST
         price(spaghetti, kvicklyId, 11.95f)
         price(spaghetti, foetexId, 10.50f)
         price(spaghetti, menyId, 13.95f)
@@ -178,118 +180,370 @@ object DatabaseMockData {
         price(spaghetti, rema1000Id, 10.00f)
 
         val penne = itemIds[i++]
-        price(penne, nettoId, 12.95f)
+        price(penne, nettoId, 11.95f)         // CHEAPEST
         price(penne, kvicklyId, 14.95f)
         price(penne, foetexId, 13.50f)
         price(penne, menyId, 16.95f)
         price(penne, bilkaId, 12.50f)
         price(penne, rema1000Id, 13.00f)
 
-// ===== RICE =====
+// ===== RICE (Føtex is cheapest) =====
         val basmati = itemIds[i++]
-        price(basmati, nettoId, 12.95f)
+        price(basmati, nettoId, 14.95f)
         price(basmati, kvicklyId, 14.50f)
-        price(basmati, foetexId, 13.00f)
+        price(basmati, foetexId, 11.00f)      // CHEAPEST
         price(basmati, menyId, 16.00f)
         price(basmati, bilkaId, 12.50f)
         price(basmati, rema1000Id, 13.50f)
 
         val jasmin = itemIds[i++]
-        price(jasmin, nettoId, 13.95f)
+        price(jasmin, nettoId, 15.95f)
         price(jasmin, kvicklyId, 15.50f)
-        price(jasmin, foetexId, 14.00f)
+        price(jasmin, foetexId, 12.00f)       // CHEAPEST
         price(jasmin, menyId, 17.00f)
         price(jasmin, bilkaId, 13.50f)
         price(jasmin, rema1000Id, 14.50f)
 
-// ===== BEEF =====
+// ===== BEEF (Rema 1000 is cheapest) =====
         val beefMinced = itemIds[i++]
-        price(beefMinced, nettoId, 38f)
-        price(beefMinced, kvicklyId, 42f)
-        price(beefMinced, foetexId, 39f)
-        price(beefMinced, menyId, 45f)
-        price(beefMinced, bilkaId, 37f)
-        price(beefMinced, rema1000Id, 40f)
+        price(beefMinced, nettoId, 42f)
+        price(beefMinced, kvicklyId, 44f)
+        price(beefMinced, foetexId, 43f)
+        price(beefMinced, menyId, 48f)
+        price(beefMinced, bilkaId, 40f)
+        price(beefMinced, rema1000Id, 35f)    // CHEAPEST
 
         val beefCubes = itemIds[i++]
-        price(beefCubes, nettoId, 41f)
-        price(beefCubes, kvicklyId, 45f)
-        price(beefCubes, foetexId, 42f)
-        price(beefCubes, menyId, 48f)
-        price(beefCubes, bilkaId, 39.5f)
-        price(beefCubes, rema1000Id, 43f)
+        price(beefCubes, nettoId, 45f)
+        price(beefCubes, kvicklyId, 47f)
+        price(beefCubes, foetexId, 46f)
+        price(beefCubes, menyId, 52f)
+        price(beefCubes, bilkaId, 43f)
+        price(beefCubes, rema1000Id, 38f)     // CHEAPEST
 
-// ===== CHICKEN =====
+// ===== CHICKEN (Bilka is cheapest) =====
         val chickenBreast = itemIds[i++]
-        price(chickenBreast, nettoId, 29f)
-        price(chickenBreast, kvicklyId, 32f)
-        price(chickenBreast, foetexId, 30f)
-        price(chickenBreast, menyId, 35f)
-        price(chickenBreast, bilkaId, 28f)
+        price(chickenBreast, nettoId, 32f)
+        price(chickenBreast, kvicklyId, 35f)
+        price(chickenBreast, foetexId, 33f)
+        price(chickenBreast, menyId, 38f)
+        price(chickenBreast, bilkaId, 26f)    // CHEAPEST
         price(chickenBreast, rema1000Id, 30f)
 
         val chickenLegs = itemIds[i++]
-        price(chickenLegs, nettoId, 26f)
-        price(chickenLegs, kvicklyId, 29f)
-        price(chickenLegs, foetexId, 27.5f)
-        price(chickenLegs, menyId, 33f)
-        price(chickenLegs, bilkaId, 25f)
-        price(chickenLegs, rema1000Id, 28f)
+        price(chickenLegs, nettoId, 28f)
+        price(chickenLegs, kvicklyId, 31f)
+        price(chickenLegs, foetexId, 29f)
+        price(chickenLegs, menyId, 35f)
+        price(chickenLegs, bilkaId, 22f)      // CHEAPEST
+        price(chickenLegs, rema1000Id, 27f)
 
-        // ===== VEGETABLES (same price model) =====
-        fun vegPrices(id: Int) {
-            price(id, nettoId, 6f)
-            price(id, kvicklyId, 7.5f)
-            price(id, foetexId, 6.5f)
-            price(id, menyId, 9f)
-            price(id, bilkaId, 5.5f)
-            price(id, rema1000Id, 6f)
-        }
+// ===== VEGETABLES =====
+        // Onion - Kvickly is cheapest
+        val onionItem = itemIds[i++]
+        price(onionItem, nettoId, 8f)
+        price(onionItem, kvicklyId, 4.50f)    // CHEAPEST
+        price(onionItem, foetexId, 7f)
+        price(onionItem, menyId, 9f)
+        price(onionItem, bilkaId, 6f)
+        price(onionItem, rema1000Id, 7f)
 
-        val onionItem = itemIds[i++]; vegPrices(onionItem)
-        val garlicItem = itemIds[i++]; vegPrices(garlicItem)
-        val carrotItem = itemIds[i++]; vegPrices(carrotItem)
-        val pepperItem = itemIds[i++]; vegPrices(pepperItem)
-        val tomato1 = itemIds[i++]; vegPrices(tomato1)
-        val tomato2 = itemIds[i++]; vegPrices(tomato2)
-        val broccoliItem = itemIds[i++]; vegPrices(broccoliItem)
+        // Garlic - Meny is cheapest
+        val garlicItem = itemIds[i++]
+        price(garlicItem, nettoId, 8f)
+        price(garlicItem, kvicklyId, 9f)
+        price(garlicItem, foetexId, 8.5f)
+        price(garlicItem, menyId, 5f)         // CHEAPEST
+        price(garlicItem, bilkaId, 7f)
+        price(garlicItem, rema1000Id, 7.5f)
 
-        // ===== MEJERI =====
-        fun dairy(id: Int, base: Float) {
-            price(id, nettoId, base)
-            price(id, kvicklyId, base + 1.5f)
-            price(id, foetexId, base + 0.5f)
-            price(id, menyId, base + 3f)
-            price(id, bilkaId, base - 0.5f)
-            price(id, rema1000Id, base + 0.8f)
-        }
+        // Carrot - Netto is cheapest
+        val carrotItem = itemIds[i++]
+        price(carrotItem, nettoId, 5f)        // CHEAPEST
+        price(carrotItem, kvicklyId, 8f)
+        price(carrotItem, foetexId, 7f)
+        price(carrotItem, menyId, 9f)
+        price(carrotItem, bilkaId, 6f)
+        price(carrotItem, rema1000Id, 6.5f)
 
-        val creamItem = itemIds[i++]; dairy(creamItem, 8f)
-        val milkItem = itemIds[i++]; dairy(milkItem, 7f)
-        val cheeseItem = itemIds[i++]; dairy(cheeseItem, 18f)
-        val butterItem = itemIds[i++]; dairy(butterItem, 12f)
-        val eggsItem = itemIds[i++]; dairy(eggsItem, 15f)
+        // Pepper - Bilka is cheapest
+        val pepperItem = itemIds[i++]
+        price(pepperItem, nettoId, 12f)
+        price(pepperItem, kvicklyId, 14f)
+        price(pepperItem, foetexId, 13f)
+        price(pepperItem, menyId, 16f)
+        price(pepperItem, bilkaId, 9f)        // CHEAPEST
+        price(pepperItem, rema1000Id, 11f)
 
-        // ===== KOLONIAL =====
-        fun pantry(id: Int, base: Float) {
-            price(id, nettoId, base)
-            price(id, kvicklyId, base + 2f)
-            price(id, foetexId, base + 1f)
-            price(id, menyId, base + 4f)
-            price(id, bilkaId, base - 0.5f)
-            price(id, rema1000Id, base + 1f)
-        }
+        // Tomato 1 - Kvickly is cheapest
+        val tomato1 = itemIds[i++]
+        price(tomato1, nettoId, 10f)
+        price(tomato1, kvicklyId, 6f)         // CHEAPEST
+        price(tomato1, foetexId, 9f)
+        price(tomato1, menyId, 12f)
+        price(tomato1, bilkaId, 8f)
+        price(tomato1, rema1000Id, 8.5f)
 
-        val curryItem = itemIds[i++]; pantry(curryItem, 7f)
-        val chiliItem = itemIds[i++]; pantry(chiliItem, 7f)
-        val soyItem = itemIds[i++]; pantry(soyItem, 8f)
-        val beansItem = itemIds[i++]; pantry(beansItem, 8f)
-        val cornItem = itemIds[i++]; pantry(cornItem, 8f)
-        val peasItem = itemIds[i++]; pantry(peasItem, 7f)
+        // Tomato 2 - Føtex is cheapest
+        val tomato2 = itemIds[i++]
+        price(tomato2, nettoId, 11f)
+        price(tomato2, kvicklyId, 10f)
+        price(tomato2, foetexId, 7f)          // CHEAPEST
+        price(tomato2, menyId, 13f)
+        price(tomato2, bilkaId, 9f)
+        price(tomato2, rema1000Id, 9.5f)
+
+        // Broccoli - Rema 1000 is cheapest
+        val broccoliItem = itemIds[i++]
+        price(broccoliItem, nettoId, 12f)
+        price(broccoliItem, kvicklyId, 14f)
+        price(broccoliItem, foetexId, 13f)
+        price(broccoliItem, menyId, 16f)
+        price(broccoliItem, bilkaId, 11f)
+        price(broccoliItem, rema1000Id, 8f)   // CHEAPEST
+
+// ===== MEJERI =====
+        // Cream - Meny is cheapest
+        val creamItem = itemIds[i++]
+        price(creamItem, nettoId, 10f)
+        price(creamItem, kvicklyId, 11f)
+        price(creamItem, foetexId, 10.5f)
+        price(creamItem, menyId, 7f)          // CHEAPEST
+        price(creamItem, bilkaId, 9f)
+        price(creamItem, rema1000Id, 9.5f)
+
+        // Milk - Kvickly is cheapest
+        val milkItem = itemIds[i++]
+        price(milkItem, nettoId, 9f)
+        price(milkItem, kvicklyId, 6f)        // CHEAPEST
+        price(milkItem, foetexId, 8f)
+        price(milkItem, menyId, 10f)
+        price(milkItem, bilkaId, 7.5f)
+        price(milkItem, rema1000Id, 8f)
+
+        // Cheese - Netto is cheapest
+        val cheeseItem = itemIds[i++]
+        price(cheeseItem, nettoId, 15f)       // CHEAPEST
+        price(cheeseItem, kvicklyId, 20f)
+        price(cheeseItem, foetexId, 18f)
+        price(cheeseItem, menyId, 22f)
+        price(cheeseItem, bilkaId, 17f)
+        price(cheeseItem, rema1000Id, 18f)
+
+        // Butter - Bilka is cheapest
+        val butterItem = itemIds[i++]
+        price(butterItem, nettoId, 14f)
+        price(butterItem, kvicklyId, 16f)
+        price(butterItem, foetexId, 15f)
+        price(butterItem, menyId, 18f)
+        price(butterItem, bilkaId, 10f)       // CHEAPEST
+        price(butterItem, rema1000Id, 13f)
+
+        // Eggs - Føtex is cheapest
+        val eggsItem = itemIds[i++]
+        price(eggsItem, nettoId, 18f)
+        price(eggsItem, kvicklyId, 20f)
+        price(eggsItem, foetexId, 14f)        // CHEAPEST
+        price(eggsItem, menyId, 22f)
+        price(eggsItem, bilkaId, 17f)
+        price(eggsItem, rema1000Id, 16f)
+
+// ===== KRYDDERIER (Spices) =====
+        // Curry - Rema 1000 is cheapest
+        val curryItem = itemIds[i++]
+        price(curryItem, nettoId, 9f)
+        price(curryItem, kvicklyId, 11f)
+        price(curryItem, foetexId, 10f)
+        price(curryItem, menyId, 13f)
+        price(curryItem, bilkaId, 8f)
+        price(curryItem, rema1000Id, 6f)      // CHEAPEST
+
+        // Chili - Meny is cheapest
+        val chiliItem = itemIds[i++]
+        price(chiliItem, nettoId, 10f)
+        price(chiliItem, kvicklyId, 12f)
+        price(chiliItem, foetexId, 11f)
+        price(chiliItem, menyId, 6f)          // CHEAPEST
+        price(chiliItem, bilkaId, 9f)
+        price(chiliItem, rema1000Id, 8f)
+
+// ===== KOLONIAL =====
+        // Soy - Netto is cheapest
+        val soyItem = itemIds[i++]
+        price(soyItem, nettoId, 7f)           // CHEAPEST
+        price(soyItem, kvicklyId, 12f)
+        price(soyItem, foetexId, 10f)
+        price(soyItem, menyId, 14f)
+        price(soyItem, bilkaId, 9f)
+        price(soyItem, rema1000Id, 9f)
+
+        // Beans - Kvickly is cheapest
+        val beansItem = itemIds[i++]
+        price(beansItem, nettoId, 10f)
+        price(beansItem, kvicklyId, 6f)       // CHEAPEST
+        price(beansItem, foetexId, 9f)
+        price(beansItem, menyId, 12f)
+        price(beansItem, bilkaId, 8f)
+        price(beansItem, rema1000Id, 8.5f)
+
+        // Corn - Føtex is cheapest
+        val cornItem = itemIds[i++]
+        price(cornItem, nettoId, 9f)
+        price(cornItem, kvicklyId, 10f)
+        price(cornItem, foetexId, 6f)         // CHEAPEST
+        price(cornItem, menyId, 12f)
+        price(cornItem, bilkaId, 8f)
+        price(cornItem, rema1000Id, 8f)
+
+        // Peas - Bilka is cheapest
+        val peasItem = itemIds[i++]
+        price(peasItem, nettoId, 9f)
+        price(peasItem, kvicklyId, 10f)
+        price(peasItem, foetexId, 9f)
+        price(peasItem, menyId, 12f)
+        price(peasItem, bilkaId, 5f)          // CHEAPEST
+        price(peasItem, rema1000Id, 8f)
 
 // ===== BRØD =====
-        val wrapsItem = itemIds[i++]; pantry(wrapsItem, 14f)
-        val breadItem = itemIds[i++]; pantry(breadItem, 12f)
+        // Wraps - Rema 1000 is cheapest
+        val wrapsItem = itemIds[i++]
+        price(wrapsItem, nettoId, 16f)
+        price(wrapsItem, kvicklyId, 18f)
+        price(wrapsItem, foetexId, 17f)
+        price(wrapsItem, menyId, 20f)
+        price(wrapsItem, bilkaId, 15f)
+        price(wrapsItem, rema1000Id, 12f)     // CHEAPEST
+
+        // Bread - Kvickly is cheapest
+        val breadItem = itemIds[i++]
+        price(breadItem, nettoId, 14f)
+        price(breadItem, kvicklyId, 10f)      // CHEAPEST
+        price(breadItem, foetexId, 13f)
+        price(breadItem, menyId, 16f)
+        price(breadItem, bilkaId, 12f)
+        price(breadItem, rema1000Id, 12f)
+
+// ===== REMAINING ITEMS =====
+        // Mushrooms - Meny is cheapest
+        val mushroomsItem = itemIds[i++]
+        price(mushroomsItem, nettoId, 14f)
+        price(mushroomsItem, kvicklyId, 15f)
+        price(mushroomsItem, foetexId, 13f)
+        price(mushroomsItem, menyId, 9f)      // CHEAPEST
+        price(mushroomsItem, bilkaId, 12f)
+        price(mushroomsItem, rema1000Id, 11f)
+
+        // Potatoes - Kvickly is cheapest
+        val potatoesItem = itemIds[i++]
+        price(potatoesItem, nettoId, 18f)
+        price(potatoesItem, kvicklyId, 12f)   // CHEAPEST
+        price(potatoesItem, foetexId, 16f)
+        price(potatoesItem, menyId, 20f)
+        price(potatoesItem, bilkaId, 15f)
+        price(potatoesItem, rema1000Id, 14f)
+
+// ===== FISK (Fish) =====
+        // Salmon - Føtex is cheapest
+        val fishItem = itemIds[i++]
+        price(fishItem, nettoId, 55f)
+        price(fishItem, kvicklyId, 58f)
+        price(fishItem, foetexId, 45f)        // CHEAPEST
+        price(fishItem, menyId, 62f)
+        price(fishItem, bilkaId, 52f)
+        price(fishItem, rema1000Id, 50f)
+
+        // Herring - Bilka is cheapest
+        val herringItem = itemIds[i++]
+        price(herringItem, nettoId, 28f)
+        price(herringItem, kvicklyId, 30f)
+        price(herringItem, foetexId, 27f)
+        price(herringItem, menyId, 32f)
+        price(herringItem, bilkaId, 22f)      // CHEAPEST
+        price(herringItem, rema1000Id, 25f)
+
+// ===== MORE MEAT =====
+        // Bacon - Netto is cheapest
+        val baconItem = itemIds[i++]
+        price(baconItem, nettoId, 18f)        // CHEAPEST
+        price(baconItem, kvicklyId, 24f)
+        price(baconItem, foetexId, 22f)
+        price(baconItem, menyId, 26f)
+        price(baconItem, bilkaId, 20f)
+        price(baconItem, rema1000Id, 21f)
+
+        // Ground meat - Rema 1000 is cheapest
+        val groundMeatItem = itemIds[i++]
+        price(groundMeatItem, nettoId, 35f)
+        price(groundMeatItem, kvicklyId, 38f)
+        price(groundMeatItem, foetexId, 36f)
+        price(groundMeatItem, menyId, 42f)
+        price(groundMeatItem, bilkaId, 33f)
+        price(groundMeatItem, rema1000Id, 28f) // CHEAPEST
+
+        // Ham - Kvickly is cheapest
+        val hamItem = itemIds[i++]
+        price(hamItem, nettoId, 22f)
+        price(hamItem, kvicklyId, 16f)        // CHEAPEST
+        price(hamItem, foetexId, 20f)
+        price(hamItem, menyId, 24f)
+        price(hamItem, bilkaId, 19f)
+        price(hamItem, rema1000Id, 18f)
+
+        // Pork Flank - Meny is cheapest
+        val porkFlankItem = itemIds[i++]
+        price(porkFlankItem, nettoId, 38f)
+        price(porkFlankItem, kvicklyId, 40f)
+        price(porkFlankItem, foetexId, 37f)
+        price(porkFlankItem, menyId, 30f)     // CHEAPEST
+        price(porkFlankItem, bilkaId, 35f)
+        price(porkFlankItem, rema1000Id, 34f)
+
+// ===== MORE VEGETABLES =====
+        // Chives - Føtex is cheapest
+        val chivesItem = itemIds[i++]
+        price(chivesItem, nettoId, 10f)
+        price(chivesItem, kvicklyId, 12f)
+        price(chivesItem, foetexId, 7f)       // CHEAPEST
+        price(chivesItem, menyId, 14f)
+        price(chivesItem, bilkaId, 9f)
+        price(chivesItem, rema1000Id, 8f)
+
+        // Beetroot - Bilka is cheapest
+        val beetrootItem = itemIds[i++]
+        price(beetrootItem, nettoId, 12f)
+        price(beetrootItem, kvicklyId, 14f)
+        price(beetrootItem, foetexId, 13f)
+        price(beetrootItem, menyId, 16f)
+        price(beetrootItem, bilkaId, 8f)      // CHEAPEST
+        price(beetrootItem, rema1000Id, 10f)
+
+        // Red Cabbage - Netto is cheapest
+        val redCabbageItem = itemIds[i++]
+        price(redCabbageItem, nettoId, 10f)   // CHEAPEST
+        price(redCabbageItem, kvicklyId, 15f)
+        price(redCabbageItem, foetexId, 14f)
+        price(redCabbageItem, menyId, 18f)
+        price(redCabbageItem, bilkaId, 12f)
+        price(redCabbageItem, rema1000Id, 11f)
+
+// ===== MORE KOLONIAL =====
+        // Apple Filling - Rema 1000 is cheapest
+        val appleFillingItem = itemIds[i++]
+        price(appleFillingItem, nettoId, 18f)
+        price(appleFillingItem, kvicklyId, 20f)
+        price(appleFillingItem, foetexId, 19f)
+        price(appleFillingItem, menyId, 24f)
+        price(appleFillingItem, bilkaId, 17f)
+        price(appleFillingItem, rema1000Id, 14f) // CHEAPEST
+
+        // Flour - Meny is cheapest
+        val flourItem = itemIds[i++]
+        price(flourItem, nettoId, 12f)
+        price(flourItem, kvicklyId, 14f)
+        price(flourItem, foetexId, 13f)
+        price(flourItem, menyId, 8f)          // CHEAPEST
+        price(flourItem, bilkaId, 11f)
+        price(flourItem, rema1000Id, 10f)
 
 // ===== Fallback =====
         val fallbackItem = itemIds.last()
@@ -658,6 +912,68 @@ object DatabaseMockData {
                     recipeId = null,
                     portionQuantity = 1,
                     portionSize = 200f,
+                    isChecked = false
+                ),
+
+                // Fisk (Fish) category
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = fish.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 300f,
+                    isChecked = false
+                ),
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = herring.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 150f,
+                    isChecked = false
+                ),
+
+                // Krydderier (Spices) category
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = curry.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 50f,
+                    isChecked = false
+                ),
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = chili.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 30f,
+                    isChecked = false
+                ),
+
+                // Kolonial category
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = soy.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 250f,
+                    isChecked = false
+                ),
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = beans.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 400f,
+                    isChecked = false
+                ),
+                ShoppingListItemGroup(
+                    shoppingListId = shoppingListId.toLong(),
+                    itemGroupId = corn.toLong(),
+                    recipeId = null,
+                    portionQuantity = 1,
+                    portionSize = 300f,
                     isChecked = false
                 )
             )

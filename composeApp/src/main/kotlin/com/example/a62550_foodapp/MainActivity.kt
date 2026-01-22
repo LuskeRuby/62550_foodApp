@@ -43,11 +43,16 @@ class MainActivity : ComponentActivity() {
             MainView(
                 recipeContent = {
                     when (val state = navigationState) {
+
+                        // ---------- LIST ----------
                         is RecipeList -> {
                             RecipePage(
                                 recipeViewModel = recipeViewModel,
                                 onAddRecipeClick = {
-                                    navigationState = CreateRecipe(null)
+                                    navigationState = CreateRecipe(
+                                        existingRecipeId = null,
+                                        returnTo = RecipeList
+                                    )
                                 },
                                 onRecipeClick = { id ->
                                     navigationState = RecipeDetail(id)
@@ -57,23 +62,31 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+
+                        // ---------- CREATE / EDIT ----------
                         is CreateRecipe -> {
                             BackHandler {
-                                navigationState = RecipeList
+                                navigationState = state.returnTo
                             }
 
                             CreateRecipeScreen(
                                 recipeViewModel = recipeViewModel,
                                 existingRecipeId = state.existingRecipeId,
                                 onRecipeSaved = {
-                                    navigationState = RecipeList
+                                    navigationState = state.returnTo
+                                },
+                                onBack = {
+                                    navigationState = state.returnTo
                                 }
                             )
                         }
+
+                        // ---------- DETAIL ----------
                         is RecipeDetail -> {
                             BackHandler {
                                 navigationState = RecipeList
                             }
+
                             RecipeDetailScreen(
                                 recipeId = state.id,
                                 recipeViewModel = recipeViewModel,
@@ -81,10 +94,15 @@ class MainActivity : ComponentActivity() {
                                     navigationState = RecipeList
                                 },
                                 onEdit = { id ->
-                                    navigationState = CreateRecipe(id)
+                                    navigationState = CreateRecipe(
+                                        existingRecipeId = id,
+                                        returnTo = RecipeDetail(id)
+                                    )
                                 }
                             )
                         }
+
+                        // ---------- DISCOVER ----------
                         is DiscoverRecipes -> {
                             BackHandler {
                                 navigationState = RecipeList
@@ -99,6 +117,8 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+
+                        // ---------- API DETAIL ----------
                         is NavState.ApiRecipeDetail -> {
                             BackHandler {
                                 navigationState = DiscoverRecipes
@@ -121,7 +141,10 @@ class MainActivity : ComponentActivity() {
 sealed class NavState {
     object RecipeList : NavState()
     object DiscoverRecipes : NavState()
-    data class CreateRecipe(val existingRecipeId: Long? = null) : NavState()
+    data class CreateRecipe(
+        val existingRecipeId: Long? = null,
+        val returnTo: NavState = RecipeList
+    ) : NavState()
     data class RecipeDetail(val id: Long) : NavState()
 
     data class ApiRecipeDetail(val mealId: String) : NavState()

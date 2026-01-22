@@ -14,6 +14,7 @@ data class ShoppingListEntry(
     val itemGroupId: Long,
     val recipeId: Long?,
     val superMarketName: String?,
+    val superMarketLogo: String?,
 
     val itemName: String,
     val category: String,

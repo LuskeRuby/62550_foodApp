@@ -25,6 +25,8 @@ import org.koin.androidx.compose.koinViewModel
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.shape.CircleShape
 
 
 @Composable
@@ -32,6 +34,7 @@ fun CreateRecipeScreen(
     recipeViewModel: RecipeViewModel,
     existingRecipeId: Long? = null,
     onRecipeSaved: () -> Unit,
+    onBack: () -> Unit,
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     var editingIngredients by remember { mutableStateOf(false) }
@@ -49,7 +52,8 @@ fun CreateRecipeScreen(
                 recipeViewModel = recipeViewModel,
                 existingRecipeId = existingRecipeId,
                 onRecipeSaved = onRecipeSaved,
-                onAddIngredients = { editingIngredients = true }
+                onAddIngredients = { editingIngredients = true },
+                onBack = onBack
             )
         } else {
             AddItemGroupToRecipePage(
@@ -66,6 +70,7 @@ private fun CreateRecipeForm(
     existingRecipeId: Long?,
     onRecipeSaved: () -> Unit,
     onAddIngredients: () -> Unit,
+    onBack: () -> Unit,
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     // ---- UI STATE FROM VIEWMODEL ----
@@ -138,6 +143,24 @@ private fun CreateRecipeForm(
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.50f)) // tint på billedet
             )
+
+            // ----- BACK BUTTON (TOP LEFT) -----
+            IconButton(
+                onClick = {
+                    recipeViewModel.resetEditState()
+                    onBack()
+                },
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
 
             // ----- EDIT HINT -----
             Column(
