@@ -25,7 +25,12 @@ class StoreFilterViewModel : ViewModel() {
         }
     }
 
-    /** Clear all selected stores (means: use all stores) */
+    /** Select all stores from a given set of IDs */
+    fun selectAll(storeIds: Set<Long>) {
+        _selectedStores.value = storeIds
+    }
+
+    /** Clear all selected stores */
     fun clear() {
         _selectedStores.value = emptySet()
     }

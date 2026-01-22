@@ -2,6 +2,7 @@ package com.example.a62550_foodapp.ui.shoppingList
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,6 +29,8 @@ import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+/** Data class to group items by supermarket with both name and logo */
+private data class SupermarketGroup(val name: String, val logo: String?)
 
 @Composable
 fun ShoppingListDetailsPage(
@@ -73,10 +76,10 @@ private fun ShoppingListPage(
         viewModel.setStoreFilter(selectedStores)
     }
 
-
+    // Group by supermarket, capturing both name and logo
     val grouped =
         items
-            .groupBy { it.superMarketName ?: "" }
+            .groupBy { SupermarketGroup(it.superMarketName ?: "", it.superMarketLogo) }
             .mapValues { (_, categoryItems) ->
                 categoryItems.groupBy { it.category }
             }
@@ -134,13 +137,15 @@ private fun ShoppingListPage(
 private fun ShoppingListContent(
     viewModel: ShoppingListDetailsViewModel,
     editOverlay: Boolean,
-    grouped: Map<String, Map<String, List<ShoppingListEntry>>>
+    grouped: Map<SupermarketGroup, Map<String, List<ShoppingListEntry>>>
 ) {
-    LazyColumn {
-        grouped.forEach { (store, categoryMap) ->
+    LazyColumn(
+        contentPadding = PaddingValues(bottom = 80.dp)
+    ) {
+        grouped.forEach { (supermarket, categoryMap) ->
 
-            if (store.isNotBlank()) {
-                item { SuperMarketHeader(store) }
+            if (supermarket.name.isNotBlank()) {
+                item { SuperMarketHeader(name = supermarket.name, logo = supermarket.logo) }
             }
 
             categoryMap.forEach { (category, items) ->
@@ -159,7 +164,8 @@ private fun ShoppingListContent(
                                 {}
                             },
                         editList = !editOverlay,
-                        onDelete = { viewModel.delete(entry) }
+                        onDelete = { viewModel.delete(entry) },
+                        supermarketName = supermarket.name
                     )
                 }
             }
@@ -170,6 +176,7 @@ private fun ShoppingListContent(
 @Composable
 private fun SuperMarketHeader(
     name: String,
+    logo: String?,
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     // Determine color based on supermarket name
@@ -183,6 +190,12 @@ private fun SuperMarketHeader(
         else -> Color(0xFF252525)              // Black fallback
     }
 
+    // Logos that need white background behind them for visibility
+    val needsWhiteBackground = when (name.lowercase()) {
+        "kvickly", "bilka" -> true
+        else -> false
+    }
+
     val textColor = when (name.lowercase()) {
         "netto" -> Color.Black                 // Dark text on yellow
         else -> Color.White                    // White text on dark backgrounds
@@ -192,15 +205,36 @@ private fun SuperMarketHeader(
         modifier = Modifier
             .fillMaxWidth()
             .background(backgroundColor)
-            .padding(vertical = 16.dp, horizontal = 16.dp)
+            .padding(vertical = 12.dp, horizontal = 16.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = name,
-            color = textColor,
-            fontWeight = FontWeight.Bold,
-            fontSize = 22.sp,
-            modifier = Modifier.align(Alignment.Center)
-        )
+        if (logo != null) {
+            // Add white background for logos that need it (dark text on logo)
+            Box(
+                modifier = if (needsWhiteBackground) {
+                    Modifier
+                        .background(Color.White, RoundedCornerShape(8.dp))
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                } else Modifier,
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = logo,
+                    contentDescription = name,
+                    modifier = Modifier
+                        .height(50.dp)
+                        .widthIn(max = 180.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
+        } else {
+            Text(
+                text = name,
+                color = textColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = 22.sp
+            )
+        }
     }
 }
 
@@ -211,9 +245,13 @@ fun CategoryHeader(category: String) {
     val color = when (category.lowercase()) {
         "tørvarer" -> themeViewModel.dryGoods
         "kød" -> themeViewModel.meat
+        "fisk" -> themeViewModel.fish
         "grøntsager" -> themeViewModel.vegetables
         "mejeri" -> themeViewModel.dairy
+        "krydderier" -> themeViewModel.spices
         "kolonial" -> themeViewModel.kolonial
+        "brød" -> themeViewModel.bread
+        "utilgængelige varer" -> themeViewModel.unavailable
         else -> themeViewModel.other
     }
 
@@ -239,8 +277,20 @@ private fun ShoppingItemRow(
     item: ShoppingListEntry,
     onCheckedChange: (Boolean) -> Unit,
     editList: Boolean,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    supermarketName: String = ""
 ) {
+    // Get supermarket brand color for the left border accent
+    val supermarketColor = when (supermarketName.lowercase()) {
+        "netto" -> Color(0xFFFFCC00)           // Yellow
+        "kvickly" -> Color(0xFFFF1E31)         // Red
+        "føtex" -> Color(0xFF27AE60)           // Green
+        "meny" -> Color(0xFF86180C)            // Dark Red
+        "bilka" -> Color(0xFF3B8DDC)           // Blue
+        "rema 1000" -> Color(0xFF6B95B6)       // Light blue
+        else -> Color.Transparent
+    }
+
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { it * 0.4f },
         confirmValueChange = {
@@ -273,6 +323,15 @@ private fun ShoppingItemRow(
                     if (item.isChecked) themeViewModel.fadedBackground
                     else themeViewModel.backgroundColor,
                     RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
+                )
+                .then(
+                    if (supermarketColor != Color.Transparent) {
+                        Modifier.border(
+                            width = 3.dp,
+                            color = supermarketColor,
+                            shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp)
+                        )
+                    } else Modifier
                 )
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
