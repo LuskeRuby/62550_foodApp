@@ -97,6 +97,7 @@ private fun CreateRecipeForm(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
+            .statusBarsPadding()
             .background(themeViewModel.backgroundColor)
     ) {
 

@@ -241,6 +241,7 @@ fun MealCard(
                     style = MaterialTheme.typography.titleMedium,
                     color = themeViewModel.textPrimary,
                     maxLines = 2,
+                    minLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
