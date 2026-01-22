@@ -82,23 +82,22 @@ fun SuperMarketPage(
                         )
                     }
 
-                    if (selectedSupermarkets.isNotEmpty()) {
-                        Button(
-                            onClick = { storeFilterViewModel.clear() },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = themeViewModel.cancelButton,
-                                contentColor = themeViewModel.textPrimary
-                            ),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = "Ryd",
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Ryd")
-                        }
+                    Button(
+                        onClick = { storeFilterViewModel.clear() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = themeViewModel.cancelButton,
+                            contentColor = themeViewModel.textPrimary
+                        ),
+                        shape = RoundedCornerShape(8.dp),
+                        enabled = selectedSupermarkets.isNotEmpty()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Ryd",
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Ryd")
                     }
                 }
             }
