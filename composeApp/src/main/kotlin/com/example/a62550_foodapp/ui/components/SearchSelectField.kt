@@ -1,96 +1,84 @@
 package com.example.a62550_foodapp.ui.components
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 
 @Composable
 fun <T> SearchSelectField(
     label: String,
     items: List<T>,
     itemText: (T) -> String,
-    itemUnit: (T) -> String? = { null },
 
     value: String,
     onValueChange: (String) -> Unit,
+    onItemSelected: (T) -> Unit,
 
-    onItemSelected: (T) -> Unit
+    borderColor: Color? = null
 ) {
-    var selectedItem: T? by remember { mutableStateOf(null) }
+    var expanded by remember { mutableStateOf(false) }
+
+    val focusRequester = remember { FocusRequester() }
 
     val matches =
         if (value.isNotBlank())
             items.filter { itemText(it).contains(value, ignoreCase = true) }
         else emptyList()
 
-    val displayedUnitType = when {
-        selectedItem != null -> itemUnit(selectedItem!!)
-        matches.isNotEmpty() -> itemUnit(matches.first())
-        else -> null
-    }
+    Column {
 
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        val colors =
+            if (borderColor != null)
+                OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = borderColor,
+                    unfocusedBorderColor = borderColor,
+                    cursorColor = borderColor
+                )
+            else
+                OutlinedTextFieldDefaults.colors()
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            OutlinedTextField(
-                value = value,
-                onValueChange = {
-                    onValueChange(it)
-                    selectedItem = null
-                },
-                label = { Text(label) },
-                modifier = Modifier.weight(1f)
-            )
+        OutlinedTextField(
+            value = value,
+            onValueChange = {
+                onValueChange(it)
+                expanded = true
+            },
+            placeholder = { Text(label) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester),
+            singleLine = true,
+            colors = colors
+        )
 
-            Text(displayedUnitType ?: "")
+        // sørg for at fokus altid bliver på feltet mens man søger
+        LaunchedEffect(value, expanded) {
+            if (expanded) focusRequester.requestFocus()
         }
 
-        Spacer(Modifier.height(8.dp))
-
-        if (value.isNotBlank()) {
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(4.dp)) {
-                    if (matches.isEmpty()) {
-                        Text("No matches", modifier = Modifier.padding(8.dp))
-                    } else {
-                        matches.take(8).forEachIndexed { index, item ->
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        selectedItem = item
-                                        onValueChange(itemText(item)) // 👈 BLIVER i feltet
-                                        onItemSelected(item)
-                                    }
-                                    .padding(8.dp)
-                            ) {
-                                Text(itemText(item))
-                            }
-                            if (index != matches.lastIndex) HorizontalDivider()
-                        }
+        DropdownMenu(
+            expanded = expanded && matches.isNotEmpty(),
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 240.dp),
+            properties = PopupProperties(focusable = false)
+        ) {
+            matches.take(5).forEach { item ->
+                DropdownMenuItem(
+                    text = { Text(itemText(item)) },
+                    onClick = {
+                        onValueChange(itemText(item))
+                        onItemSelected(item)
+                        expanded = false
                     }
-                }
+                )
             }
         }
     }
