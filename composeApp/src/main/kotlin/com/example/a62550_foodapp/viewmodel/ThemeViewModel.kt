@@ -31,7 +31,9 @@ class ThemeViewModel : ViewModel() {
     val textPrimary = Color(0xFF212121)         // Near Black (main text)
     val textSecondary = Color(0xFF757575)       // Medium Grey (secondary text)
     val greyedOutColor = Color(0xFF757575)      // Medium Grey for disabled elements
-    val grayedOutColor = greyedOutColor         // Alias for American spelling
+    val grayedOutColor = greyedOutColor                 // Alias for American spelling
+
+    val textWhite = Color.White                          // Pure White text
 
     // ============================================================
     // ## NAVIGATION & HEADERS
@@ -44,8 +46,8 @@ class ThemeViewModel : ViewModel() {
     // ============================================================
     val addButtonColor = Color(0xFF4CAF50)      // Green - Matches primary for consistency
     val successColor = Color(0xFF388E3C)        // Dark Green - Success states
-    val confirmDeleteColor = Color(0xFFD32F2F)  // Red - Delete confirmation
-    val cancelButton = Color(0xFF757575)        // Grey - Cancel actions
+    val deleteColor = Color(0xFFD32F2F)         // Red - Delete confirmation
+    val cancelButton = Color.LightGray                 // Grey - Cancel actions
 
     // ============================================================
     // ## PRICES & FINANCIAL

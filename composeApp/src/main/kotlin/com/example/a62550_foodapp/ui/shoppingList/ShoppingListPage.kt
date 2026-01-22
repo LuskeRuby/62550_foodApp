@@ -1,7 +1,6 @@
 package com.example.a62550_foodapp.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -48,7 +47,6 @@ import com.example.a62550_foodapp.model.ShoppingList
 import com.example.a62550_foodapp.ui.shoppingList.ShoppingListDetailsPage
 import com.example.a62550_foodapp.viewmodel.ShoppingListViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
-import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ShoppingListPage(
@@ -83,17 +81,12 @@ fun ShoppingListPage(
                 items(shoppingList) { list ->
                     ShoppingListPageRow(
                         list,
-                        themeViewModel = themeViewModel,
-                        editClick = { clicked ->
-                            selectedShoppingList = clicked
+                        editClick = {
+                            selectedShoppingList = list
                             editListNameOverlay = true
                         },
-                        deleteClick = { clicked ->
-                            selectedShoppingList = clicked
-                            deleteListOverlay = true
-                        },
-                        selectClick = { clicked ->
-                            selectedShoppingList = clicked
+                        selectClick = {
+                            selectedShoppingList = list
                             selectListPage = true
                         }
                     )
@@ -139,6 +132,11 @@ fun ShoppingListPage(
             BackHandler { editListNameOverlay = false }
             EditShoppingListFormOverlay(
                 onDismiss = {editListNameOverlay = false},
+                deleteButtonClick = { list ->
+                    selectedShoppingList = list
+                    deleteListOverlay = true
+                    editListNameOverlay = false
+                },
                 onEdit = { id: Long, name: String ->
                     shoppingListViewModel.editShoppingList(
                         id = id,
@@ -149,15 +147,19 @@ fun ShoppingListPage(
                 selectedShoppingList = selectedShoppingList
             )
         } else if (deleteListOverlay) {
-            BackHandler { deleteListOverlay = false }
+            BackHandler {
+                deleteListOverlay = false
+                editListNameOverlay = true
+            }
             DeleteShoppingListFormOverlay(
-                onDismiss = {deleteListOverlay = false},
-                onDelete = { id: Long, name: String ->
-                    shoppingListViewModel.deleteShoppingList(
-                        id = id,
-                        name = name
-                    )
+                onDismiss = {
                     deleteListOverlay = false
+                    editListNameOverlay = true
+                },
+                onDelete = { id: Long ->
+                    shoppingListViewModel.deleteShoppingList(id = id)
+                    deleteListOverlay = false
+                    editListNameOverlay = false
                 },
                 selectedShoppingList = selectedShoppingList
             )
@@ -169,16 +171,13 @@ fun ShoppingListPage(
 @Composable
 private fun ShoppingListPageRow(
     shoppingList: ShoppingList,
-    editClick: (shoppingList: ShoppingList) -> Unit,
-    deleteClick: (shoppingList: ShoppingList) -> Unit,
-    selectClick: (shoppingList: ShoppingList) -> Unit,
+    editClick: () -> Unit,
+    selectClick: () -> Unit,
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
 
-    val interactionSource = remember { MutableInteractionSource() }
-
     Card(
-        onClick = { selectClick(shoppingList) },
+        onClick = { selectClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -189,7 +188,7 @@ private fun ShoppingListPageRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -207,22 +206,7 @@ private fun ShoppingListPageRow(
                 tint = themeViewModel.textSecondary,
                 modifier = Modifier
                     .size(24.dp)
-                   .clickable(
-                       indication = LocalIndication.current,
-                       interactionSource = interactionSource
-                    ) { editClick(shoppingList) }
-            )
-
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = "Delete",
-                tint = themeViewModel.textSecondary,
-                modifier = Modifier
-                    .size(24.dp)
-                    .clickable(
-                        indication = LocalIndication.current,
-                        interactionSource = interactionSource
-                    ) { deleteClick(shoppingList) }
+                   .clickable { editClick() }
             )
         }
     }
@@ -231,7 +215,8 @@ private fun ShoppingListPageRow(
 @Composable
 private fun NewShoppingListFormOverlay(
     onDismiss: () -> Unit,
-    onCreate: (String) -> Unit
+    onCreate: (String) -> Unit,
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
 
     Box(
@@ -277,13 +262,13 @@ private fun NewShoppingListFormOverlay(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Button(
                         onClick = {
                             onCreate(newShoppingListName)
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = koinViewModel<ThemeViewModel>().primaryColor)
+                        colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.addButtonColor)
                     ) {
                         Text("Create")
                     }
@@ -306,7 +291,9 @@ private fun NewShoppingListFormOverlay(
 private fun EditShoppingListFormOverlay(
     onDismiss: () -> Unit,
     onEdit: (Long, String) -> Unit,
-    selectedShoppingList: ShoppingList?
+    deleteButtonClick: (ShoppingList) -> Unit,
+    selectedShoppingList: ShoppingList?,
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
 
     Box(
@@ -332,12 +319,31 @@ private fun EditShoppingListFormOverlay(
                 modifier = Modifier
                     .padding(24.dp)
             ) {
-                Text(
-                    text = "Edit Shopping List",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = Color.Black
-                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ){
+                    Text(
+                        text = "Edit Shopping List",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = themeViewModel.textPrimary
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = themeViewModel.deleteColor,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable{
+                                selectedShoppingList?.let{deleteButtonClick(it)}
+                            }
+                    )
+                }
+
 
                 Spacer(modifier = Modifier.size(16.dp))
 
@@ -352,24 +358,32 @@ private fun EditShoppingListFormOverlay(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Button(
                         onClick = {
                             selectedShoppingList?.let {onEdit(it.id, newName)}
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = koinViewModel<ThemeViewModel>().primaryColor)
+                        colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.primaryColor),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("Edit")
+                        Text(
+                            text = "Edit",
+                            color = themeViewModel.textWhite
+                        )
                     }
 
                     Spacer(modifier = Modifier.size(8.dp))
 
                     Button(
                         onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
+                        colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.cancelButton),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancel", color = Color.Black)
+                        Text(
+                            text = "Cancel",
+                            color = themeViewModel.textPrimary
+                        )
                     }
                 }
             }
@@ -380,7 +394,7 @@ private fun EditShoppingListFormOverlay(
 @Composable
 private fun DeleteShoppingListFormOverlay(
     onDismiss: () -> Unit,
-    onDelete: (Long, String) -> Unit,
+    onDelete: (Long) -> Unit,
     selectedShoppingList: ShoppingList?,
     themeViewModel : ThemeViewModel = koinViewModel()
 ) {
@@ -396,12 +410,10 @@ private fun DeleteShoppingListFormOverlay(
         contentAlignment = Alignment.Center
     ) {
 
-        var newName by remember { mutableStateOf(selectedShoppingList?.name?: "") }
-
         Card(
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
-                .width(340.dp)
+                .width(300.dp)
                 .wrapContentHeight()
         ) {
             Column(
@@ -409,34 +421,43 @@ private fun DeleteShoppingListFormOverlay(
                     .padding(24.dp)
             ) {
                 Text(
-                    text = "Deleting: \n${selectedShoppingList?.name}",
+                    text = "Er du sikker?",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
-                    color = Color.Black
+                    color = themeViewModel.textPrimary,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
 
-                Spacer(modifier = Modifier.size(24.dp))
+                Spacer(modifier = Modifier.size(12.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Button(
                         onClick = {
-                            selectedShoppingList?.let {onDelete(it.id, newName)}
+                            selectedShoppingList?.let {onDelete(it.id)}
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.confirmDeleteColor)
+                        colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.deleteColor),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("Delete")
+                        Text(
+                            text = "Slet",
+                            color = themeViewModel.textWhite
+                        )
                     }
 
                     Spacer(modifier = Modifier.size(8.dp))
 
                     Button(
                         onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.cancelButton)
+                        colors = ButtonDefaults.buttonColors(containerColor = themeViewModel.cancelButton),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancel", color = Color.Black)
+                        Text(
+                            text="Fortryd",
+                            color = themeViewModel.textPrimary
+                        )
                     }
                 }
             }
