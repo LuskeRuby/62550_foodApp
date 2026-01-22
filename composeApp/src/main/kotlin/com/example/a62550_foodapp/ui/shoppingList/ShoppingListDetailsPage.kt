@@ -13,12 +13,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.a62550_foodapp.db.projection.ShoppingListEntry
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
@@ -165,19 +167,39 @@ private fun ShoppingListContent(
     }
 }
 
-//TODO make it look sexy
 @Composable
-private fun SuperMarketHeader(name: String) {
+private fun SuperMarketHeader(
+    name: String,
+    themeViewModel: ThemeViewModel = koinViewModel()
+) {
+    // Determine color based on supermarket name
+    val backgroundColor = when (name.lowercase()) {
+        "netto" -> Color(0xFFFFCC00)           // Yellow (Netto brand color)
+        "kvickly" -> Color(0xFFFF1E31)         // Bright Red (Kvickly brand color)
+        "føtex" -> Color(0xFF27AE60)           // Green (Føtex brand color)
+        "meny" -> Color(0xFF86180C)            // Darker Red (Meny brand color)
+        "bilka" -> Color(0xFF3B8DDC)           // Darker blue (Bilka brand color)
+        "rema 1000" -> Color(0xFF6B95B6)       // Light blue (Rema 1000 brand color)
+        else -> Color(0xFF252525)              // Black fallback
+    }
+
+    val textColor = when (name.lowercase()) {
+        "netto" -> Color.Black                 // Dark text on yellow
+        else -> Color.White                    // White text on dark backgrounds
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF6200EE))
-            .padding(vertical = 6.dp, horizontal = 12.dp)
+            .background(backgroundColor)
+            .padding(vertical = 16.dp, horizontal = 16.dp)
     ) {
         Text(
             text = name,
-            color = Color.White,
-            fontWeight = FontWeight.Bold
+            color = textColor,
+            fontWeight = FontWeight.Bold,
+            fontSize = 22.sp,
+            modifier = Modifier.align(Alignment.Center)
         )
     }
 }
