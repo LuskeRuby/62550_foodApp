@@ -66,15 +66,18 @@ fun <T> SearchSelectField(
             Text(displayedUnitType ?: "")
         }
 
-        Spacer(Modifier.height(8.dp))
+
 
         if (value.isNotBlank()) {
+            Spacer(Modifier.height(8.dp))
+
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(4.dp)) {
                     if (matches.isEmpty()) {
                         Text("No matches", modifier = Modifier.padding(8.dp))
                     } else {
-                        matches.take(8).forEachIndexed { index, item ->
+                        val shortList = matches.take(8)
+                        shortList.take(8).forEachIndexed { index, item ->
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -87,7 +90,7 @@ fun <T> SearchSelectField(
                             ) {
                                 Text(itemText(item))
                             }
-                            if (index != matches.lastIndex) HorizontalDivider()
+                            if (index < shortList.lastIndex) HorizontalDivider()
                         }
                     }
                 }
