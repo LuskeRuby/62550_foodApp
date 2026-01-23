@@ -77,16 +77,17 @@ class ThemeViewModel : ViewModel() {
     // ============================================================
     // ## SHOPPING LIST CATEGORIES
     // ============================================================
-    val dryGoods = Color(0xFF996600)            // Brown - Tørvarer (dry goods)
-    val meat = Color(0xFFD32F2F)                // Red - Kød (meat)
-    val fish = Color(0xFF0288D1)                // Light Blue - Fisk (fish)
-    val vegetables = Color(0xFF388E3C)          // Green - Grøntsager (vegetables)
-    val dairy = Color(0xFF1976D2)               // Blue - Mejeri (dairy)
-    val spices = Color(0xFFFF8F00)              // Amber/Orange - Krydderier (spices)
-    val kolonial = Color(0xFF6A1B9A)            // Purple - Kolonial (colonial/pantry items)
-    val bread = Color(0xFF8D6E63)               // Warm Brown - Brød (bread)
-    val unavailable = Color(0xFF757575)         // Grey - Utilgængelige varer (unavailable items)
-    val other = Color.Gray                      // Grey - Other categories
+    // Updated to more matte / desaturated variants
+    val dryGoods = Color(0xFF8F6F3B)            // Brown - Tørvarer (dry goods) (matte)
+    val meat = Color(0xFFB23B3B)                // Red - Kød (meat) (matte)
+    val fish = Color(0xFF3B90A8)                // Light Blue - Fisk (fish) (matte)
+    val vegetables = Color(0xFF4A7A4A)          // Green - Grøntsager (vegetables) (matte)
+    val dairy = Color(0xFF2E7BB3)               // Blue - Mejeri (dairy) (matte)
+    val spices = Color(0xFFCC7A19)              // Amber/Orange - Krydderier (spices) (matte)
+    val kolonial = Color(0xFF6C3B85)            // Purple - Kolonial (colonial/pantry items) (matte)
+    val bread = Color(0xFF7E635B)               // Warm Brown - Brød (bread) (matte)
+    val unavailable = Color(0xFF6E6E6E)         // Grey - Utilgængelige varer (unavailable items) (matte)
+    val other = Color(0xFF9E9E9E)               // Grey - Other categories (matte)
 
     // ============================================================
     // ## SUPER MARKET CATEGORIES
