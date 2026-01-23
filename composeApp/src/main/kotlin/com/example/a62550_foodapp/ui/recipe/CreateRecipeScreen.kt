@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.foundation.shape.CircleShape
+import com.example.a62550_foodapp.ui.components.AddItemGroupPage
 
 
 @Composable
@@ -56,8 +57,30 @@ fun CreateRecipeScreen(
                 onBack = onBack
             )
         } else {
-            AddItemGroupToRecipePage(
-                recipeViewModel = recipeViewModel,
+
+            val allGroups by recipeViewModel.getAllItemGroups().collectAsState(initial = emptyList())
+            val selectedGroups by recipeViewModel.tempGroups.collectAsState()
+
+            // map tempGroups -> Pair<ItemGroup, Int>
+            val selectedItems = selectedGroups.mapNotNull { sg ->
+                val group = allGroups.firstOrNull { it.id == sg.itemGroupId }
+                group?.let { it to sg.quantity }
+            }
+
+            AddItemGroupPage(
+                headerText = "Tilføj ingredienser",
+
+                allGroups = allGroups,
+                selectedItems = selectedItems,
+
+                onAdd = { group, qty ->
+                    recipeViewModel.addTempGroup(group.id, qty)
+                },
+
+                onDelete = { group ->
+                    recipeViewModel.removeTempGroup(group.id)
+                },
+
                 onDone = { editingIngredients = false }
             )
         }
@@ -126,15 +149,6 @@ private fun CreateRecipeForm(
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize()
                     )
-                }
-
-                else -> {
-                    Box(
-                        Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Tryk for at vælge billede")
-                    }
                 }
             }
 

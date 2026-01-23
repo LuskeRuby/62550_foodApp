@@ -1,81 +1,75 @@
-package com.example.a62550_foodapp.ui.recipe
+package com.example.a62550_foodapp.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.a62550_foodapp.db.entity.ItemGroup
-import com.example.a62550_foodapp.ui.components.SearchSelectField
-import com.example.a62550_foodapp.viewmodel.RecipeViewModel
-import com.example.a62550_foodapp.viewmodel.ThemeViewModel
-import org.koin.androidx.compose.koinViewModel
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import org.koin.androidx.compose.koinViewModel
+
+import com.example.a62550_foodapp.db.entity.ItemGroup
+import com.example.a62550_foodapp.ui.components.SearchSelectField
+import com.example.a62550_foodapp.viewmodel.ThemeViewModel
+import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+
 
 @Composable
-fun AddItemGroupToRecipePage(
-    recipeViewModel: RecipeViewModel,
+fun AddItemGroupPage(
+    headerText: String,
+
+    allGroups: List<ItemGroup>,
+    selectedItems: List<Pair<ItemGroup, Int>>, // (group, qty)
+
+    onAdd: (ItemGroup, Int) -> Unit,
+    onDelete: (ItemGroup) -> Unit,
     onDone: () -> Unit,
+
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
-    val allGroups by recipeViewModel.getAllItemGroups().collectAsState(initial = emptyList())
-    val tempSelected by recipeViewModel.tempGroups.collectAsState()
-
     var searchText by remember { mutableStateOf("") }
     var selectedGroup by remember { mutableStateOf<ItemGroup?>(null) }
     var qtyText by remember { mutableStateOf("") }
     val qtyFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(selectedGroup) {
-        if (selectedGroup != null) {
-            qtyFocusRequester.requestFocus()
-        }
+        if (selectedGroup != null) qtyFocusRequester.requestFocus()
     }
 
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
+    Box(Modifier.fillMaxSize()) {
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(themeViewModel.backgroundColor) // GRÅ BAGGRUND
+                .background(themeViewModel.backgroundColor)
         ) {
 
-            // ===== WHITE HEADER BLOCK =====
+            // ===== WHITE HEADER =====
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(themeViewModel.surfaceColor) // HVID
+                    .background(themeViewModel.surfaceColor)
             ) {
                 Column {
 
-                    // ---------- HEADER ----------
                     Text(
-                        "Tilføj ingredienser",
-                        fontSize = 22.sp,
+                        headerText,
+                        fontSize = 18.sp, // samme som resten
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .padding(top = 12.dp, bottom = 12.dp)
+                        modifier = Modifier.padding(16.dp)
                     )
 
-                    // ---------- INPUT ROW ----------
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -87,7 +81,6 @@ fun AddItemGroupToRecipePage(
 
                         val rowHeight = TextFieldDefaults.MinHeight
 
-                        // ---- SEARCH ----
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -104,7 +97,6 @@ fun AddItemGroupToRecipePage(
                             )
                         }
 
-                        // ---- QTY ----
                         OutlinedTextField(
                             value = qtyText,
                             onValueChange = { qtyText = it.filter(Char::isDigit) },
@@ -113,12 +105,12 @@ fun AddItemGroupToRecipePage(
                                 .height(rowHeight)
                                 .focusRequester(qtyFocusRequester),
                             singleLine = true,
-                            placeholder = { Text("0") },
+                            placeholder = { Text("") },
                             trailingIcon = {
                                 Text(
                                     text = selectedGroup?.unitType ?: "kg/L",
-                                    color = themeViewModel.textSecondary,
                                     fontSize = 12.sp,
+                                    color = themeViewModel.textSecondary,
                                     modifier = Modifier.padding(end = 8.dp)
                                 )
                             },
@@ -129,13 +121,12 @@ fun AddItemGroupToRecipePage(
                             )
                         )
 
-                        // ---- ADD ----
                         Button(
                             onClick = {
                                 val qty = qtyText.toIntOrNull() ?: return@Button
                                 val group = selectedGroup ?: return@Button
 
-                                recipeViewModel.addTempGroup(group.id, qty)
+                                onAdd(group, qty)
 
                                 qtyText = ""
                                 selectedGroup = null
@@ -153,34 +144,24 @@ fun AddItemGroupToRecipePage(
                 }
             }
 
-            // ===== GRÅ SPACER =====
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(Modifier.height(12.dp))
 
-            // ---------- LIST ----------
+            // ===== LIST CARD =====
             Card(
                 shape = RoundedCornerShape(0.dp),
                 colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .padding(top = 8.dp)
             ) {
-                LazyColumn(
-                    contentPadding = PaddingValues(bottom = 0.dp)
-                ) {
-                    items(
-                        tempSelected,
-                        key = { it.itemGroupId }
-                    ) { sg ->
+                LazyColumn {
+                    items(selectedItems, key = { it.first.id }) { (group, qty) ->
 
-                        val group = allGroups.firstOrNull { it.id == sg.itemGroupId }
-
-                        EditRecipeItemRow(
-                            name = group?.name ?: "(ukendt)",
-                            quantity = sg.quantity,
-                            unit = group?.unitType ?: "",
-                            onDelete = { recipeViewModel.removeTempGroup(sg.itemGroupId) },
+                        SwipeIngredientRow(
+                            name = group.name,
+                            quantity = qty,
+                            unit = group.unitType,
+                            onDelete = { onDelete(group) },
                             themeViewModel = themeViewModel
                         )
                     }
@@ -188,7 +169,6 @@ fun AddItemGroupToRecipePage(
             }
         }
 
-        // ---------- DONE BUTTON ----------
         FloatingActionButton(
             onClick = onDone,
             modifier = Modifier
@@ -200,14 +180,14 @@ fun AddItemGroupToRecipePage(
             containerColor = themeViewModel.addButtonColor,
             contentColor = themeViewModel.onPrimaryColor
         ) {
-            Text(text = "Færdig")
+            Text("Færdig")
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditRecipeItemRow(
+fun SwipeIngredientRow(
     name: String,
     quantity: Int,
     unit: String,
@@ -253,7 +233,6 @@ fun EditRecipeItemRow(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                // ---- NAME ----
                 Text(
                     text = name,
                     modifier = Modifier.weight(1f),
@@ -262,7 +241,6 @@ fun EditRecipeItemRow(
                     color = themeViewModel.textPrimary
                 )
 
-                // ---- QUANTITY (ORANGE) ----
                 Text(
                     text = "$quantity $unit",
                     fontSize = 13.sp,
@@ -279,3 +257,4 @@ fun EditRecipeItemRow(
         }
     }
 }
+
