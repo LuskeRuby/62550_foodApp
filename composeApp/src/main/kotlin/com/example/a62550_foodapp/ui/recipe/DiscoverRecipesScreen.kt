@@ -12,6 +12,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -78,7 +81,7 @@ fun DiscoverRecipesScreen(
                 .fillMaxSize()
                 .background(themeViewModel.backgroundColor)
                 .padding(padding)
-                .padding(16.dp)
+                .padding(12.dp)
         ) {
             when {
                 //loading api feedback
@@ -104,40 +107,31 @@ fun DiscoverRecipesScreen(
                 else -> {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = "Vælg kategori",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = themeViewModel.textSecondary
-                        )
 
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        LazyRow(
-                            state = categoryListState,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            contentPadding = PaddingValues(horizontal = 4.dp)
-                        ) {
-                            items(categories) { category ->
-                                CategoryCard(
-                                    category = category,
-                                    selected = category.name == selectedCategory,
-                                    onClick = {
-                                        viewModel.selectCategory(category.name)
-                                    },
-                                    themeViewModel = themeViewModel
-                                )
+                            LazyRow(
+                                state = categoryListState,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp),
+                                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+                            ) {
+                                items(categories, key = { it.name }) { category ->
+                                    CategoryCard(
+                                        category = category,
+                                        selected = category.name == selectedCategory,
+                                        onClick = { viewModel.selectCategory(category.name) },
+                                        themeViewModel = themeViewModel
+                                    )
+                                }
                             }
-                        }
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         //Opskriftsliste
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier.fillMaxHeight()
+                            modifier = Modifier.weight(1f)
                         ) {
                             items(meals) { meal ->
                                 MealCard(
@@ -225,7 +219,7 @@ fun MealCard(
                 contentDescription = meal.name,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp),
+                    .height(128.dp),
                 contentScale = ContentScale.Crop
             )
 
@@ -241,6 +235,7 @@ fun MealCard(
                     style = MaterialTheme.typography.titleMedium,
                     color = themeViewModel.textPrimary,
                     maxLines = 2,
+                    minLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }

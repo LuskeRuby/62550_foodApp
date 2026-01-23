@@ -163,7 +163,7 @@ fun RecipeCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp)
+                    .height(128.dp)
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                     .background(themeViewModel.secondaryColor)
             ) {
@@ -202,8 +202,10 @@ fun RecipeCard(
                     style = MaterialTheme.typography.titleMedium,
                     color = themeViewModel.textPrimary,
                     maxLines = 2,
+                    minLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
+
             }
         }
     }
