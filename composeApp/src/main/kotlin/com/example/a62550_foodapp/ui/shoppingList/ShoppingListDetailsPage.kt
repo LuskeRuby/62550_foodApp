@@ -14,11 +14,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -176,34 +180,39 @@ private fun ShoppingListContent(
                 else -> themeViewModel.otherSuperMarkets
             }
 
-            item {
-                if (supermarket.name.isNotBlank()) {
-                    SuperMarketHeader(
-                        name = supermarket.name,
-                        logo = supermarket.logo,
-                        backgroundColor = supermarketColor
-                    )
+            val cornerRounding = 32.dp
+            val bottomPadding = 8.dp
 
-                }
+            item {
+                SuperMarketHeader(
+                    name = supermarket.name,
+                    logo = supermarket.logo,
+                    backgroundColor = supermarketColor,
+                    cornerRounding = cornerRounding
+                )
             }
 
 
             item {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    color = supermarketColor,
-                    shape = RoundedCornerShape(bottomStart = 48.dp, bottomEnd = 48.dp),
-                    tonalElevation = 0.dp
-                ){
-                    Column(modifier = Modifier
-                        // for some reason this padding decides the area that gets colored from the surface
-                        .padding(start = 8.dp, end = 8.dp, bottom = 48.dp)
-                    ) {
-                        categoryMap.forEach { (category, itemList) ->
+                //Surface(
+                //    modifier = Modifier
+                //        .fillMaxWidth(),
+                //    color = supermarketColor,
+                //    shape = RoundedCornerShape(bottomStart = 48.dp, bottomEnd = 48.dp),
+                //    tonalElevation = 0.dp
+                //){
+                //    Column(modifier = Modifier
+                //        // for some reason this padding decides the area that gets colored from the surface
+                //        .padding(start = 8.dp, end = 8.dp, bottom = 48.dp)
+                //    ) {
+                        categoryMap.toList().forEachIndexed { categoryIndex, (category, itemList) ->
                             CategoryHeader(category)
 
-                            itemList.forEach { entry ->
+                            itemList.forEachIndexed { shoppingListIndex, entry ->
+
+                                val isLastSupermarketItem = categoryIndex == categoryMap.toList().lastIndex &&
+                                                            shoppingListIndex == itemList.lastIndex
+
                                 ShoppingItemRow(
                                     item = entry,
                                     onCheckedChange =
@@ -213,20 +222,20 @@ private fun ShoppingListContent(
                                             {}
                                         },
                                     editList = !editOverlay,
-                                    onDelete = { viewModel.delete(entry) }
+                                    onDelete = { viewModel.delete(entry) },
+                                    extraPadding = bottomPadding,
+                                    customShape =
+                                        if (isLastSupermarketItem) RoundedCornerShape(bottomStart = cornerRounding, bottomEnd = cornerRounding)
+                                        else RectangleShape
                                 )
                             }
-                        }
-                    }
+                        //}
+                    //}
                 }
             }
             // space between supermarkets
             item{
                 Spacer(modifier = Modifier.padding(12.dp))
-                //HorizontalDivider(
-                //    thickness = 2.dp,
-                //    color = Color.Black//themeViewModel.backgroundColor
-                //    )
             }
         }
     }
@@ -237,7 +246,8 @@ private fun SuperMarketHeader(
     name: String,
     logo: String?,
     backgroundColor: Color,
-    themeViewModel: ThemeViewModel = koinViewModel()
+    themeViewModel: ThemeViewModel = koinViewModel(),
+    cornerRounding: Dp = 0.dp
 ) {
 
     // Logos that need white background behind them for visibility
@@ -252,21 +262,21 @@ private fun SuperMarketHeader(
             .fillMaxWidth()
             .background(
                 color = backgroundColor,
-                shape = RoundedCornerShape(topStart = 48.dp, topEnd = 48.dp)
+                shape = RoundedCornerShape(topStart = cornerRounding, topEnd = cornerRounding)
             )
             .padding(start = 12.dp,end = 12.dp, top = 16.dp, bottom = 16.dp),
         contentAlignment = Alignment.Center
     ) {
-        if (logo != null) {
-            // Add white background for logos that need it (dark text on logo)
-            Box(
-                modifier = if (needsWhiteBackground) {
-                    Modifier
-                        .background(Color.White, RoundedCornerShape(8.dp))
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
-                } else Modifier,
-                contentAlignment = Alignment.Center
-            ) {
+        // Add white background for logos that need it (dark text on logo)
+        Box(
+            modifier = if (needsWhiteBackground) {
+                Modifier
+                    .background(Color.White, RoundedCornerShape(8.dp))
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+            } else Modifier,
+            contentAlignment = Alignment.Center
+        ) {
+            if (logo != null && name.isNotBlank()) {
                 AsyncImage(
                     model = logo,
                     contentDescription = name,
@@ -275,14 +285,21 @@ private fun SuperMarketHeader(
                         .widthIn(max = 180.dp),
                     contentScale = ContentScale.Fit
                 )
+            } else if ( name.isNotBlank() ) {
+                Text(
+                    text = name,
+                    color = themeViewModel.textOtherSuperMarkets,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 32.sp
+                )
+            } else {
+                Text(
+                    text = "Utilgængelige varer",
+                    color = themeViewModel.textOtherSuperMarkets,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 32.sp
+                )
             }
-        } else {
-            Text(
-                text = name,
-                color = themeViewModel.textOtherSuperMarkets,
-                fontWeight = FontWeight.Bold,
-                fontSize = 22.sp
-            )
         }
     }
 }
@@ -324,11 +341,13 @@ fun CategoryHeader(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShoppingItemRow(
-    themeViewModel: ThemeViewModel = koinViewModel(),
     item: ShoppingListEntry,
     onCheckedChange: (Boolean) -> Unit,
     editList: Boolean,
     onDelete: () -> Unit,
+    extraPadding: Dp = 0.dp,
+    customShape: Shape,
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { it * 0.4f },
@@ -346,8 +365,11 @@ private fun ShoppingItemRow(
         backgroundContent = {
             Box(
                 modifier = Modifier
+                    .shadow(elevation = 20.dp)
                     .fillMaxSize()
-                    .background(Color.Red)
+                    .background(
+                        Color.Red,
+                        shape = customShape)
                     .padding(end = 20.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
@@ -361,9 +383,9 @@ private fun ShoppingItemRow(
                 .background(
                     if (item.isChecked) themeViewModel.fadedBackground
                     else themeViewModel.surfaceColor,
-                    //shape = RoundedCornerShape(bottomEnd = 32.dp)
-                )
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+                    shape = customShape)
+                .padding(horizontal = 16.dp, vertical = 10.dp)
+                .padding(bottom = extraPadding),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
