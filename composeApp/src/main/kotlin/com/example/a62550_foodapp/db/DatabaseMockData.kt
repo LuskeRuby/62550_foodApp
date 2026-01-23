@@ -571,122 +571,122 @@ object DatabaseMockData {
             ).toInt()
 
         val r1 = recipe(
-            "Spaghetti Bolognese", 45, "Italiensk klassiker",
-            "Kog spaghetti efter anvisning på pakken. Svits løg i lidt olie, tilsæt hakket oksekød og brun det godt. Tilsæt tomater og lad saucen simre i 20–30 minutter. Smag til med salt og peber. Server saucen over pastaen.",
+            "Spaghetti Bolognese", 45, "Klassisk italiensk kødsauce med dyb smag",
+            "Hak løg fint og varm en gryde op med lidt olie ved middel varme. Tilsæt løgene og lad dem stege langsomt, indtil de bliver bløde og let gennemsigtige uden at tage farve.\n\nTilsæt hakket oksekød og skru lidt op for varmen. Del kødet godt med en ske og steg det, til det er gennemstegt og har fået lidt stegeskorpe. Krydr med salt og peber.\n\nTilsæt hakkede tomater og eventuelt lidt tomatpuré for ekstra fylde. Rør godt rundt og lad saucen simre ved lav varme i mindst 20–25 minutter. Rør jævnligt, så den ikke brænder på.\n\nSmag til med oregano, basilikum, salt og peber. Hvis saucen virker for syrlig, kan du tilsætte en smule sukker.\n\nKog spaghetti i rigeligt saltet vand efter anvisningen på pakken. Hæld vandet fra, fordel pastaen på tallerkener og server kødsaucen ovenpå. Drys evt. med revet parmesan før servering.",
             R.drawable.recipe_1
         )
 
         val r2 = recipe(
-            "Chicken Wok", 30, "Asiatisk wok",
-            "Skær kylling i strimler og steg i varm pande med olie. Tilsæt grøntsager og steg kort. Hæld sojasauce over og vend det hele rundt. Server med ris eller nudler.",
+            "Chicken Wok", 30, "Hurtig asiatisk inspireret wokret med grønt",
+            "Skær kyllingebryst i tynde strimler og dup dem tørre med køkkenrulle, så de steger bedre. Varm en wok eller stor pande op med lidt olie ved høj varme.\n\nSteg kyllingen i små portioner, så den bliver brunet i stedet for kogt. Tag den færdigstegte kylling af panden og læg den til side.\n\nTilsæt evt. lidt ekstra olie og steg grøntsagerne hurtigt, så de stadig er sprøde. Start med de hårdeste grøntsager og tilsæt de blødere til sidst.\n\nKom kyllingen tilbage på panden sammen med sojasauce og eventuelt lidt hvidløg eller ingefær. Vend det hele godt sammen i 1–2 minutter.\n\nSmag til med mere sojasauce hvis nødvendigt og server straks med ris eller nudler.",
             R.drawable.recipe_2
         )
 
         val r3 = recipe(
-            "Chili con Carne", 50, "Krydret gryderet",
-            "Svits løg og hvidløg i gryde. Tilsæt hakket oksekød og brun det. Kom tomater, bønner og krydderier i. Lad retten simre i ca. 30 minutter. Smag til med salt og chili.",
+            "Chili con Carne", 50, "Fyldig og krydret gryderet",
+            "Hak løg og hvidløg fint. Varm en stor gryde op med lidt olie og svits løg og hvidløg ved middel varme, til de bliver bløde og dufter godt.\n\nTilsæt hakket oksekød og steg det grundigt, mens du deler det med en ske, så der ikke er store klumper. Krydr med salt, peber og chili.\n\nTilsæt hakkede tomater, bønner og evt. lidt vand eller bouillon, så retten ikke bliver for tyk. Rør godt rundt.\n\nLad retten simre ved lav varme i mindst 30 minutter, så smagen bliver kraftigere. Rør jævnligt og justér konsistensen med lidt vand hvis nødvendigt.\n\nSmag til med mere chili, salt og evt. lidt sukker. Server med ris eller brød.",
             R.drawable.recipe_3
         )
 
         val r4 = recipe(
-            "Pasta Alfredo", 25, "Cremet pasta",
-            "Kog pasta. Varm fløde op i pande og tilsæt revet ost. Rør til cremet sauce. Vend pastaen i saucen og smag til med salt og peber.",
+            "Pasta Alfredo", 25, "Cremet pastaret med ostesauce",
+            "Bring en stor gryde med saltet vand i kog og kog pastaen efter anvisningen på pakken, til den er al dente.\n\nImens varmes fløden op i en pande ved middel varme. Undgå at koge fløden, da den kan skille.\n\nTilsæt den revne ost lidt ad gangen under omrøring, så saucen bliver jævn og cremet.\n\nHæld den kogte pasta direkte over i saucen sammen med lidt af pastavandet og vend det hele godt rundt.\n\nSmag til med salt og peber og server straks med ekstra ost på toppen.",
             R.drawable.recipe_4
         )
 
         val r5 = recipe(
-            "Chicken Curry", 40, "Karryret",
-            "Steg kylling i tern i gryde. Tilsæt karry og svits kort. Hæld fløde eller kokosmælk i og lad simre i 20 minutter. Server med ris.",
+            "Chicken Curry", 40, "Krydret karryret med kylling",
+            "Skær kyllingen i mundrette tern. Varm olie op i en gryde og brun kyllingen godt på alle sider.\n\nDrys karry over kyllingen og svits krydderiet kort, så smagen frigives.\n\nTilsæt fløde eller kokosmælk og rør godt rundt. Skru ned for varmen og lad retten simre i ca. 20 minutter.\n\nHvis saucen bliver for tyk, kan du tilsætte lidt vand eller bouillon. Smag til med salt.\n\nServer med ris og evt. frisk koriander på toppen.",
             R.drawable.recipe_5
         )
 
         val r6 = recipe(
-            "Wraps med kylling", 20, "Let aftensmad",
-            "Steg kylling med krydderier. Varm wraps. Fyld wraps med kylling og grøntsager. Rul sammen og server.",
+            "Wraps med kylling", 20, "Let og hurtig aftensmad med saftig kylling",
+            "Skær kyllingen i strimler og krydr med salt, peber og evt. paprika. Varm olie op på en pande ved middelhøj varme og steg kyllingen gylden og gennemstegt.\n\nSkær grøntsager i tynde strimler og varm dem kort på panden sammen med kyllingen, så de stadig har bid.\n\nVarm wraps kort på en tør pande eller i ovnen, så de bliver bløde.\n\nFordel fyldet på wraps, rul dem sammen og server straks.",
             R.drawable.recipe_6
         )
 
         val r7 = recipe(
-            "Veggie Wok", 25, "Grøntsagswok",
-            "Varm olie i pande. Steg alle grøntsager hurtigt ved høj varme. Tilsæt sojasauce og evt. chili. Server med ris eller nudler.",
+            "Veggie Wok", 25, "Sprød grøntsagswok med asiatisk smag",
+            "Skær alle grøntsager i ensartede stykker, så de steger jævnt. Varm en wok eller stor pande op med olie ved høj varme.\n\nSteg først de grøntsager der tager længst tid, og tilsæt de mere sarte til sidst.\n\nTilsæt sojasauce og evt. lidt hvidløg eller chili. Vend hurtigt rundt så saucen fordeles.\n\nServer straks med ris eller nudler.",
             R.drawable.recipe_7
         )
 
         val r8 = recipe(
-            "Ris med oksekød", 35, "Hurtig hverdagsret",
-            "Kog ris. Steg oksekød med løg i pande. Tilsæt grøntsager og steg videre. Bland risene i og varm det hele igennem.",
+            "frikadelle med tilbehør", 35, "Mættende ret med kød og grøntsager",
+            "Kog ris efter anvisningen på pakken og hold dem varme.\n\nSteg oksekødet på en pande ved høj varme, så det får stegeskorpe. Tag kødet af panden.\n\nSteg løg og grøntsager på samme pande, tilsæt kødet igen og bland risene i.\n\nVarm det hele godt igennem og smag til med salt og peber.",
             R.drawable.recipe_8
         )
 
         val r9 = recipe(
-            "Tomatsuppe", 30, "Varm suppe",
-            "Kog tomater med lidt vand og bouillon. Blend suppen glat. Smag til med salt og peber og tilsæt evt. fløde før servering.",
+            "Tomatsuppe", 30, "Blød og varmende suppe",
+            "Svits løg i en gryde med lidt olie til de er bløde. Tilsæt tomater og evt. bouillon.\n\nLad suppen simre i 15 minutter.\n\nBlend suppen glat og tilsæt fløde hvis ønsket.\n\nSmag til med salt, peber og evt. sukker.",
             R.drawable.recipe_9
         )
 
         val r10 = recipe(
-            "Laks med grønt", 35, "Sund fiskeret",
-            "Steg laks på pande med lidt olie. Damp eller steg grøntsager separat. Server laksen sammen med grønt og evt. kartofler.",
+            "Laks med grønt", 35, "Let og sund fiskeret",
+            "Krydr laksen med salt og peber. Steg den på en pande med olie ved middel varme, til den er netop gennemstegt.\n\nDamp eller steg grøntsager separat så de stadig er sprøde.\n\nServer laksen sammen med grøntsager og evt. kartofler.",
             R.drawable.recipe_10
         )
 
         val r11 = recipe(
-            "Mørbrad gryde", 40, "Lækkert stegt mel fra Sverige",
-            "Skær svinemørbrad i skiver og brun i gryde. Tilsæt løg og svampe. Hæld fløde i og lad simre i 20 minutter. Smag til med salt og peber. Server med ris eller kartofler.",
+            "Mørbrad gryde", 40, "Cremet gryderet med svinekød og svampe",
+            "Skær svinemørbrad i skiver og brun dem i gryde med lidt olie. Tag kødet op og læg til side.\n\nSvits løg og svampe i samme gryde, så de afgiver væde og bliver gyldne.\n\nHæld fløde i gryden, kom kødet tilbage og lad retten simre i ca. 20 minutter.\n\nSmag til med salt og peber og server med ris eller kartofler.",
             R.drawable.recipe_11
         )
 
         val r12 = recipe(
-            "Frikadeller", 40, "Danske klassiker med rødkål",
-            "Rør fars med æg, løg, salt og peber. Form frikadeller og steg dem gyldne på pande. Server med kartofler og rødkål.",
+            "Frikadeller", 40, "Dansk klassiker med sprøde frikadeller",
+            "Rør fars med æg, finthakket løg, salt og peber. Lad farsen hvile 5 minutter.\n\nForm små frikadeller med en ske og steg dem i rigeligt smør på middel varme.\n\nVend dem jævnligt så de bliver gyldne hele vejen rundt.\n\nServer med kartofler og evt. rødkål.",
             R.drawable.recipe_12
         )
 
         val r13 = recipe(
-            "Æbleskiver", 35, "Søde danske æbleskiver",
-            "Varm æbleskivepande op og tilsæt fedtstof. Fyld dej i hullerne og læg æbleskivemasse i midten. Vend æbleskiverne under bagning til de er gyldne. Server med flormelis og syltetøj.",
+            "Æbleskiver", 35, "Søde og bløde æbleskiver",
+            "Varm æbleskivepanden op og kom lidt fedtstof i hvert hul.\n\nHæld dej i hullerne og læg en skefuld æbleskivemasse i midten.\n\nVend æbleskiverne gradvist med en pind så de bliver runde.\n\nBag dem gyldne og server med flormelis og syltetøj.",
             R.drawable.recipe_13
         )
 
         val r14 = recipe(
-            "Stegt flæsk og løg", 45, "Dansk klassiker med kartofler",
-            "Steg flæsk sprødt på pande eller i ovn. Steg løg bløde i fedtet. Kog kartofler. Server flæsk og løg med kartofler og persillesauce.",
+            "Stegt flæsk med kartofler", 45, "Dansk nationalret med kartofler",
+            "Steg flæsk sprødt på pande eller i ovn ved 200 grader.\n\nSteg løg i fedtet til de er bløde og let karamelliserede.\n\nKog kartofler møre.\n\nServer flæsk og løg med kartofler og evt. persillesovs.",
             R.drawable.recipe_14
         )
 
         val r15 = recipe(
-            "Rugbrødsmørrebrød", 20, "Let frokost med skinke",
-            "Smør rugbrød med smør. Læg skinke ovenpå og pynt evt. med grønt. Server straks.",
+            "Rugbrødsmørrebrød", 20, "Klassisk dansk frokost",
+            "Smør rugbrød med smør i et jævnt lag.\n\nLæg skinke ovenpå og pynt evt. med grønt eller agurk.\n\nServer straks mens brødet stadig er friskt.",
             R.drawable.recipe_15
         )
 
         val r16 = recipe(
-            "Rødkål gryde", 50, "Varm og behagelig ret",
-            "Snit rødkål og svits i gryde med lidt fedtstof. Tilsæt væske og lad simre til kålen er mør. Smag til med salt og evt. lidt sukker.",
+            "Rødkål gryde", 50, "Langtidskogt rødkål med sødme",
+            "Snit rødkål fint og svits i gryde med smør.\n\nTilsæt lidt væske og lad kålen simre under låg i 40 minutter.\n\nSmag til med salt og evt. sukker.\n\nServer som tilbehør til kødretter.",
             R.drawable.recipe_16
         )
 
         val r17 = recipe(
             "Medister med kartofler", 35, "Klassisk dansk medisterpølse",
-            "Steg medisterpølsen langsomt på pande til gennemstegt. Kog kartofler. Server med brun sovs og evt. rødkål.",
+            "Steg medister langsomt på pande så den bliver gennemstegt.\n\nKog kartofler møre.\n\nServer med brun sovs og evt. rødkål.",
             R.drawable.recipe_17
         )
 
         val r18 = recipe(
-            "Karbonader", 40, "Stegt kød med sauce",
-            "Form hakket kød til flade bøffer og steg dem gyldne. Lav brun sovs i panden. Server med kartofler og grøntsager.",
+            "Karbonader", 40, "Panerede bøffer med sovs",
+            "Form flade bøffer af farsen og vend dem i mel.\n\nSteg dem gyldne på pande.\n\nLav brun sovs i panden af stegeskyen.\n\nServer med kartofler og grøntsager.",
             R.drawable.recipe_18
         )
 
         val r19 = recipe(
-            "Pølser med kartofler", 30, "Dansk husmannskost",
-            "Kog kartofler. Steg eller kog pølser. Server sammen med sennep og evt. brun sovs.",
+            "Pølser med kartofler", 30, "Nem hverdagsret",
+            "Kog kartofler møre.\n\nSteg eller kog pølser efter ønske.\n\nServer med sennep og evt. brun sovs.",
             R.drawable.recipe_19
         )
 
         val r20 = recipe(
-            "Kylling i flødesauce", 45, "Cremet og lækker",
-            "Steg kylling i gryde. Tilsæt fløde og lad simre til kyllingen er mør. Smag til med salt og peber. Server med ris eller kartofler.",
+            "Kylling i flødesauce", 45, "Cremet og fyldig kyllingeret",
+            "Brun kyllingestykker i gryde med olie.\n\nTilsæt fløde og lad simre i 25 minutter.\n\nSmag til med salt og peber.\n\nServer med ris eller kartofler.",
             R.drawable.recipe_20
         )
 
