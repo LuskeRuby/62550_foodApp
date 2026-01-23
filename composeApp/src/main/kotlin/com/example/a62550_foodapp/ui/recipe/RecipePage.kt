@@ -1,8 +1,6 @@
 package com.example.a62550_foodapp.ui.recipe
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -33,6 +31,7 @@ import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.BasicTextField
+import java.util.Locale
 
 @Composable
 fun RecipePage(
@@ -82,7 +81,7 @@ fun RecipePage(
                 themeViewModel = themeViewModel
             )
 
-            Divider(
+            HorizontalDivider(
                 thickness = 1.dp,
                 color = themeViewModel.textSecondary.copy(alpha = 0.12f)
             )
@@ -183,7 +182,7 @@ fun RecipeCard(
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = String.format("%.2f kr", price),
+                        text = String.format(Locale.getDefault(),"%.2f kr", price.toDouble()),
                         color = themeViewModel.onPrimaryColor,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold

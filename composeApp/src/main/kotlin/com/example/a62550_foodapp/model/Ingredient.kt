@@ -1,6 +1,6 @@
 package com.example.a62550_foodapp.model
 
-//storespecific item if possible, otherwise fallback to itemgroup
+//store specific item if possible, otherwise fallback to itemGroup
 data class Ingredient(
 
     // canonical ingredient

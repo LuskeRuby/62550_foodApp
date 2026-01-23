@@ -50,8 +50,9 @@ fun ShoppingListDetailsPage(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            // to prevent clicking underlying buttons
             .clickable(indication = null,
-                interactionSource = remember { MutableInteractionSource()}) {} // to prevent clicking underlying buttons
+                interactionSource = remember { MutableInteractionSource()}) {}
     ) {
         if (!addItemsOverlay) {
             ShoppingListPage(
