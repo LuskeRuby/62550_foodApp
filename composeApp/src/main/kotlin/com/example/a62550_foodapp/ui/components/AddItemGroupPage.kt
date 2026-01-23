@@ -16,11 +16,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.koin.androidx.compose.koinViewModel
-
 import com.example.a62550_foodapp.db.entity.ItemGroup
-import com.example.a62550_foodapp.ui.components.SearchSelectField
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 
@@ -249,7 +246,7 @@ fun SwipeIngredientRow(
                 )
             }
 
-            Divider(
+            HorizontalDivider(
                 thickness = 0.5.dp,
                 color = themeViewModel.textSecondary.copy(alpha = 0.12f),
                 modifier = Modifier.padding(start = 16.dp)

@@ -1,10 +1,7 @@
 package com.example.a62550_foodapp.ui.recipe
-
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.RemoveCircle
@@ -12,15 +9,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.a62550_foodapp.viewmodel.*
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import java.util.Locale
 
 @Composable
 fun RecipeDetailScreen(
@@ -276,7 +271,7 @@ fun RecipeActionBarLocal(
             // Price
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = String.format("%.2f", price),
+                    text = String.format(Locale.getDefault(),"%.2f", price.toDouble()),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
