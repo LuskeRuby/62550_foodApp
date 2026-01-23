@@ -4,10 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -109,6 +107,7 @@ private fun ShoppingListPage(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(color = themeViewModel.surfaceColor)
                     .padding(horizontal = 16.dp, vertical = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -158,37 +157,76 @@ private fun ShoppingListPage(
 private fun ShoppingListContent(
     viewModel: ShoppingListDetailsViewModel,
     editOverlay: Boolean,
-    grouped: Map<SupermarketGroup, Map<String, List<ShoppingListEntry>>>
+    grouped: Map<SupermarketGroup, Map<String, List<ShoppingListEntry>>>,
+    themeViewModel: ThemeViewModel = koinViewModel()
 ) {
     LazyColumn(
         contentPadding = PaddingValues(bottom = 80.dp)
     ) {
         grouped.forEach { (supermarket, categoryMap) ->
 
-            if (supermarket.name.isNotBlank()) {
-                item { SuperMarketHeader(name = supermarket.name, logo = supermarket.logo) }
+            // Determine color based on supermarket name
+            val supermarketColor = when (supermarket.name.lowercase()) {
+                "netto" -> themeViewModel.nettoColor
+                "kvickly" -> themeViewModel.kvicklyColor
+                "føtex" -> themeViewModel.fotexColor
+                "meny" -> themeViewModel.menyColor
+                "bilka" -> themeViewModel.bilkaColor
+                "rema 1000" -> themeViewModel.rema1000Color
+                else -> themeViewModel.otherSuperMarkets
             }
 
-            categoryMap.forEach { (category, items) ->
-                item { CategoryHeader(category) }
-
-                items(
-                    items = items,
-                    key = { "${it.id}-${it.itemGroupId}-${it.superMarketName}" }
-                ) { entry ->
-                    ShoppingItemRow(
-                        item = entry,
-                        onCheckedChange =
-                            if (!editOverlay) {
-                                { checked -> viewModel.setCheckmark(entry, checked) }
-                            } else {
-                                {}
-                            },
-                        editList = !editOverlay,
-                        onDelete = { viewModel.delete(entry) },
-                        supermarketName = supermarket.name
+            item {
+                if (supermarket.name.isNotBlank()) {
+                    SuperMarketHeader(
+                        name = supermarket.name,
+                        logo = supermarket.logo,
+                        backgroundColor = supermarketColor
                     )
+
                 }
+            }
+
+
+            item {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    color = supermarketColor,
+                    shape = RoundedCornerShape(bottomStart = 48.dp, bottomEnd = 48.dp),
+                    tonalElevation = 0.dp
+                ){
+                    Column(modifier = Modifier
+                        // for some reason this padding decides the area that gets colored from the surface
+                        .padding(start = 8.dp, end = 8.dp, bottom = 48.dp)
+                    ) {
+                        categoryMap.forEach { (category, itemList) ->
+                            CategoryHeader(category)
+
+                            itemList.forEach { entry ->
+                                ShoppingItemRow(
+                                    item = entry,
+                                    onCheckedChange =
+                                        if (!editOverlay) {
+                                            { checked -> viewModel.setCheckmark(entry, checked) }
+                                        } else {
+                                            {}
+                                        },
+                                    editList = !editOverlay,
+                                    onDelete = { viewModel.delete(entry) }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            // space between supermarkets
+            item{
+                Spacer(modifier = Modifier.padding(12.dp))
+                //HorizontalDivider(
+                //    thickness = 2.dp,
+                //    color = Color.Black//themeViewModel.backgroundColor
+                //    )
             }
         }
     }
@@ -198,35 +236,25 @@ private fun ShoppingListContent(
 private fun SuperMarketHeader(
     name: String,
     logo: String?,
+    backgroundColor: Color,
     themeViewModel: ThemeViewModel = koinViewModel()
 ) {
-    // Determine color based on supermarket name
-    val backgroundColor = when (name.lowercase()) {
-        "netto" -> Color(0xFFFFCC00)           // Yellow (Netto brand color)
-        "kvickly" -> Color(0xFFFF1E31)         // Bright Red (Kvickly brand color)
-        "føtex" -> Color(0xFF3257A1)           // Green (Føtex brand color)
-        "meny" -> Color(0xFF86180C)            // Darker Red (Meny brand color)
-        "bilka" -> Color(0xFF3B8DDC)           // Darker blue (Bilka brand color)
-        "rema 1000" -> Color(0xFF6B95B6)       // Light blue (Rema 1000 brand color)
-        else -> Color(0xFF252525)              // Black fallback
-    }
 
     // Logos that need white background behind them for visibility
-    val needsWhiteBackground = when (name.lowercase()) {
+    val needsWhiteBackground =
+        when (name.lowercase()) {
         "kvickly", "bilka" -> true
         else -> false
-    }
-
-    val textColor = when (name.lowercase()) {
-        "netto" -> Color.Black                 // Dark text on yellow
-        else -> Color.White                    // White text on dark backgrounds
     }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(backgroundColor)
-            .padding(vertical = 12.dp, horizontal = 16.dp),
+            .background(
+                color = backgroundColor,
+                shape = RoundedCornerShape(topStart = 48.dp, topEnd = 48.dp)
+            )
+            .padding(start = 12.dp,end = 12.dp, top = 16.dp, bottom = 16.dp),
         contentAlignment = Alignment.Center
     ) {
         if (logo != null) {
@@ -251,7 +279,7 @@ private fun SuperMarketHeader(
         } else {
             Text(
                 text = name,
-                color = textColor,
+                color = themeViewModel.textOtherSuperMarkets,
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp
             )
@@ -259,11 +287,13 @@ private fun SuperMarketHeader(
     }
 }
 
-//TODO add more/all categories
 @Composable
-fun CategoryHeader(category: String) {
-    val themeViewModel: ThemeViewModel = koinViewModel()
-    val color = when (category.lowercase()) {
+fun CategoryHeader(
+    category: String,
+    themeViewModel: ThemeViewModel = koinViewModel()
+) {
+    val color =
+        when (category.lowercase()) {
         "tørvarer" -> themeViewModel.dryGoods
         "kød" -> themeViewModel.meat
         "fisk" -> themeViewModel.fish
@@ -299,19 +329,7 @@ private fun ShoppingItemRow(
     onCheckedChange: (Boolean) -> Unit,
     editList: Boolean,
     onDelete: () -> Unit,
-    supermarketName: String = ""
 ) {
-    // Get supermarket brand color for the left border accent
-    val supermarketColor = when (supermarketName.lowercase()) {
-        "netto" -> Color(0xFFFFCC00)           // Yellow
-        "kvickly" -> Color(0xFFFF1E31)         // Red
-        "føtex" -> Color(0xFF27AE60)           // Green
-        "meny" -> Color(0xFF86180C)            // Dark Red
-        "bilka" -> Color(0xFF3B8DDC)           // Blue
-        "rema 1000" -> Color(0xFF6B95B6)       // Light blue
-        else -> Color.Transparent
-    }
-
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { it * 0.4f },
         confirmValueChange = {
@@ -342,17 +360,8 @@ private fun ShoppingItemRow(
                 .fillMaxWidth()
                 .background(
                     if (item.isChecked) themeViewModel.fadedBackground
-                    else themeViewModel.backgroundColor,
-                    RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
-                )
-                .then(
-                    if (supermarketColor != Color.Transparent) {
-                        Modifier.border(
-                            width = 3.dp,
-                            color = supermarketColor,
-                            shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp)
-                        )
-                    } else Modifier
+                    else themeViewModel.surfaceColor,
+                    //shape = RoundedCornerShape(bottomEnd = 32.dp)
                 )
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically

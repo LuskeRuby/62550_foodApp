@@ -14,8 +14,16 @@ class ThemeViewModel : ViewModel() {
     // ## BACKGROUND & SURFACE
     // ============================================================
     val backgroundColor = Color(0xFFF5F5F5)     // Light grey neutral background (main app)
+    val backgroundColorTwo = Color(0xFFF0F0F0)   // Slightly darker grey for contrast areas
     val surfaceColor = Color(0xFFFFFFFF)        // Pure white for elevated surfaces
     val fadedBackground = Color(0xFFDEDEDE)     // Faded grey for secondary backgrounds
+
+    // ============================================================
+    // ## OUTLINE COLORS
+    // ============================================================
+
+    val greyOutline = Color(0xFFBDBDBD)       // Medium Grey for borders and outlines
+    val blackOutline = Color(0xFF9E9E9E) // Darker Grey for stronger borders
 
     // ============================================================
     // ## BRAND COLORS
@@ -31,7 +39,6 @@ class ThemeViewModel : ViewModel() {
     val textPrimary = Color(0xFF212121)         // Near Black (main text)
     val textSecondary = Color(0xFF757575)       // Medium Grey (secondary text)
     val greyedOutColor = Color(0xFF757575)      // Medium Grey for disabled elements
-    val grayedOutColor = greyedOutColor                 // Alias for American spelling
 
     val textWhite = Color.White                          // Pure White text
 
@@ -40,6 +47,7 @@ class ThemeViewModel : ViewModel() {
     // ============================================================
     val navBarColor = Color(0xFFFFD59A)         // Creamy Orange (navigation bar background)
     val onNavBarColor = Color(0xFF000000)       // Black text/icons on nav bar
+    val softDivide = Color(0xFF252525)          // Light Grey for subtle dividers
 
     // ============================================================
     // ## BUTTONS & ACTIONS
@@ -79,6 +87,19 @@ class ThemeViewModel : ViewModel() {
     val bread = Color(0xFF8D6E63)               // Warm Brown - Brød (bread)
     val unavailable = Color(0xFF757575)         // Grey - Utilgængelige varer (unavailable items)
     val other = Color.Gray                      // Grey - Other categories
+
+    // ============================================================
+    // ## SUPER MARKET CATEGORIES
+    // ============================================================
+
+    val nettoColor = Color(0xFFFFCC00)          // Yellow (Netto brand color)
+    val kvicklyColor =Color(0xFFFF1E31)         // Bright Red (Kvickly brand color)
+    val fotexColor = Color(0xFF3257A1)               // Green (Føtex brand color)
+    val menyColor = Color(0xFF86180C)           // Darker Red (Meny brand color)
+    val bilkaColor = Color(0xFF3B8DDC)          // Darker blue (Bilka brand color)
+    val rema1000Color = Color(0xFF6B95B6)       // Light blue (Rema 1000 brand color)
+    val otherSuperMarkets = Color(0xFF252525)   // Black fallback
+    val textOtherSuperMarkets = Color.White            // White text for dark backgrounds
 
 
 }
