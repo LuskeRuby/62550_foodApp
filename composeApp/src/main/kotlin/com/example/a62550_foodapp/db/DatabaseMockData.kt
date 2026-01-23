@@ -57,7 +57,7 @@ object DatabaseMockData {
         val fish = g("Laks", "Fisk", "g")
         val herring = g("Sild", "Fisk", "g")
 
-        val onion = g("Løg", "Grøntsager", "g")
+        val onion = g("Løg", "Grøntsager", "stk")
         val garlic = g("Hvidløg", "Grøntsager", "g")
         val carrot = g("Gulerod", "Grøntsager", "g")
         val pepper = g("Peberfrugt", "Grøntsager", "g")

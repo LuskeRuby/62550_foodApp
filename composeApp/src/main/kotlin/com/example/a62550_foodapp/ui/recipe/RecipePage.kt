@@ -364,7 +364,7 @@ fun RecipeHeader(
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Medium,
                         color = themeViewModel.textPrimary,
-                        modifier = Modifier.padding(horizontal = 6.dp)
+                        modifier = Modifier.padding(horizontal = 0.dp)
                     )
 
                     //remove + when not searh

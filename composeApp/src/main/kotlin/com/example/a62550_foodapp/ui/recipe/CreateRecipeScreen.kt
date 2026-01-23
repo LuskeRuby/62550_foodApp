@@ -150,15 +150,6 @@ private fun CreateRecipeForm(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-
-                else -> {
-                    Box(
-                        Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Tryk for at vælge billede")
-                    }
-                }
             }
 
             // ----- DARK OVERLAY -----
