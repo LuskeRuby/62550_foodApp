@@ -21,6 +21,9 @@ import com.example.a62550_foodapp.ui.components.SearchSelectField
 import com.example.a62550_foodapp.viewmodel.RecipeViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun AddItemGroupToRecipePage(
@@ -34,145 +37,163 @@ fun AddItemGroupToRecipePage(
     var searchText by remember { mutableStateOf("") }
     var selectedGroup by remember { mutableStateOf<ItemGroup?>(null) }
     var qtyText by remember { mutableStateOf("") }
+    val qtyFocusRequester = remember { FocusRequester() }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(themeViewModel.backgroundColor)
-    ) {
-
-        // ---------- HEADER ----------
-        Text(
-            "Tilføj ingredienser",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(16.dp)
-        )
-
-        // ---------- INPUT ROW ----------
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-
-            val rowHeight = TextFieldDefaults.MinHeight
-
-            // ---- SEARCH ----
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(rowHeight)
-            ) {
-                SearchSelectField(
-                    label = "Søg vare",
-                    items = allGroups,
-                    itemText = { it.name },
-                    value = searchText,
-                    onValueChange = { searchText = it },
-                    onItemSelected = { selectedGroup = it },
-                    borderColor = themeViewModel.addButtonColor
-                )
-            }
-
-            // ---- QTY ----
-            val canAdd = selectedGroup != null && qtyText.isNotBlank()
-
-            OutlinedTextField(
-                value = qtyText,
-                onValueChange = { qtyText = it.filter(Char::isDigit) },
-                modifier = Modifier
-                    .width(88.dp)
-                    .height(rowHeight),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = themeViewModel.addButtonColor,
-                    unfocusedBorderColor = themeViewModel.addButtonColor,
-                    cursorColor = themeViewModel.addButtonColor
-                )
-            )
-
-            // ---- UNIT ----
-            Box(
-                modifier = Modifier.height(rowHeight),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = selectedGroup?.unitType ?: "",
-                    fontSize = 14.sp,
-                    color = themeViewModel.textSecondary
-                )
-            }
-
-            // ---- ADD ----
-            Button(
-                enabled = canAdd,
-                onClick = {
-                    val qty = qtyText.toIntOrNull() ?: return@Button
-
-                    selectedGroup?.let {
-                        recipeViewModel.addTempGroup(it.id, qty)
-                    }
-
-                    qtyText = ""
-                    selectedGroup = null
-                    searchText = ""
-                },
-                modifier = Modifier.height(rowHeight),
-                contentPadding = PaddingValues(horizontal = 20.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (canAdd)
-                        themeViewModel.addButtonColor
-                    else
-                        Color.LightGray,
-                    contentColor = themeViewModel.onPrimaryColor,
-                    disabledContainerColor = Color.LightGray,
-                    disabledContentColor = themeViewModel.onPrimaryColor.copy(alpha = 0.6f)
-                )
-            ) {
-                Text("Tilføj")
-            }
-        }
-
-        // ---------- LIST ----------
-        LazyColumn(
-            modifier = Modifier.padding(top = 12.dp)
-        ) {
-            items(
-                tempSelected,
-                key = { it.itemGroupId }
-            ) { sg ->
-
-                val group = allGroups.firstOrNull { it.id == sg.itemGroupId }
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    EditRecipeItemRow(
-                        name = group?.name ?: "(ukendt)",
-                        quantity = sg.quantity,
-                        unit = group?.unitType ?: "",
-                        onDelete = { recipeViewModel.removeTempGroup(sg.itemGroupId) },
-                        themeViewModel = themeViewModel
-                    )
-                }
-            }
+    LaunchedEffect(selectedGroup) {
+        if (selectedGroup != null) {
+            qtyFocusRequester.requestFocus()
         }
     }
 
-    // ---------- DONE BUTTON ----------
-    Box(modifier = Modifier.fillMaxSize()) {
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(themeViewModel.backgroundColor) // GRÅ BAGGRUND
+        ) {
+
+            // ===== WHITE HEADER BLOCK =====
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(themeViewModel.surfaceColor) // HVID
+            ) {
+                Column {
+
+                    // ---------- HEADER ----------
+                    Text(
+                        "Tilføj ingredienser",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 12.dp, bottom = 12.dp)
+                    )
+
+                    // ---------- INPUT ROW ----------
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 12.dp)
+                    ) {
+
+                        val rowHeight = TextFieldDefaults.MinHeight
+
+                        // ---- SEARCH ----
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(rowHeight)
+                        ) {
+                            SearchSelectField(
+                                label = "Søg vare",
+                                items = allGroups,
+                                itemText = { it.name },
+                                value = searchText,
+                                onValueChange = { searchText = it },
+                                onItemSelected = { selectedGroup = it },
+                                borderColor = themeViewModel.addButtonColor
+                            )
+                        }
+
+                        // ---- QTY ----
+                        OutlinedTextField(
+                            value = qtyText,
+                            onValueChange = { qtyText = it.filter(Char::isDigit) },
+                            modifier = Modifier
+                                .width(110.dp)
+                                .height(rowHeight)
+                                .focusRequester(qtyFocusRequester),
+                            singleLine = true,
+                            placeholder = { Text("0") },
+                            trailingIcon = {
+                                Text(
+                                    text = selectedGroup?.unitType ?: "kg/L",
+                                    color = themeViewModel.textSecondary,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = themeViewModel.addButtonColor,
+                                unfocusedBorderColor = themeViewModel.addButtonColor,
+                                cursorColor = themeViewModel.addButtonColor
+                            )
+                        )
+
+                        // ---- ADD ----
+                        Button(
+                            onClick = {
+                                val qty = qtyText.toIntOrNull() ?: return@Button
+                                val group = selectedGroup ?: return@Button
+
+                                recipeViewModel.addTempGroup(group.id, qty)
+
+                                qtyText = ""
+                                selectedGroup = null
+                                searchText = ""
+                            },
+                            modifier = Modifier.height(rowHeight),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = themeViewModel.addButtonColor,
+                                contentColor = themeViewModel.onPrimaryColor
+                            )
+                        ) {
+                            Text("Tilføj")
+                        }
+                    }
+                }
+            }
+
+            // ===== GRÅ SPACER =====
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // ---------- LIST ----------
+            Card(
+                shape = RoundedCornerShape(0.dp),
+                colors = CardDefaults.cardColors(containerColor = themeViewModel.surfaceColor),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 8.dp)
+            ) {
+                LazyColumn(
+                    contentPadding = PaddingValues(bottom = 0.dp)
+                ) {
+                    items(
+                        tempSelected,
+                        key = { it.itemGroupId }
+                    ) { sg ->
+
+                        val group = allGroups.firstOrNull { it.id == sg.itemGroupId }
+
+                        EditRecipeItemRow(
+                            name = group?.name ?: "(ukendt)",
+                            quantity = sg.quantity,
+                            unit = group?.unitType ?: "",
+                            onDelete = { recipeViewModel.removeTempGroup(sg.itemGroupId) },
+                            themeViewModel = themeViewModel
+                        )
+                    }
+                }
+            }
+        }
+
+        // ---------- DONE BUTTON ----------
         FloatingActionButton(
             onClick = onDone,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(end = 20.dp, bottom = 20.dp)
+                .padding(bottom = 20.dp)
                 .height(48.dp)
                 .width(160.dp),
             shape = RoundedCornerShape(24.dp),
@@ -210,7 +231,7 @@ private fun EditRecipeItemRow(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Red)
+                    .background(themeViewModel.deleteColor)
                     .padding(end = 20.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
@@ -222,32 +243,39 @@ private fun EditRecipeItemRow(
             }
         }
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(themeViewModel.backgroundColor) // eller card color
-        ) {
+        Column {
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .background(themeViewModel.surfaceColor)
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
+                // ---- NAME ----
                 Text(
                     text = name,
                     modifier = Modifier.weight(1f),
                     fontSize = 15.sp,
-                    color = themeViewModel.textPrimary,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    color = themeViewModel.textPrimary
                 )
 
+                // ---- QUANTITY (ORANGE) ----
                 Text(
                     text = "$quantity $unit",
                     fontSize = 13.sp,
-                    color = themeViewModel.textPrimary,
-                    textAlign = TextAlign.End
+                    fontWeight = FontWeight.Medium,
+                    color = themeViewModel.textSecondary
                 )
             }
+
+            Divider(
+                thickness = 0.5.dp,
+                color = themeViewModel.textSecondary.copy(alpha = 0.12f),
+                modifier = Modifier.padding(start = 16.dp)
+            )
         }
     }
 }
