@@ -23,7 +23,10 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.a62550_foodapp.db.entity.ItemGroup
 import com.example.a62550_foodapp.db.projection.ShoppingListEntry
+import com.example.a62550_foodapp.db.projection.ShoppingListItemGroupEntry
+import com.example.a62550_foodapp.ui.components.AddItemGroupPage
 import com.example.a62550_foodapp.viewmodel.ShoppingListDetailsViewModel
 import com.example.a62550_foodapp.viewmodel.StoreFilterViewModel
 import com.example.a62550_foodapp.viewmodel.ThemeViewModel
@@ -55,15 +58,68 @@ fun ShoppingListDetailsPage(
             )
         } else {
             BackHandler { addItemsOverlay = false }
-            AddItemGroupToShoppingListPage(
-                shoppingListId = shoppingListId,
-                disableItemOverlay = { addItemsOverlay = false }
+
+            // Reuse same VM instance as the details page (same key + params)
+            val viewModel: ShoppingListDetailsViewModel = koinViewModel(
+                key = "ShoppingListDetails-$shoppingListId",
+                parameters = { parametersOf(shoppingListId) }
+            )
+
+            val allGroups by viewModel.itemGroups.collectAsState()
+            val itemGroupEntries by viewModel.itemGroupEntries.collectAsState()
+
+            //  merge duplicates per group.
+            val selectedItems: List<Pair<ItemGroup, Int>> = remember(allGroups, itemGroupEntries) {
+                buildSelectedItems(allGroups, itemGroupEntries)
+            }
+
+            AddItemGroupPage(
+                headerText = "Tilføj til indkøbslisten",
+                allGroups = allGroups,
+                selectedItems = selectedItems,
+                onAdd = { group, qty ->
+                    // Shopping list stores qty as portionSize (Float)
+                    viewModel.add(
+                        addedItem = group,
+                        portionSize = qty.toFloat()
+                    )
+                },
+                onDelete = { group ->
+                    // name + unitType.
+                    itemGroupEntries
+                        .filter { it.name == group.name && it.unitType == group.unitType }
+                        .forEach { viewModel.delete(it) }
+                },
+                onDone = { addItemsOverlay = false }
             )
         }
     }
 
 }
 
+// Shared AddItemGroupPage expects (ItemGroup, Int)
+private fun buildSelectedItems(
+    allGroups: List<ItemGroup>,
+    itemGroupEntries: List<ShoppingListItemGroupEntry>
+): List<Pair<ItemGroup, Int>> {
+    if (allGroups.isEmpty() || itemGroupEntries.isEmpty()) return emptyList()
+
+    // We merge by the same key used in the previous ShoppingList add-items UI.
+    val groupByNameAndUnit: Map<Pair<String, String>, ItemGroup> =
+        allGroups.associateBy { it.name to it.unitType }
+
+    return itemGroupEntries
+        .groupBy { it.name to it.unitType }
+        .mapNotNull { (key, entries) ->
+            val group = groupByNameAndUnit[key] ?: return@mapNotNull null
+
+            // We pproximate by summing sizes and truncating.
+            val qty = entries.sumOf { it.size.toDouble() }.toInt().coerceAtLeast(0)
+
+            group to qty
+        }
+        .sortedBy { it.first.name.lowercase() }
+}
 
 @Composable
 private fun ShoppingListPage(
